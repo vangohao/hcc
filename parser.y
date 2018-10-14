@@ -9,7 +9,7 @@
     int yylex();  
     int yyparse();
     int yyerror(const char *);
-    typedef union{
+    typedef struct{
         int number;
         char* name;
         SymbolType type;

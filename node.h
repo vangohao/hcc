@@ -49,7 +49,12 @@ struct Node //语法树节点
     Label ltrue;
     Label lfalse;
     Symbol* sym;
-    Node(Node* _left,Node* _right,NodeType _type,int _val,int _line=0):left(_left),right(_right),type(_type),val(_val),line(_line){}
+    Node(Node* _left,Node* _right,NodeType _type,
+    int _val,
+    int _line=0):
+
+        left(_left),right(_right),
+        type(_type),val(_val),line(_line){}
 };
 
 #endif
