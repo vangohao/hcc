@@ -36,9 +36,9 @@
                 std::cout<<s;
             }
         }
-        void patch(int i,Label l)
+        void patch(int i,Label& l)
         {
-            list.at(i) += l.print();
+            list.at(i) += l.print() + "\n";
         }
     }
     int Symbol::origCount = 0;
@@ -53,6 +53,7 @@
 %token<name> IDENTIFIER
 %type<node> Goal BeforeMain BeforeMainStatement VarDefn VarDecls VarDecl FuncDefn FuncCreateIdTable
 %type<node> InsideFuncStatements FuncDecl MainFunc Statements Statement Expression Params Identifier
+%type<node> M N
 %type<type> Type
 %right '='
 %left LOR
@@ -120,30 +121,58 @@ InsideFuncStatements
          Output::gen("end ");$1->sym->print();Output::gen("\n");
 }
 ;
-InsideFuncStatements: InsideFuncStatements FuncDecl
-| InsideFuncStatements Statement
+InsideFuncStatements: InsideFuncStatements M FuncDecl
+| InsideFuncStatements M Statement
 | %empty
 ;
 FuncDecl: FuncCreateIdTable VarDecls ')' ';'
         {/* delete top; */ top = save;}
 ;
-MainFunc: T_INT MAIN '(' ')' '{' InsideFuncStatements '}'
+MainFunc: T_INT MAIN '(' ')' '{' Statements '}'
 ;
 Type: T_INT   {$$ = SymbolType::Int;}
 ;
-Statements: Statements Statement
-| %empty
+Statements: Statements M Statement      { // std::cerr<<"GAY"<<std::endl;
+                                            $$ = new Node($1,$3,NodeType::Stmts,0);
+                                            $1->nextlist.backpatch($2->instr);
+                                            $$->nextlist = $3->nextlist;
+}
+//| %empty                             { $$= new Node(NULL,NULL,NodeType::Stmts,0);}
+| Statement {$$ = $1;}
 ;
-IfStatement: IF '(' 
- Expression ')' 
-  Statement
-
+M: %empty { $$ = new Node(NULL,NULL,NodeType::Empty,0);
+            $$->instr.Init(); 
+            Output::gen($$->instr.print()+":");
+}
+;
+N: %empty { $$ = new Node(NULL,NULL,NodeType::Empty,0);
+            $$->nextlist = Gotolist(Output::gen("goto "));
+}
 ;
 Statement: '{'    {save = top;top = new SymbolTable(top);}
-            Statements '}'        {/* delete top; */ top = save;}      
-| IfStatement
-| IfStatement ELSE Statement
-| WHILE '(' Expression ')' Statement
+            Statements '}'        {/* delete top; */ top = save;
+                                     $$ = $3;
+}      
+| IF '('  Expression ')' M Statement {   $3->truelist.backpatch($5->instr);
+                                         $$ = new Node($3,$6,NodeType::If,0);
+                                         $$->nextlist = $3->falselist.merge($6->nextlist);
+                                        
+}
+| IF '('  Expression ')' M Statement N ELSE M Statement  {
+                                        $$ = new Node($3,$6,NodeType::IfElse,0);
+                                        $3->truelist.backpatch($5->instr);
+                                        $3->falselist.backpatch($9->instr);
+                                        $$->nextlist = $6->nextlist.merge($10->nextlist);
+                                        $$->nextlist = $$->nextlist.merge($7->nextlist);
+}
+| WHILE M '(' Expression ')' M Statement           {
+                                        $$ = new Node($4,$7,NodeType::While,0);
+                                        $7->nextlist.backpatch($2->instr);
+                                        $4->truelist.backpatch($6->instr);
+                                        $$->nextlist = $4->falselist;
+                                        Output::gen("goto "+$2->instr.print());
+                                        
+}
 | Identifier '=' Expression ';'           {$$ =new Node($1,$3,NodeType::Assign,'=');
                                             $1->sym->print();
                                             Output::gen(" = ");//printf(" = ");
@@ -172,15 +201,11 @@ Expression:  Expression '+' Expression    {$$ = new Node($1,$3,NodeType::DualAri
                                            $$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"%%");
 }
 | Expression '<' Expression               {$$ = new Node($1,$3,NodeType::DualLogic,'<');
-                                            if($$->type == NodeType::If || $$->type==NodeType::IfElse 
-                                            || $$->type==NodeType::While)
-                                            {
-                                            printf("if ");$1->sym->print();printf(" < ");$3->sym->print();
-                                            printf(" goto ");$$->ltrue.print();Output::gen("\n");
-                                            printf(" goto ");$$->lfalse.print();Output::gen("\n");
-                                            }
-                                            else
-                                                $$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"<");
+                                        //    $$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"<");
+                                            Output::gen("if ");$1->sym->print();Output::gen(" < ");
+                                            $3->sym->print();
+                                            $$->truelist = Gotolist(Output::gen(" goto "));
+                                            $$->falselist = Gotolist(Output::gen("goto "));
 }
 | Expression '>' Expression               {$$ = new Node($1,$3,NodeType::DualLogic,'>');
                                            //$$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,">");
@@ -191,11 +216,17 @@ Expression:  Expression '+' Expression    {$$ = new Node($1,$3,NodeType::DualAri
 | Expression NOTEQUAL Expression          {$$ = new Node($1,$3,NodeType::DualLogic,NOTEQUAL);
                                            //$$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"!=");
 }
-| Expression LAND Expression               {$$ = new Node($1,$3,NodeType::DualLogic,LAND);
+| Expression LAND M Expression               {$$ = new Node($1,$3,NodeType::DualLogic,LAND);
                                            //$$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"&&");
+                                           $1->truelist.backpatch($3->instr);
+                                           $$->truelist = $4->truelist;
+                                           $$->falselist = $1->falselist.merge($4->falselist);
 }
-| Expression LOR Expression               {$$ = new Node($1,$3,NodeType::DualLogic,LOR);
+| Expression LOR M Expression               {$$ = new Node($1,$3,NodeType::DualLogic,LOR);
                                            //$$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"||");
+                                           $1->falselist.backpatch($3->instr);
+                                           $$->falselist = $4->falselist;
+                                           $$->truelist = $1->truelist.merge($4->truelist);
                                             
 }
 | Expression '[' Expression ']'               {$$ = new Node($1,$3,NodeType::DualArith,'[');
@@ -211,7 +242,9 @@ Expression:  Expression '+' Expression    {$$ = new Node($1,$3,NodeType::DualAri
 | Identifier                                  {if($1->sym->decleared == false) {$1->sym->ReportError("Undecleared");}
     $$ = $1;}
 | '!' Expression                              {$$ = new Node($2,NULL,NodeType::SingleLogic,'!');
-                                                $$->sym = Symbol::ProcessSingleOp($2->sym,"!");
+                                                // $$->sym = Symbol::ProcessSingleOp($2->sym,"!");
+                                                $$->falselist = $2->truelist;
+                                                $$->truelist = $2->falselist;
 } 
 | '-' Expression %prec NEGA                   {$$ = new Node($2,NULL,NodeType::SingleArith,'-');
                                                 $$->sym = Symbol::ProcessSingleOp($2->sym,"-");

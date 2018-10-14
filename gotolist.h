@@ -1,8 +1,9 @@
 #include<list>
-#include"node.h"
+//#include"node.h"
+struct Label;
 namespace Output
 {
-    void patch(int i,Label l);
+    void patch(int i,Label& l);
 }
 struct Gotolist
 {
@@ -20,11 +21,11 @@ struct Gotolist
         g1.list.merge(l2.list);
         return g1;
     }
-    void backpatch(Label l)
+    void backpatch(Label& l)
     {
         for(auto x: list)
         {
-            Output.patch(x,l);
+            Output::patch(x,l);
         }
     }
 };
