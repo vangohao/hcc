@@ -114,7 +114,7 @@ FuncDefn: FuncCreateIdTable VarDecls ')'    { $1->sym->Declear(SymbolType::FunPt
                                             Output::gen(ss.str());
  }
 '{'    
-InsideFuncStatements 
+Statements M
 '}'    { /* delete top; */ top = save;
          $$ = new Node($1,$6,NodeType::Fundfn,$2->val); 
          /* printf("end ");  */ 
@@ -128,7 +128,7 @@ InsideFuncStatements: InsideFuncStatements M FuncDecl
 FuncDecl: FuncCreateIdTable VarDecls ')' ';'
         {/* delete top; */ top = save;}
 ;
-MainFunc: T_INT MAIN '(' ')' '{' Statements '}'
+MainFunc: T_INT MAIN '(' ')' '{' Statements M'}'
 ;
 Type: T_INT   {$$ = SymbolType::Int;}
 ;
