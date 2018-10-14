@@ -24,9 +24,10 @@
     namespace Output
     {
         std::vector<std::string> list;
-        void gen(std::string s)
+        int gen(std::string s)
         {
             list.push_back(s);
+            return list.size() - 1;
         }
         void print()
         {
@@ -35,8 +36,11 @@
                 std::cout<<s;
             }
         }
+        void patch(int i,Label l)
+        {
+            list.at(i) += l.print();
+        }
     }
-    //std::vector<std::string> list = std::vector<std::string>();
     int Symbol::origCount = 0;
     int Symbol::tempCount = 0;
     int Label::usedCount = 0;

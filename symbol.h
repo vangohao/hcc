@@ -6,7 +6,7 @@
 struct Node;
 namespace Output
 {
-void gen(std::string);
+int gen(std::string);
 }
 enum SymbolType //符号类型
 {

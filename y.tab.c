@@ -170,9 +170,10 @@ int yyparse (void);
     namespace Output
     {
         std::vector<std::string> list;
-        void gen(std::string s)
+        int gen(std::string s)
         {
             list.push_back(s);
+            return list.size() - 1;
         }
         void print()
         {
@@ -181,13 +182,17 @@ int yyparse (void);
                 std::cout<<s;
             }
         }
+        void patch(int i,Label l)
+        {
+            list.at(i) += l.print();
+        }
     }
     //std::vector<std::string> list = std::vector<std::string>();
     int Symbol::origCount = 0;
     int Symbol::tempCount = 0;
     int Label::usedCount = 0;
 
-#line 191 "y.tab.c" /* yacc.c:359  */
+#line 196 "y.tab.c" /* yacc.c:359  */
 
 #ifdef short
 # undef short
@@ -486,12 +491,12 @@ static const yytype_uint8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    64,    64,    66,    67,    69,    69,    69,    71,    79,
-      81,    85,    90,    93,    97,    98,   100,   104,   104,   119,
-     120,   121,   123,   126,   128,   130,   131,   133,   138,   138,
-     140,   141,   142,   143,   150,   151,   152,   155,   158,   161,
-     164,   167,   170,   181,   184,   187,   190,   193,   197,   204,
-     207,   209,   212,   215,   223,   226,   229,   232,   234
+       0,    69,    69,    71,    72,    74,    74,    74,    76,    84,
+      86,    90,    95,    98,   102,   103,   105,   109,   109,   124,
+     125,   126,   128,   131,   133,   135,   136,   138,   143,   143,
+     145,   146,   147,   148,   155,   156,   157,   160,   163,   166,
+     169,   172,   175,   186,   189,   192,   195,   198,   202,   209,
+     212,   214,   217,   220,   228,   231,   234,   237,   239
 };
 #endif
 
@@ -1382,13 +1387,13 @@ yyreduce:
   switch (yyn)
     {
         case 2:
-#line 64 "parser.y" /* yacc.c:1646  */
+#line 69 "parser.y" /* yacc.c:1646  */
     {Output::print();}
-#line 1388 "y.tab.c" /* yacc.c:1646  */
+#line 1393 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 8:
-#line 71 "parser.y" /* yacc.c:1646  */
+#line 76 "parser.y" /* yacc.c:1646  */
     {   (yyval.node) = new Node((yyvsp[-1].node),NULL,NodeType::Vardfn,0);
                                     (yyvsp[-1].node)->sym->Declear((yyvsp[-2].type));
                                     (yyvsp[-1].node)->sym->Define();
@@ -1397,54 +1402,54 @@ yyreduce:
                                     ss<<"var T"<<(yyvsp[-1].node)->sym->id<<"\n";
                                     Output::gen(ss.str());
                                 }
-#line 1401 "y.tab.c" /* yacc.c:1646  */
+#line 1406 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 10:
-#line 81 "parser.y" /* yacc.c:1646  */
+#line 86 "parser.y" /* yacc.c:1646  */
     {   (yyval.node) = new Node((yyvsp[-2].node),(yyvsp[0].node),NodeType::Params,(yyvsp[-2].node)->val + 1);
                                     (yyvsp[0].node)->sym->paramCount = (yyvsp[-2].node)->val;
                                     (yyvsp[0].node)->sym->Define();
 }
-#line 1410 "y.tab.c" /* yacc.c:1646  */
+#line 1415 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 11:
-#line 85 "parser.y" /* yacc.c:1646  */
+#line 90 "parser.y" /* yacc.c:1646  */
     {
                                     (yyval.node) = new Node(NULL,(yyvsp[0].node),NodeType::Params,1);
                                     (yyvsp[0].node)->sym->paramCount = 0;
                                     (yyvsp[0].node)->sym->Define();
 }
-#line 1420 "y.tab.c" /* yacc.c:1646  */
+#line 1425 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 12:
-#line 90 "parser.y" /* yacc.c:1646  */
+#line 95 "parser.y" /* yacc.c:1646  */
     {(yyval.node) = new Node(NULL,NULL,NodeType::Params,0);
 }
-#line 1427 "y.tab.c" /* yacc.c:1646  */
+#line 1432 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 13:
-#line 93 "parser.y" /* yacc.c:1646  */
+#line 98 "parser.y" /* yacc.c:1646  */
     {   (yyval.node) = new Node((yyvsp[0].node),NULL,NodeType::VarDcl,0);
                                     (yyvsp[0].node)->sym->Declear((yyvsp[-1].type),0);
                                     (yyval.node)->sym = (yyvsp[0].node)->sym;
 }
-#line 1436 "y.tab.c" /* yacc.c:1646  */
+#line 1441 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 16:
-#line 100 "parser.y" /* yacc.c:1646  */
+#line 105 "parser.y" /* yacc.c:1646  */
     {save = top;top = new SymbolTable(top);/*函数前的创建符号表*/
                                         (yyval.node) = (yyvsp[-1].node);
 }
-#line 1444 "y.tab.c" /* yacc.c:1646  */
+#line 1449 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 17:
-#line 104 "parser.y" /* yacc.c:1646  */
+#line 109 "parser.y" /* yacc.c:1646  */
     { (yyvsp[-2].node)->sym->Declear(SymbolType::FunPtr,0,(yyvsp[-1].node)->val);
                                             (yyvsp[-2].node)->sym->Define();
                                             (yyvsp[-2].node)->sym->print();//printf(" [%d]\n",$2->val);
@@ -1452,45 +1457,45 @@ yyreduce:
                                             ss<<" ["<< (yyvsp[-1].node)->val <<"]\n";
                                             Output::gen(ss.str());
  }
-#line 1456 "y.tab.c" /* yacc.c:1646  */
+#line 1461 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 18:
-#line 113 "parser.y" /* yacc.c:1646  */
+#line 118 "parser.y" /* yacc.c:1646  */
     { /* delete top; */ top = save;
          (yyval.node) = new Node((yyvsp[-6].node),(yyvsp[-1].node),NodeType::Fundfn,(yyvsp[-5].node)->val); 
          /* printf("end ");  */ 
-         Output::gen("end ");(yyvsp[-6].node)->sym->print();
+         Output::gen("end ");(yyvsp[-6].node)->sym->print();Output::gen("\n");
 }
-#line 1466 "y.tab.c" /* yacc.c:1646  */
+#line 1471 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 22:
-#line 124 "parser.y" /* yacc.c:1646  */
+#line 129 "parser.y" /* yacc.c:1646  */
     {/* delete top; */ top = save;}
-#line 1472 "y.tab.c" /* yacc.c:1646  */
+#line 1477 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 24:
-#line 128 "parser.y" /* yacc.c:1646  */
+#line 133 "parser.y" /* yacc.c:1646  */
     {(yyval.type) = SymbolType::Int;}
-#line 1478 "y.tab.c" /* yacc.c:1646  */
+#line 1483 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 28:
-#line 138 "parser.y" /* yacc.c:1646  */
+#line 143 "parser.y" /* yacc.c:1646  */
     {save = top;top = new SymbolTable(top);}
-#line 1484 "y.tab.c" /* yacc.c:1646  */
+#line 1489 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 29:
-#line 139 "parser.y" /* yacc.c:1646  */
+#line 144 "parser.y" /* yacc.c:1646  */
     {/* delete top; */ top = save;}
-#line 1490 "y.tab.c" /* yacc.c:1646  */
+#line 1495 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 33:
-#line 143 "parser.y" /* yacc.c:1646  */
+#line 148 "parser.y" /* yacc.c:1646  */
     {(yyval.node) =new Node((yyvsp[-3].node),(yyvsp[-1].node),NodeType::Assign,'=');
                                             (yyvsp[-3].node)->sym->print();
                                             Output::gen(" = ");//printf(" = ");
@@ -1498,58 +1503,58 @@ yyreduce:
                                             Output::gen("\n");//printf("\n");
 
 }
-#line 1502 "y.tab.c" /* yacc.c:1646  */
+#line 1507 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 36:
-#line 152 "parser.y" /* yacc.c:1646  */
+#line 157 "parser.y" /* yacc.c:1646  */
     {(yyval.node) = new Node((yyvsp[-1].node),NULL,NodeType::Return,0);
-                                            Output::gen("return ");(yyvsp[-1].node)->sym->print();}
-#line 1509 "y.tab.c" /* yacc.c:1646  */
+                                            Output::gen("return ");(yyvsp[-1].node)->sym->print();Output::gen("\n");}
+#line 1514 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 37:
-#line 155 "parser.y" /* yacc.c:1646  */
+#line 160 "parser.y" /* yacc.c:1646  */
     {(yyval.node) = new Node((yyvsp[-2].node),(yyvsp[0].node),NodeType::DualArith,'+');
                                            (yyval.node)->sym = Symbol::ProcessDualOp((yyvsp[-2].node)->sym,(yyvsp[0].node)->sym,"+");
 }
-#line 1517 "y.tab.c" /* yacc.c:1646  */
+#line 1522 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 38:
-#line 158 "parser.y" /* yacc.c:1646  */
+#line 163 "parser.y" /* yacc.c:1646  */
     {(yyval.node) = new Node((yyvsp[-2].node),(yyvsp[0].node),NodeType::DualArith,'-');
                                            (yyval.node)->sym = Symbol::ProcessDualOp((yyvsp[-2].node)->sym,(yyvsp[0].node)->sym,"-");
 }
-#line 1525 "y.tab.c" /* yacc.c:1646  */
+#line 1530 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 39:
-#line 161 "parser.y" /* yacc.c:1646  */
+#line 166 "parser.y" /* yacc.c:1646  */
     {(yyval.node) = new Node((yyvsp[-2].node),(yyvsp[0].node),NodeType::DualArith,'*');
                                            (yyval.node)->sym = Symbol::ProcessDualOp((yyvsp[-2].node)->sym,(yyvsp[0].node)->sym,"*");
 }
-#line 1533 "y.tab.c" /* yacc.c:1646  */
+#line 1538 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 40:
-#line 164 "parser.y" /* yacc.c:1646  */
+#line 169 "parser.y" /* yacc.c:1646  */
     {(yyval.node) = new Node((yyvsp[-2].node),(yyvsp[0].node),NodeType::DualArith,'/');
                                            (yyval.node)->sym = Symbol::ProcessDualOp((yyvsp[-2].node)->sym,(yyvsp[0].node)->sym,"/");
 }
-#line 1541 "y.tab.c" /* yacc.c:1646  */
+#line 1546 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 41:
-#line 167 "parser.y" /* yacc.c:1646  */
+#line 172 "parser.y" /* yacc.c:1646  */
     {(yyval.node) = new Node((yyvsp[-2].node),(yyvsp[0].node),NodeType::DualArith,'%');
                                            (yyval.node)->sym = Symbol::ProcessDualOp((yyvsp[-2].node)->sym,(yyvsp[0].node)->sym,"%%");
 }
-#line 1549 "y.tab.c" /* yacc.c:1646  */
+#line 1554 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 42:
-#line 170 "parser.y" /* yacc.c:1646  */
+#line 175 "parser.y" /* yacc.c:1646  */
     {(yyval.node) = new Node((yyvsp[-2].node),(yyvsp[0].node),NodeType::DualLogic,'<');
                                             if((yyval.node)->type == NodeType::If || (yyval.node)->type==NodeType::IfElse 
                                             || (yyval.node)->type==NodeType::While)
@@ -1561,52 +1566,52 @@ yyreduce:
                                             else
                                                 (yyval.node)->sym = Symbol::ProcessDualOp((yyvsp[-2].node)->sym,(yyvsp[0].node)->sym,"<");
 }
-#line 1565 "y.tab.c" /* yacc.c:1646  */
+#line 1570 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 43:
-#line 181 "parser.y" /* yacc.c:1646  */
+#line 186 "parser.y" /* yacc.c:1646  */
     {(yyval.node) = new Node((yyvsp[-2].node),(yyvsp[0].node),NodeType::DualLogic,'>');
                                            //$$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,">");
 }
-#line 1573 "y.tab.c" /* yacc.c:1646  */
+#line 1578 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 44:
-#line 184 "parser.y" /* yacc.c:1646  */
+#line 189 "parser.y" /* yacc.c:1646  */
     {(yyval.node) = new Node((yyvsp[-2].node),(yyvsp[0].node),NodeType::DualLogic,EQUAL);
                                            //$$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"==");
 }
-#line 1581 "y.tab.c" /* yacc.c:1646  */
+#line 1586 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 45:
-#line 187 "parser.y" /* yacc.c:1646  */
+#line 192 "parser.y" /* yacc.c:1646  */
     {(yyval.node) = new Node((yyvsp[-2].node),(yyvsp[0].node),NodeType::DualLogic,NOTEQUAL);
                                            //$$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"!=");
 }
-#line 1589 "y.tab.c" /* yacc.c:1646  */
+#line 1594 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 46:
-#line 190 "parser.y" /* yacc.c:1646  */
+#line 195 "parser.y" /* yacc.c:1646  */
     {(yyval.node) = new Node((yyvsp[-2].node),(yyvsp[0].node),NodeType::DualLogic,LAND);
                                            //$$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"&&");
 }
-#line 1597 "y.tab.c" /* yacc.c:1646  */
+#line 1602 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 47:
-#line 193 "parser.y" /* yacc.c:1646  */
+#line 198 "parser.y" /* yacc.c:1646  */
     {(yyval.node) = new Node((yyvsp[-2].node),(yyvsp[0].node),NodeType::DualLogic,LOR);
                                            //$$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"||");
                                             
 }
-#line 1606 "y.tab.c" /* yacc.c:1646  */
+#line 1611 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 48:
-#line 197 "parser.y" /* yacc.c:1646  */
+#line 202 "parser.y" /* yacc.c:1646  */
     {(yyval.node) = new Node((yyvsp[-3].node),(yyvsp[-1].node),NodeType::DualArith,'[');
                                                 Symbol* tmpsym = new Symbol(SymbolType::Int);
                                                 Output::gen("var ");tmpsym->print();Output::gen("\n");
@@ -1614,42 +1619,42 @@ yyreduce:
                                                 Output::gen(" [");(yyvsp[-1].node)->sym->print();Output::gen("]\n");
                                                 (yyval.node)->sym = tmpsym;
 }
-#line 1618 "y.tab.c" /* yacc.c:1646  */
+#line 1623 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 49:
-#line 204 "parser.y" /* yacc.c:1646  */
+#line 209 "parser.y" /* yacc.c:1646  */
     {(yyval.node) = new Node(NULL,NULL,NodeType::Symbol1,(yyvsp[0].number));
                                                 (yyval.node)->sym = new Symbol(SymbolType::Immediate,(yyvsp[0].number));
 }
-#line 1626 "y.tab.c" /* yacc.c:1646  */
+#line 1631 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 50:
-#line 207 "parser.y" /* yacc.c:1646  */
+#line 212 "parser.y" /* yacc.c:1646  */
     {if((yyvsp[0].node)->sym->decleared == false) {(yyvsp[0].node)->sym->ReportError("Undecleared");}
     (yyval.node) = (yyvsp[0].node);}
-#line 1633 "y.tab.c" /* yacc.c:1646  */
+#line 1638 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 51:
-#line 209 "parser.y" /* yacc.c:1646  */
+#line 214 "parser.y" /* yacc.c:1646  */
     {(yyval.node) = new Node((yyvsp[0].node),NULL,NodeType::SingleLogic,'!');
                                                 (yyval.node)->sym = Symbol::ProcessSingleOp((yyvsp[0].node)->sym,"!");
 }
-#line 1641 "y.tab.c" /* yacc.c:1646  */
+#line 1646 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 52:
-#line 212 "parser.y" /* yacc.c:1646  */
+#line 217 "parser.y" /* yacc.c:1646  */
     {(yyval.node) = new Node((yyvsp[0].node),NULL,NodeType::SingleArith,'-');
                                                 (yyval.node)->sym = Symbol::ProcessSingleOp((yyvsp[0].node)->sym,"-");
 }
-#line 1649 "y.tab.c" /* yacc.c:1646  */
+#line 1654 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 53:
-#line 215 "parser.y" /* yacc.c:1646  */
+#line 220 "parser.y" /* yacc.c:1646  */
     {(yyval.node) = new Node((yyvsp[-3].node),(yyvsp[-1].node),NodeType::Funcall,(yyvsp[-1].node)->val);
                                                 Symbol* tmpsym = new Symbol(SymbolType::Int);
                                                 Output::gen("var ");tmpsym->print();Output::gen("\n");
@@ -1658,40 +1663,40 @@ yyreduce:
                                                 (yyval.node)->sym = tmpsym;
                                                 
 }
-#line 1662 "y.tab.c" /* yacc.c:1646  */
+#line 1667 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 54:
-#line 223 "parser.y" /* yacc.c:1646  */
+#line 228 "parser.y" /* yacc.c:1646  */
     {(yyval.node) = (yyvsp[-1].node);
 }
-#line 1669 "y.tab.c" /* yacc.c:1646  */
+#line 1674 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 55:
-#line 226 "parser.y" /* yacc.c:1646  */
+#line 231 "parser.y" /* yacc.c:1646  */
     {   (yyval.node) = new Node((yyvsp[-2].node),(yyvsp[0].node),NodeType::Params,(yyvsp[-2].node)->val + 1);
                                         Output::gen("param ");(yyvsp[0].node)->sym->print();Output::gen("\n");
 }
-#line 1677 "y.tab.c" /* yacc.c:1646  */
+#line 1682 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 56:
-#line 229 "parser.y" /* yacc.c:1646  */
+#line 234 "parser.y" /* yacc.c:1646  */
     { (yyval.node)=new Node(NULL,(yyvsp[0].node),NodeType::Params,1);
                                         Output::gen("param ");(yyvsp[0].node)->sym->print();Output::gen("\n");
 }
-#line 1685 "y.tab.c" /* yacc.c:1646  */
+#line 1690 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 57:
-#line 232 "parser.y" /* yacc.c:1646  */
+#line 237 "parser.y" /* yacc.c:1646  */
     {(yyval.node) = new Node(NULL,NULL,NodeType::Params,0);}
-#line 1691 "y.tab.c" /* yacc.c:1646  */
+#line 1696 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 58:
-#line 234 "parser.y" /* yacc.c:1646  */
+#line 239 "parser.y" /* yacc.c:1646  */
     {    (yyval.node) = new Node(NULL,NULL,NodeType::Symbol1,0);
                                         Symbol * sym = top->get((yyvsp[0].name));
                                         if(sym == NULL)
@@ -1704,11 +1709,11 @@ yyreduce:
                                         strcat(sym->funName,(yyvsp[0].name));
                                         (yyval.node)->sym = sym;
 }
-#line 1708 "y.tab.c" /* yacc.c:1646  */
+#line 1713 "y.tab.c" /* yacc.c:1646  */
     break;
 
 
-#line 1712 "y.tab.c" /* yacc.c:1646  */
+#line 1717 "y.tab.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -1936,7 +1941,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 248 "parser.y" /* yacc.c:1906  */
+#line 253 "parser.y" /* yacc.c:1906  */
 
 
 int yyerror(const char *msg)            //输出错误信息的yyerror()函数

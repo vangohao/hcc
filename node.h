@@ -1,5 +1,6 @@
 #ifndef __HCC_H
 #define __HCC_H
+#include<sstream>
 enum NodeType //语法树节点所对应语句类型
 {
 DualArith=0,
@@ -41,14 +42,16 @@ struct Label
         used++;
         id = usedCount++;
     } */
-    void print()
+    std::string print()
     {
         if(used == 0)
         {
             used ++;
             id = usedCount++;
         }   
-        //printf("l%d",id);
+        std::stringstream ss;
+        ss<<"l"<<id;
+        return ss.str();
     }
 };
 struct Node //语法树节点
