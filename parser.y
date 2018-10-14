@@ -21,6 +21,22 @@
 %code{
     SymbolTable * top = new SymbolTable(NULL); 
     SymbolTable * save = NULL;
+    namespace Output
+    {
+        std::vector<std::string> list;
+        void gen(std::string s)
+        {
+            list.push_back(s);
+        }
+        void print()
+        {
+            for(std::string s : list)
+            {
+                std::cout<<s;
+            }
+        }
+    }
+    //std::vector<std::string> list = std::vector<std::string>();
     int Symbol::origCount = 0;
     int Symbol::tempCount = 0;
     int Label::usedCount = 0;
@@ -45,7 +61,7 @@
 %right '[' 
 
 %%
-Goal: BeforeMain MainFunc
+Goal: BeforeMain MainFunc           {Output::print();}
 ;
 BeforeMain: BeforeMain BeforeMainStatement
 |   %empty
@@ -55,7 +71,10 @@ BeforeMainStatement: VarDefn | FuncDefn | FuncDecl
 VarDefn: Type Identifier ';'    {   $$ = new Node($2,NULL,NodeType::Vardfn,0);
                                     $2->sym->Declear($1);
                                     $2->sym->Define();
-                                    printf("var T%d\n",$2->sym->id);
+                                    // printf("var T%d\n",$2->sym->id);
+                                    std::stringstream ss;
+                                    ss<<"var T"<<$2->sym->id<<"\n";
+                                    Output::gen(ss.str());
                                 }
 | Type Identifier'['INTEGER']' ';'
 ;
@@ -84,13 +103,17 @@ FuncCreateIdTable: Type Identifier '(' {save = top;top = new SymbolTable(top);/*
 ;
 FuncDefn: FuncCreateIdTable VarDecls ')'    { $1->sym->Declear(SymbolType::FunPtr,0,$2->val);
                                             $1->sym->Define();
-                                            $1->sym->print();printf(" [%d]\n",$2->val);
+                                            $1->sym->print();//printf(" [%d]\n",$2->val);
+                                            std::stringstream ss;
+                                            ss<<" ["<< $2->val <<"]\n";
+                                            Output::gen(ss.str());
  }
 '{'    
 InsideFuncStatements 
 '}'    { /* delete top; */ top = save;
          $$ = new Node($1,$6,NodeType::Fundfn,$2->val); 
-         printf("end ");  $1->sym->print();
+         /* printf("end ");  */ 
+         Output::gen("end ");$1->sym->print();Output::gen("\n");
 }
 ;
 InsideFuncStatements: InsideFuncStatements FuncDecl
@@ -107,22 +130,27 @@ Type: T_INT   {$$ = SymbolType::Int;}
 Statements: Statements Statement
 | %empty
 ;
-IfBegin: IF '(' {
+IfStatement: IF '(' 
+ Expression ')' 
+  Statement
 
-}
+;
 Statement: '{'    {save = top;top = new SymbolTable(top);}
             Statements '}'        {/* delete top; */ top = save;}      
-| IfBegin Expression ')' Statement   
-| IfBegin Expression ')' Statement ELSE Statement
+| IfStatement
+| IfStatement ELSE Statement
 | WHILE '(' Expression ')' Statement
 | Identifier '=' Expression ';'           {$$ =new Node($1,$3,NodeType::Assign,'=');
-                                            $1->sym->print();printf(" = ");$3->sym->print();printf("\n");
+                                            $1->sym->print();
+                                            Output::gen(" = ");//printf(" = ");
+                                            $3->sym->print();
+                                            Output::gen("\n");//printf("\n");
 
 }
 | Identifier '[' Expression ']' '=' Expression ';'
 | VarDefn
 | RETURN Expression ';'                 {$$ = new Node($2,NULL,NodeType::Return,0);
-                                            printf("return ");$2->sym->print();}
+                                            Output::gen("return ");$2->sym->print();Output::gen("\n");}
 ;
 Expression:  Expression '+' Expression    {$$ = new Node($1,$3,NodeType::DualArith,'+');
                                            $$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"+");
@@ -144,8 +172,8 @@ Expression:  Expression '+' Expression    {$$ = new Node($1,$3,NodeType::DualAri
                                             || $$->type==NodeType::While)
                                             {
                                             printf("if ");$1->sym->print();printf(" < ");$3->sym->print();
-                                            printf(" goto ");$$->ltrue->print();putchar('\n');
-                                            printf(" goto ");$$->lfalse->print();putchar('\n');
+                                            printf(" goto ");$$->ltrue.print();Output::gen("\n");
+                                            printf(" goto ");$$->lfalse.print();Output::gen("\n");
                                             }
                                             else
                                                 $$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"<");
@@ -168,9 +196,9 @@ Expression:  Expression '+' Expression    {$$ = new Node($1,$3,NodeType::DualAri
 }
 | Expression '[' Expression ']'               {$$ = new Node($1,$3,NodeType::DualArith,'[');
                                                 Symbol* tmpsym = new Symbol(SymbolType::Int);
-                                                printf("var ");tmpsym->print();putchar('\n');
-                                                tmpsym->print();printf(" = ");$1->sym->print();
-                                                printf(" [");$3->sym->print();printf("]\n");
+                                                Output::gen("var ");tmpsym->print();Output::gen("\n");
+                                                tmpsym->print();Output::gen(" = ");$1->sym->print();
+                                                Output::gen(" [");$3->sym->print();Output::gen("]\n");
                                                 $$->sym = tmpsym;
 }
 | INTEGER                                     {$$ = new Node(NULL,NULL,NodeType::Symbol1,$1);
@@ -186,9 +214,9 @@ Expression:  Expression '+' Expression    {$$ = new Node($1,$3,NodeType::DualAri
 }
 | Identifier '(' Params ')'                   {$$ = new Node($1,$3,NodeType::Funcall,$3->val);
                                                 Symbol* tmpsym = new Symbol(SymbolType::Int);
-                                                printf("var ");tmpsym->print();putchar('\n');
-                                                tmpsym->print();printf(" = ");
-                                                printf("call ");$1->sym->print();putchar('\n');
+                                                Output::gen("var ");tmpsym->print();Output::gen("\n");
+                                                tmpsym->print();Output::gen(" = ");
+                                                Output::gen("call ");$1->sym->print();Output::gen("\n");
                                                 $$->sym = tmpsym;
                                                 
 }
@@ -196,10 +224,10 @@ Expression:  Expression '+' Expression    {$$ = new Node($1,$3,NodeType::DualAri
 }
 ;
 Params: Params ',' Expression       {   $$ = new Node($1,$3,NodeType::Params,$1->val + 1);
-                                        printf("param ");$3->sym->print();putchar('\n');
+                                        Output::gen("param ");$3->sym->print();Output::gen("\n");
 }
 |   Expression                         { $$=new Node(NULL,$1,NodeType::Params,1);
-                                        printf("param ");$1->sym->print();putchar('\n');
+                                        Output::gen("param ");$1->sym->print();Output::gen("\n");
 }
 | %empty        {$$ = new Node(NULL,NULL,NodeType::Params,0);}
 ;
@@ -210,10 +238,10 @@ Identifier: IDENTIFIER             {    $$ = new Node(NULL,NULL,NodeType::Symbol
                                             sym = new Symbol($$);
                                             top->put($1,sym);
                                         }
-                                        sym->funName = strdup("f_");
+                                        sym->funName = (char*)malloc(4+strlen($1));
+                                        strcpy(sym->funName,"f_");
                                         strcat(sym->funName,$1);
                                         $$->sym = sym;
-                                        
 }
 ;
 
@@ -221,6 +249,6 @@ Identifier: IDENTIFIER             {    $$ = new Node(NULL,NULL,NodeType::Symbol
 
 int yyerror(const char *msg)            //输出错误信息的yyerror()函数
 {
-printf("Error encountered: %s \n", msg);
+std::cerr<<"Error encountered: "<<msg<<std::endl;
 return 0;
 }

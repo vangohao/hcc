@@ -41,14 +41,14 @@ struct Label
         used++;
         id = usedCount++;
     } */
-    void Print()
+    void print()
     {
         if(used == 0)
         {
             used ++;
             id = usedCount++;
         }   
-        printf("l%d",id);
+        //printf("l%d",id);
     }
 };
 struct Node //语法树节点

@@ -1,7 +1,13 @@
-#include<stdio.h>
+#include<iostream>
+#include<sstream>
 #include<map>
 #include<string>
+#include<vector>
 struct Node;
+namespace Output
+{
+void gen(std::string);
+}
 enum SymbolType //符号类型
 {
     Int=0,
@@ -58,41 +64,51 @@ struct Symbol //符号
     }
     void print()
     {
+        std::stringstream ss;
         if(type==SymbolType::FunPtr)
         {
-            printf("%s",funName);
+            ss<<funName;
         }
         else if(type==SymbolType::Immediate)
         {
-            printf("IM%d",immediate);
+            ss<<immediate;
         }
         else if(id!=-1)
         {
-            printf("T%d",id);
+            ss<<"T"<<id;
         }
         else if(tempid==-1)
         {
-            printf("p%d",paramCount);
+            ss<<"p"<<paramCount;
         }
         else
         {
-            printf("t%d",tempid);
+            ss<<"t"<<tempid;
         }
+        Output::gen(ss.str());
     }
     static Symbol* ProcessDualOp(Symbol* s1,Symbol* s2,const char * x)
     {
         Symbol* tmpsym = new Symbol(SymbolType::Int);
-        printf("var ");tmpsym->print();putchar('\n');
-        tmpsym->print();printf(" = ");s1->print();
-        printf(" %s ",x);s2->print();putchar('\n');
+        // printf("var ");tmpsym->print();putchar('\n');
+        // tmpsym->print();printf(" = ");s1->print();
+        // printf(" %s ",x);s2->print();putchar('\n');
+        Output::gen("var ");tmpsym->print();Output::gen("\n");
+        tmpsym->print();Output::gen(" = ");s1->print();
+        Output::gen(" ");Output::gen(x);Output::gen(" ");
+        s2->print();Output::gen("\n");
         return tmpsym;
     }
     static Symbol* ProcessSingleOp(Symbol* s1,const char * x)
     {
         Symbol* tmpsym = new Symbol(SymbolType::Int);
-        printf("var ");tmpsym->print();putchar('\n');
-        tmpsym->print();printf(" = ");
-        printf(" %s",x);s1->print();putchar('\n');
+        // printf("var ");tmpsym->print();putchar('\n');
+        // tmpsym->print();printf(" = ");
+        // printf("%s",x);s1->print();putchar('\n');
+        Output::gen("var ");tmpsym->print();Output::gen("\n");
+        tmpsym->print();
+        Output::gen(" = ");Output::gen(x);Output::gen(" ");
+        s1->print();Output::gen("\n");
         return tmpsym;
     }
     void Declear(SymbolType _type,int _paramCount=-1, int _val=0)
@@ -122,7 +138,7 @@ struct Symbol //符号
     }
     static void ReportError(const char * s)
     {
-        fprintf(stderr,"%s\n",s);
+        std::cerr<<s<<std::endl;
     }
 };
 
