@@ -1,0 +1,8 @@
+a.out
+hcc
+lex.yy.o
+lex.yy.c
+main.o
+y.output
+y.tab.h
+y.tab.o
