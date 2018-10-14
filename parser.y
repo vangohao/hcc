@@ -23,6 +23,7 @@
     SymbolTable * save = NULL;
     int Symbol::origCount = 0;
     int Symbol::tempCount = 0;
+    int Label::usedCount = 0;
 }
 
 
@@ -88,7 +89,9 @@ FuncDefn: FuncCreateIdTable VarDecls ')'    { $1->sym->Declear(SymbolType::FunPt
 '{'    
 InsideFuncStatements 
 '}'    { /* delete top; */ top = save;
-         $$ = new Node($1,$6,NodeType::Fundfn,$2->val); }
+         $$ = new Node($1,$6,NodeType::Fundfn,$2->val); 
+         printf("end ");  $1->sym->print();
+}
 ;
 InsideFuncStatements: InsideFuncStatements FuncDecl
 | InsideFuncStatements Statement
@@ -104,10 +107,13 @@ Type: T_INT   {$$ = SymbolType::Int;}
 Statements: Statements Statement
 | %empty
 ;
+IfBegin: IF '(' {
+
+}
 Statement: '{'    {save = top;top = new SymbolTable(top);}
             Statements '}'        {/* delete top; */ top = save;}      
-| IF '(' Expression ')' Statement
-| IF '(' Expression ')' Statement ELSE Statement
+| IfBegin Expression ')' Statement   
+| IfBegin Expression ')' Statement ELSE Statement
 | WHILE '(' Expression ')' Statement
 | Identifier '=' Expression ';'           {$$ =new Node($1,$3,NodeType::Assign,'=');
                                             $1->sym->print();printf(" = ");$3->sym->print();printf("\n");
@@ -134,22 +140,31 @@ Expression:  Expression '+' Expression    {$$ = new Node($1,$3,NodeType::DualAri
                                            $$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"%%");
 }
 | Expression '<' Expression               {$$ = new Node($1,$3,NodeType::DualLogic,'<');
-                                           $$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"<");
+                                            if($$->type == NodeType::If || $$->type==NodeType::IfElse 
+                                            || $$->type==NodeType::While)
+                                            {
+                                            printf("if ");$1->sym->print();printf(" < ");$3->sym->print();
+                                            printf(" goto ");$$->ltrue->print();putchar('\n');
+                                            printf(" goto ");$$->lfalse->print();putchar('\n');
+                                            }
+                                            else
+                                                $$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"<");
 }
 | Expression '>' Expression               {$$ = new Node($1,$3,NodeType::DualLogic,'>');
-                                           $$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,">");
+                                           //$$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,">");
 }
 | Expression EQUAL Expression             {$$ = new Node($1,$3,NodeType::DualLogic,EQUAL);
-                                           $$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"==");
+                                           //$$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"==");
 }
 | Expression NOTEQUAL Expression          {$$ = new Node($1,$3,NodeType::DualLogic,NOTEQUAL);
-                                           $$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"!=");
+                                           //$$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"!=");
 }
 | Expression LAND Expression               {$$ = new Node($1,$3,NodeType::DualLogic,LAND);
-                                           $$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"&&");
+                                           //$$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"&&");
 }
 | Expression LOR Expression               {$$ = new Node($1,$3,NodeType::DualLogic,LOR);
-                                           $$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"||");
+                                           //$$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"||");
+                                            
 }
 | Expression '[' Expression ']'               {$$ = new Node($1,$3,NodeType::DualArith,'[');
                                                 Symbol* tmpsym = new Symbol(SymbolType::Int);

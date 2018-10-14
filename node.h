@@ -28,14 +28,27 @@ VarDcl = 20,
 struct Symbol;
 struct Label
 {
+    static int usedCount;
+    int id;
     int used;
     Label()
     {
         used = 0;
+        id = -1;
     }
-    void Use()
+    /* void Use()
     {
         used++;
+        id = usedCount++;
+    } */
+    void Print()
+    {
+        if(used == 0)
+        {
+            used ++;
+            id = usedCount++;
+        }   
+        printf("l%d",id);
     }
 };
 struct Node //语法树节点
