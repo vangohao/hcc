@@ -210,12 +210,24 @@ Expression:  Expression '+' Expression    {$$ = new Node($1,$3,NodeType::DualAri
 }
 | Expression '>' Expression               {$$ = new Node($1,$3,NodeType::DualLogic,'>');
                                            //$$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,">");
+                                           Output::gen("if ");$1->sym->print();Output::gen(" > ");
+                                            $3->sym->print();
+                                            $$->truelist = Gotolist(Output::gen(" goto "));
+                                            $$->falselist = Gotolist(Output::gen("goto "));
 }
 | Expression EQUAL Expression             {$$ = new Node($1,$3,NodeType::DualLogic,EQUAL);
                                            //$$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"==");
+                                           Output::gen("if ");$1->sym->print();Output::gen(" == ");
+                                            $3->sym->print();
+                                            $$->truelist = Gotolist(Output::gen(" goto "));
+                                            $$->falselist = Gotolist(Output::gen("goto "));
 }
 | Expression NOTEQUAL Expression          {$$ = new Node($1,$3,NodeType::DualLogic,NOTEQUAL);
                                            //$$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"!=");
+                                           Output::gen("if ");$1->sym->print();Output::gen(" != ");
+                                            $3->sym->print();
+                                            $$->truelist = Gotolist(Output::gen(" goto "));
+                                            $$->falselist = Gotolist(Output::gen("goto "));
 }
 | Expression LAND M Expression               {$$ = new Node($1,$3,NodeType::DualLogic,LAND);
                                            //$$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"&&");
