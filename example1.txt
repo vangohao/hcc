@@ -1,5 +1,6 @@
 int getint();
 int a;
+;
 int func(int a[],int b[10])
 {
     int i;
@@ -10,7 +11,7 @@ int func(int a[],int b[10])
     while (s<100)
     {
 		int a;
-        s = s||i;
+        s = s + i ;
         if(i == 5) i = 0;
         if(i >6 && (i>7 || i>8))
         {
@@ -19,6 +20,7 @@ int func(int a[],int b[10])
         else i  = a[i] + 1;
     }
 }
+int b;
 int main()
 {
     int aa[1000];

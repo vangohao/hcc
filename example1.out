@@ -1,0 +1,59 @@
+var T0
+f_func [2]
+var T1
+T1 = 0
+var T2
+T2 = 0
+var t0
+t0 = 4 * 1
+p0 [t0] = 0
+l6:
+if T2 < 100 goto l7
+goto l8
+l7:
+var T3
+var t1
+t1 = T2 + T1
+T2 = t1
+if T1 == 5 goto l0
+goto l5
+l0:
+T1 = 0
+l5:
+if T1 > 6 goto l2
+goto l4
+l2:
+if T1 > 7 goto l3
+goto l1
+l1:
+if T1 > 8 goto l3
+goto l4
+l3:
+var t2
+t2 = 4 * T1
+var t3
+t3 = T1 * T2
+T3 [t2] = t3
+goto l6
+l4:
+var t4
+t4 = 4 * T1
+var t5
+t5 = T3 [t4]
+var t6
+t6 = t5 + 1
+T1 = t6
+goto l6
+l8:
+end f_func
+var T4
+f_main [0]
+var 4000 T5
+var T6
+param T5
+param T6
+var t7
+t7 = call f_func
+T6 = t7
+return 0
+end f_main

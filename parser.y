@@ -74,7 +74,7 @@ Goal: BeforeMain MainFunc           {Output::print();}
 BeforeMain: BeforeMain BeforeMainStatement
 |   %empty
 ;
-BeforeMainStatement: VarDefn | FuncDefn | FuncDecl
+BeforeMainStatement: VarDefn | FuncDefn | FuncDecl | ';'
 ;
 VarDefn: Type Identifier ';'    {   $$ = new Node($2,NULL,NodeType::Vardfn,0);
                                     if($2->val == 1)
