@@ -1,23 +1,27 @@
-int func(int a,int b)
+int getint();
+int a;
+int func(int a[],int b[10])
 {
     int i;
     i = 0;
     int s;
     s = 0;
+	a[1] = 0;
     while (s<100)
     {
-        s = s + i;
+		int a;
+        s = s||i;
         if(i == 5) i = 0;
         if(i >6 && (i>7 || i>8))
         {
-            i = 1;
+            a[i] = i*s;
         }
-        else i  = i + 1;
+        else i  = a[i] + 1;
     }
 }
 int main()
 {
-    int aa;
+    int aa[1000];
     int b;
     b = func(aa,b);
     return 0;

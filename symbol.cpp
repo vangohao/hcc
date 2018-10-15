@@ -106,6 +106,23 @@ Symbol::Symbol()
             ReportError("Redecleared");
         }
     }
+    void Symbol::Define(SymbolType _type,int _paramCount, int _val)
+    {
+        if(decleared == false){
+            if(_paramCount == -1)
+            {
+                id = origCount++;
+            }
+            else id = -1;
+            type = _type;
+            val = _val;
+            decleared = true;}
+        else if(_val != val || type!=_type)
+        {
+            ReportError("Function Defined does not match Decleared");
+        }
+        Define();
+    }
     void Symbol::Define()
     {
         if(defined==false)
@@ -117,7 +134,7 @@ Symbol::Symbol()
     }
     void Symbol::ReportError(const char * s)
     {
-        std::cerr<<s<<funName<<std::endl;
+        std::cerr<<s<<":"<<funName<<std::endl;
     }
 
 
@@ -139,6 +156,15 @@ Symbol::Symbol()
             {
                 return it->second;
             }
+        }
+        return NULL;
+    }
+    Symbol* SymbolTable::gethere(const char * s)
+    {
+        auto it = this->table.find(s);
+        if(it!=this->table.end())
+        {
+            return it->second;
         }
         return NULL;
     }

@@ -36,6 +36,7 @@ struct Symbol //符号
     static Symbol* ProcessDualOp(Symbol* s1,Symbol* s2,const char * x);
     static Symbol* ProcessSingleOp(Symbol* s1,const char * x);
     void Declear(SymbolType _type,int _paramCount=-1, int _val=0);
+    void Define(SymbolType _type,int _paramCount, int _val);
     void Define();
     void ReportError(const char * s);
 };
@@ -47,5 +48,6 @@ struct SymbolTable
     SymbolTable(SymbolTable * st);
     void put(const char * s, Symbol* sym);
     Symbol* get(const char * s);
+    Symbol* gethere(const char * s);
 };
 #endif

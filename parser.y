@@ -54,7 +54,7 @@
 %token EQUAL NOTEQUAL LAND LOR T_INT MAIN IF ELSE WHILE RETURN
 %token<number> INTEGER
 %token<name> IDENTIFIER
-%type<node> Goal BeforeMain BeforeMainStatement VarDefn VarDecls VarDecl FuncDefn FuncCreateIdTable
+%type<node> Goal BeforeMainStatement VarDefn VarDecls VarDecl FuncDefn FuncCreateIdTable
 %type<node> InsideFuncStatements FuncDecl MainFunc Statements Statement Expression Params Identifier
 %type<node> M N
 %type<type> Type
@@ -77,13 +77,34 @@ BeforeMain: BeforeMain BeforeMainStatement
 BeforeMainStatement: VarDefn | FuncDefn | FuncDecl
 ;
 VarDefn: Type Identifier ';'    {   $$ = new Node($2,NULL,NodeType::Vardfn,0);
+                                    if($2->val == 1)
+                                    {
+                                        Symbol * tmp = $2->sym;
+                                        $2->sym = new Symbol($2);
+                                        $2->sym->funName = tmp->funName;
+                                        top->put(tmp->funName+2,$2->sym);
+                                    }
                                     $2->sym->Declear($1);
                                     $2->sym->Define();
                                     std::stringstream ss;
                                     ss<<"var T"<<$2->sym->id<<"\n";
                                     Output::gen(ss.str());
                                 }
-| Type Identifier'['INTEGER']' ';'
+| Type Identifier'['INTEGER']' ';'  {
+                                    $$ = new Node($2,NULL,NodeType::Vardfn,4 * $4);
+                                    if($2->val == 1)
+                                    {
+                                        Symbol * tmp = $2->sym;
+                                        $2->sym = new Symbol($2);
+                                        $2->sym->funName = tmp->funName;
+                                        top->put(tmp->funName+2,$2->sym);
+                                    }
+                                    $2->sym->Declear(SymbolType::IntPtr,-1,4 * $4);
+                                    $2->sym->Define();
+                                    std::stringstream ss;
+                                    ss<<"var "<<4 * $4<<" T"<<$2->sym->id<<"\n";
+                                    Output::gen(ss.str());
+}
 ;
 VarDecls:VarDecls ',' VarDecl   {   $$ = new Node($1,$3,NodeType::Params,$1->val + 1);
                                     $3->sym->paramCount = $1->val;
@@ -98,43 +119,79 @@ VarDecls:VarDecls ',' VarDecl   {   $$ = new Node($1,$3,NodeType::Params,$1->val
 }
 ;
 VarDecl: Type Identifier        {   $$ = new Node($2,NULL,NodeType::VarDcl,0);
+                                    if($2->val == 1)
+                                    {
+                                        Symbol * tmp = $2->sym;
+                                        $2->sym = new Symbol($2);
+                                        $2->sym->funName = tmp->funName;
+                                        // std::cerr<<tmp->funName +2<<std::endl;
+                                        top->put(tmp->funName+2,$2->sym);
+                                    }
                                     $2->sym->Declear($1,0);
                                     $$->sym = $2->sym;
 }
-| Type Identifier '[' INTEGER ']'
-| Type Identifier '[' ']'
+| Type Identifier '[' INTEGER ']' {   $$ = new Node($2,NULL,NodeType::VarDcl,4 * $4);
+                                    if($2->val == 1)
+                                    {
+                                        Symbol * tmp = $2->sym;
+                                        $2->sym = new Symbol($2);
+                                        $2->sym->funName = tmp->funName;
+                                        top->put(tmp->funName+2,$2->sym);
+                                    }
+                                    $2->sym->Declear(SymbolType::IntPtr,0,4 * $4);
+                                    $$->sym = $2->sym;
+}
+| Type Identifier '[' ']'          {   $$ = new Node($2,NULL,NodeType::VarDcl,0);
+                                    if($2->val == 1)
+                                    {
+                                        Symbol * tmp = $2->sym;
+                                        $2->sym = new Symbol($2);
+                                        $2->sym->funName = tmp->funName;
+                                        top->put(tmp->funName+2,$2->sym);
+                                    }
+                                    $2->sym->Declear(SymbolType::IntPtr,0,0);
+                                    $$->sym = $2->sym;
+}
 ;
 FuncCreateIdTable: Type Identifier '(' {save.push(top);top = new SymbolTable(top);/*函数前的创建符号表*/
                                         $$ = $2;
 }
 ;
-FuncDefn: FuncCreateIdTable VarDecls ')'    { $1->sym->Declear(SymbolType::FunPtr,0,$2->val);
-                                            $1->sym->Define();
+FuncDefn: FuncCreateIdTable VarDecls ')'    { $1->sym->Define(SymbolType::FunPtr,0,$2->val);
                                             $1->sym->print();//printf(" [%d]\n",$2->val);
                                             std::stringstream ss;
                                             ss<<" ["<< $2->val <<"]\n";
                                             Output::gen(ss.str());
  }
 '{'    
-Statements M
+InsideFuncStatements M
 '}'    {   delete top;  top = save.top();save.pop();//恢复符号表
          $$ = new Node($1,$6,NodeType::Fundfn,$2->val); 
          $6->nextlist.backpatch($7->instr);
          Output::gen("end ");$1->sym->print();Output::gen("\n");
 }
 ;
-InsideFuncStatements: InsideFuncStatements M FuncDecl 
-| InsideFuncStatements M Statement
-| FuncDecl
-| Statement
+InsideFuncStatements: InsideFuncStatements M FuncDecl        { 
+                                            $$ = new Node($1,$3,NodeType::Stmts,0);
+                                            $1->nextlist.backpatch($2->instr);
+}
+| InsideFuncStatements M Statement                          { 
+                                            $$ = new Node($1,$3,NodeType::Stmts,0);
+                                            $1->nextlist.backpatch($2->instr);
+                                            $$->nextlist = $3->nextlist;
+}
+| FuncDecl                      {$$ = $1;}
+| Statement                     {$$ = $1;}
 ;
 FuncDecl: FuncCreateIdTable VarDecls ')' ';'
-        { delete top;  top = save.top(); save.pop();}
+        {     $$ = new Node($1,$2,NodeType::Fundcl,$2->val);
+            $1->sym->Declear(SymbolType::FunPtr,0,$2->val);
+            delete top;  top = save.top(); save.pop();}
 ;
 MainFunc: T_INT MAIN '(' ')'            {   save.push(top);top = new SymbolTable(top);/*函数前的创建符号表*/ 
                                             Output::gen("f_main [0]\n");
 }
- '{' Statements M'}'                    {   
+ '{' InsideFuncStatements M'}'                    {   
                                             $7->nextlist.backpatch($8->instr);
                                             Output::gen("end f_main\n");
                                             delete top;
@@ -187,12 +244,23 @@ Statement: '{'    {save.push(top);top = new SymbolTable(top);}
 }
 | Identifier '=' Expression ';'           {$$ =new Node($1,$3,NodeType::Assign,'=');
                                             $1->sym->print();
-                                            Output::gen(" = ");//printf(" = ");
+                                            Output::gen(" = ");
                                             $3->sym->print();
-                                            Output::gen("\n");//printf("\n");
+                                            Output::gen("\n");
+}
+| Identifier '[' Expression ']' '='  {
+                                        Symbol * four = new Symbol(SymbolType::Immediate,4);
+                                        $3->sym = Symbol::ProcessDualOp(four,$3->sym,"*");
 
 }
-| Identifier '[' Expression ']' '=' Expression ';'
+ Expression ';'  {$$ =new Node($1,$3,NodeType::ArrayAssign,'=');
+                                            $1->sym->print();
+                                            Output::gen(" [");
+                                            $3->sym->print();
+                                            Output::gen("] = ");
+                                            $7->sym->print();
+                                            Output::gen("\n");
+}
 | VarDefn
 | RETURN Expression ';'                 {$$ = new Node($2,NULL,NodeType::Return,0);
                                             Output::gen("return ");$2->sym->print();Output::gen("\n");}
@@ -254,10 +322,12 @@ Expression:  Expression '+' Expression    {$$ = new Node($1,$3,NodeType::DualAri
                                             
 }
 | Expression '[' Expression ']'               {$$ = new Node($1,$3,NodeType::DualArith,'[');
+                                                Symbol * four = new Symbol(SymbolType::Immediate,4);
+                                                Symbol * tmpans = Symbol::ProcessDualOp(four,$3->sym,"*");
                                                 Symbol* tmpsym = new Symbol(SymbolType::Int);
                                                 Output::gen("var ");tmpsym->print();Output::gen("\n");
                                                 tmpsym->print();Output::gen(" = ");$1->sym->print();
-                                                Output::gen(" [");$3->sym->print();Output::gen("]\n");
+                                                Output::gen(" [");tmpans->print();Output::gen("]\n");
                                                 $$->sym = tmpsym;
 }
 | INTEGER                                     {$$ = new Node(NULL,NULL,NodeType::Symbol1,$1);
@@ -294,10 +364,15 @@ Params: Params ',' Expression       {   $$ = new Node($1,$3,NodeType::Params,$1-
 ;
 Identifier: IDENTIFIER             {    $$ = new Node(NULL,NULL,NodeType::Symbol1,0);
                                         Symbol * sym = top->get($1);
+                                        Symbol * here = top->gethere($1);
                                         if(sym == NULL)
                                         {
                                             sym = new Symbol($$);
                                             top->put($1,sym);
+                                        }
+                                        else if(here == NULL)
+                                        {
+                                            $$->val = 1;//标记该标识符在最内层函数中未定义。
                                         }
                                         sym->funName = (char*)malloc(4+strlen($1));
                                         strcpy(sym->funName,"f_");
