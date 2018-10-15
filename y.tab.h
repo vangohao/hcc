@@ -46,6 +46,7 @@ extern int yydebug;
     #include<stdlib.h>
     #include<string.h>
     #include<map>
+    #include<stack>
     #include "symbol.h"
     #include "node.h"
     
@@ -60,7 +61,7 @@ extern int yydebug;
     } foryystype;
     #define YYSTYPE foryystype
 
-#line 64 "y.tab.h" /* yacc.c:1909  */
+#line 65 "y.tab.h" /* yacc.c:1909  */
 
 /* Token type.  */
 #ifndef YYTOKENTYPE

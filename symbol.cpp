@@ -117,7 +117,7 @@ Symbol::Symbol()
     }
     void Symbol::ReportError(const char * s)
     {
-        std::cerr<<s<<std::endl;
+        std::cerr<<s<<funName<<std::endl;
     }
 
 

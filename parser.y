@@ -3,6 +3,7 @@
     #include<stdlib.h>
     #include<string.h>
     #include<map>
+    #include<stack>
     #include "symbol.h"
     #include "node.h"
     
@@ -20,7 +21,7 @@
 
 %code{
     SymbolTable * top = new SymbolTable(NULL); 
-    SymbolTable * save = NULL;
+    std::stack<SymbolTable*> save;
     namespace Output
     {
         std::vector<std::string> list;
@@ -78,7 +79,6 @@ BeforeMainStatement: VarDefn | FuncDefn | FuncDecl
 VarDefn: Type Identifier ';'    {   $$ = new Node($2,NULL,NodeType::Vardfn,0);
                                     $2->sym->Declear($1);
                                     $2->sym->Define();
-                                    // printf("var T%d\n",$2->sym->id);
                                     std::stringstream ss;
                                     ss<<"var T"<<$2->sym->id<<"\n";
                                     Output::gen(ss.str());
@@ -104,7 +104,7 @@ VarDecl: Type Identifier        {   $$ = new Node($2,NULL,NodeType::VarDcl,0);
 | Type Identifier '[' INTEGER ']'
 | Type Identifier '[' ']'
 ;
-FuncCreateIdTable: Type Identifier '(' {save = top;top = new SymbolTable(top);/*函数前的创建符号表*/
+FuncCreateIdTable: Type Identifier '(' {save.push(top);top = new SymbolTable(top);/*函数前的创建符号表*/
                                         $$ = $2;
 }
 ;
@@ -117,24 +117,33 @@ FuncDefn: FuncCreateIdTable VarDecls ')'    { $1->sym->Declear(SymbolType::FunPt
  }
 '{'    
 Statements M
-'}'    { /* delete top; */ top = save;
+'}'    {   delete top;  top = save.top();save.pop();//恢复符号表
          $$ = new Node($1,$6,NodeType::Fundfn,$2->val); 
-         /* printf("end ");  */ 
+         $6->nextlist.backpatch($7->instr);
          Output::gen("end ");$1->sym->print();Output::gen("\n");
 }
 ;
-InsideFuncStatements: InsideFuncStatements M FuncDecl
+InsideFuncStatements: InsideFuncStatements M FuncDecl 
 | InsideFuncStatements M Statement
-| %empty
+| FuncDecl
+| Statement
 ;
 FuncDecl: FuncCreateIdTable VarDecls ')' ';'
-        {/* delete top; */ top = save;}
+        { delete top;  top = save.top(); save.pop();}
 ;
-MainFunc: T_INT MAIN '(' ')' '{' Statements M'}'
+MainFunc: T_INT MAIN '(' ')'            {   save.push(top);top = new SymbolTable(top);/*函数前的创建符号表*/ 
+                                            Output::gen("f_main [0]\n");
+}
+ '{' Statements M'}'                    {   
+                                            $7->nextlist.backpatch($8->instr);
+                                            Output::gen("end f_main\n");
+                                            delete top;
+                                            top = save.top(); save.pop(); //恢复符号表
+                                    }
 ;
 Type: T_INT   {$$ = SymbolType::Int;}
 ;
-Statements: Statements M Statement      { // std::cerr<<"GAY"<<std::endl;
+Statements: Statements M Statement      { 
                                             $$ = new Node($1,$3,NodeType::Stmts,0);
                                             $1->nextlist.backpatch($2->instr);
                                             $$->nextlist = $3->nextlist;
@@ -150,10 +159,11 @@ N: %empty { $$ = new Node(NULL,NULL,NodeType::Empty,0);
             $$->nextlist = Gotolist(Output::gen("goto "));
 }
 ;
-Statement: '{'    {save = top;top = new SymbolTable(top);}
-            Statements '}'        {/* delete top; */ top = save;
+Statement: '{'    {save.push(top);top = new SymbolTable(top);}
+            Statements '}'        { delete top;  top = save.top(); save.pop();
                                      $$ = $3;
 }      
+| ';'           {$$ = new Node(NULL,NULL,NodeType::Stmts,0);}
 | IF '('  Expression ')' M Statement {   $3->truelist.backpatch($5->instr);
                                          $$ = new Node($3,$6,NodeType::If,0);
                                          $$->nextlist = $3->falselist.merge($6->nextlist);
@@ -171,7 +181,8 @@ Statement: '{'    {save = top;top = new SymbolTable(top);}
                                         $7->nextlist.backpatch($2->instr);
                                         $4->truelist.backpatch($6->instr);
                                         $$->nextlist = $4->falselist;
-                                        Output::gen("goto "+$2->instr.print());
+                                        Gotolist(Output::gen("goto ")).backpatch($2->instr);
+                                        // Output::gen("goto "+$2->instr.print());
                                         
 }
 | Identifier '=' Expression ';'           {$$ =new Node($1,$3,NodeType::Assign,'=');

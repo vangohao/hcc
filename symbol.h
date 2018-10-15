@@ -37,7 +37,7 @@ struct Symbol //符号
     static Symbol* ProcessSingleOp(Symbol* s1,const char * x);
     void Declear(SymbolType _type,int _paramCount=-1, int _val=0);
     void Define();
-    static void ReportError(const char * s);
+    void ReportError(const char * s);
 };
 
 struct SymbolTable

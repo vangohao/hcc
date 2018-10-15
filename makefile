@@ -1,4 +1,4 @@
-hcc : lex.yy.o y.tab.o main.o
+hcc : lex.yy.o y.tab.o main.o gotolist.o symbol.o node.o
 	g++ -o hcc lex.yy.o y.tab.o main.o gotolist.o symbol.o node.o
 gotolist.o : gotolist.cpp gotolist.h
 	g++ -c gotolist.cpp
