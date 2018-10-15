@@ -6,7 +6,9 @@ lex.yy.c
 main.o
 y.output
 y.tab.h
+y.tab.c
 y.tab.o
 *.o
 *.txt
 *.out
+*.gch
