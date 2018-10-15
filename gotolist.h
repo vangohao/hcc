@@ -1,3 +1,5 @@
+#ifndef __GOTOLIST_H
+#define __GOTOLIST_H
 #include<list>
 //#include"node.h"
 struct Label;
@@ -9,3 +11,4 @@ struct Gotolist
     Gotolist merge(Gotolist & l2);
     void backpatch(Label& l);
 };
+#endif

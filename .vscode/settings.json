@@ -7,6 +7,7 @@
         "tuple": "cpp",
         "utility": "cpp",
         "list": "cpp",
-        "sstream": "cpp"
+        "sstream": "cpp",
+        "vector": "cpp"
     }
 }

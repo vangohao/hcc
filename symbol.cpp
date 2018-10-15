@@ -3,39 +3,18 @@
 #include<map>
 #include<string>
 #include<vector>
+#include "symbol.h"
 struct Node;
 namespace Output
 {
 int gen(std::string);
 }
-enum SymbolType //符号类型
-{
-    Int=0,
-    IntPtr=1,
-    FunPtr=2,
-    Immediate=3,
-    Error=4,
-};
-struct Symbol //符号
-{
-    static int origCount;
-    static int tempCount;
-    int id;
-    int tempid;
-    SymbolType type;
-    int val; //附加值，函数参数个数或数组大小
-    Node* appear; //第一次出现的位置
-    bool decleared;
-    bool defined;
-    int paramCount;
-    int immediate;
-    char * funName; //函数名称
-    Symbol()
+Symbol::Symbol()
     {
         id = -1;type = SymbolType::Error;val = -1;tempid=-1;
         appear = NULL;decleared = false;defined = false;paramCount = -1;
     }
-    Symbol(Node* _appear)
+    Symbol::Symbol(Node* _appear)
     {
         appear = _appear;
         decleared = false;
@@ -43,7 +22,7 @@ struct Symbol //符号
         paramCount = -1;
         tempid=-1;
     }
-    Symbol(SymbolType _type) //创建临时符号
+    Symbol::Symbol(SymbolType _type) //创建临时符号
     {
         tempid = tempCount++;
         type = _type;
@@ -52,7 +31,7 @@ struct Symbol //符号
         decleared = true;
         defined = true;
     }
-    Symbol(SymbolType _type, int _immediate) //创建直接数符号
+    Symbol::Symbol(SymbolType _type, int _immediate) //创建直接数符号
     {
         type=_type;
         immediate = _immediate;
@@ -62,7 +41,7 @@ struct Symbol //符号
         decleared = true;
         defined = true;
     }
-    void print()
+    void Symbol::print()
     {
         std::stringstream ss;
         if(type==SymbolType::FunPtr)
@@ -87,7 +66,7 @@ struct Symbol //符号
         }
         Output::gen(ss.str());
     }
-    static Symbol* ProcessDualOp(Symbol* s1,Symbol* s2,const char * x)
+    Symbol* Symbol::ProcessDualOp(Symbol* s1,Symbol* s2,const char * x)
     {
         Symbol* tmpsym = new Symbol(SymbolType::Int);
         // printf("var ");tmpsym->print();putchar('\n');
@@ -99,7 +78,7 @@ struct Symbol //符号
         s2->print();Output::gen("\n");
         return tmpsym;
     }
-    static Symbol* ProcessSingleOp(Symbol* s1,const char * x)
+    Symbol* Symbol::ProcessSingleOp(Symbol* s1,const char * x)
     {
         Symbol* tmpsym = new Symbol(SymbolType::Int);
         // printf("var ");tmpsym->print();putchar('\n');
@@ -111,7 +90,7 @@ struct Symbol //符号
         s1->print();Output::gen("\n");
         return tmpsym;
     }
-    void Declear(SymbolType _type,int _paramCount=-1, int _val=0)
+    void Symbol::Declear(SymbolType _type,int _paramCount, int _val)
     {
         if(decleared == false){
             if(_paramCount == -1)
@@ -127,7 +106,7 @@ struct Symbol //符号
             ReportError("Redecleared");
         }
     }
-    void Define()
+    void Symbol::Define()
     {
         if(defined==false)
             defined = true;
@@ -136,25 +115,22 @@ struct Symbol //符号
             ReportError("Redefined");
         }
     }
-    static void ReportError(const char * s)
+    void Symbol::ReportError(const char * s)
     {
         std::cerr<<s<<std::endl;
     }
-};
 
-struct SymbolTable
-{
-    std::map<std::string,Symbol*> table;
-    SymbolTable * prev;
-    SymbolTable(SymbolTable * st)
+
+
+    SymbolTable::SymbolTable(SymbolTable * st)
     {
         prev = st;
     }
-    void put(const char * s, Symbol* sym)
+    void SymbolTable::put(const char * s, Symbol* sym)
     {
         table.insert(std::make_pair(s,sym));
     }
-    Symbol* get(const char * s)
+    Symbol* SymbolTable::get(const char * s)
     {
         for(SymbolTable* t =this; t!=NULL; t = t->prev)
         {
@@ -166,4 +142,3 @@ struct SymbolTable
         }
         return NULL;
     }
-};

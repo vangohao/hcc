@@ -2,8 +2,12 @@
 #define __NODE_H
 #include<sstream>
 #include<vector>
-#include "gotolist.h"
-// struct Gotolist;
+#include"gotolist.h"
+struct Label;
+namespace Output
+{
+    void patch(int,Label&,int);
+}
 enum NodeType //语法树节点所对应语句类型
 {
 DualArith=0,
@@ -40,6 +44,7 @@ struct Label
     int location;
     Label();
     void Init(int x);
+    void Patch();
     std::string print();
 };
 struct Node //语法树节点

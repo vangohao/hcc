@@ -1504,7 +1504,7 @@ yyreduce:
   case 24:
 #line 145 "parser.y" /* yacc.c:1646  */
     { (yyval.node) = new Node(NULL,NULL,NodeType::Empty,0); 
-            (yyval.node)->instr.Init(Output::gen(":"));
+            (yyval.node)->instr.Init(Output::gen(""));
 }
 #line 1510 "y.tab.c" /* yacc.c:1646  */
     break;

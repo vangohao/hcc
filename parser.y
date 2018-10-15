@@ -143,7 +143,7 @@ Statements: Statements M Statement      { // std::cerr<<"GAY"<<std::endl;
 | Statement {$$ = $1;}
 ;
 M: %empty { $$ = new Node(NULL,NULL,NodeType::Empty,0); 
-            $$->instr.Init(Output::gen(":"));
+            $$->instr.Init(Output::gen(""));
 }
 ;
 N: %empty { $$ = new Node(NULL,NULL,NodeType::Empty,0);

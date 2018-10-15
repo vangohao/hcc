@@ -1,3 +1,5 @@
+#ifndef __SYMBOL_H
+#define __SYMBOL_H
 #include<iostream>
 #include<sstream>
 #include<map>
@@ -46,3 +48,4 @@ struct SymbolTable
     void put(const char * s, Symbol* sym);
     Symbol* get(const char * s);
 };
+#endif

@@ -1,4 +1,5 @@
 #include<list>
+#include"gotolist.h"
 #include"node.h"
 namespace Output
 {
@@ -19,7 +20,7 @@ Gotolist Gotolist::merge(Gotolist & l2)
     }
 void Gotolist::backpatch(Label& l)
     {
-        l.print();
+        if(!list.empty()) l.Patch();
         for(auto x: list)
         {
             Output::patch(x,l);
