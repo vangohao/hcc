@@ -1,6 +1,7 @@
-#ifndef __HCC_H
-#define __HCC_H
+#ifndef __NODE_H
+#define __NODE_H
 #include<sstream>
+#include<vector>
 #include "gotolist.h"
 // struct Gotolist;
 enum NodeType //语法树节点所对应语句类型
@@ -36,28 +37,10 @@ struct Label
 {
     static int usedCount;
     int id;
-    int used;
-    Label()
-    {
-        used = 0;
-        id = -1;
-    }
-    void Init()
-    {
-        used++;
-        id = usedCount++;
-    }
-    std::string print()
-    {
-        if(used == 0)
-        {
-            used ++;
-            id = usedCount++;
-        }   
-        std::stringstream ss;
-        ss<<"l"<<id;
-        return ss.str();
-    }
+    int location;
+    Label();
+    void Init(int x);
+    std::string print();
 };
 struct Node //语法树节点
 {
@@ -73,10 +56,7 @@ struct Node //语法树节点
     Symbol* sym;
     Node(Node* _left,Node* _right,NodeType _type,
     int _val,
-    int _line=0):
-
-        left(_left),right(_right),
-        type(_type),val(_val),line(_line){}
+    int _line=0);
 };
 
 #endif

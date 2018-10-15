@@ -36,9 +36,11 @@
                 std::cout<<s;
             }
         }
-        void patch(int i,Label& l)
+        void patch(int i,Label& l,int x =0)
         {
+            if(x ==0)
             list.at(i) += l.print() + "\n";
+            else list.at(i) = l.print() + ":\n";
         }
     }
     int Symbol::origCount = 0;
@@ -140,9 +142,8 @@ Statements: Statements M Statement      { // std::cerr<<"GAY"<<std::endl;
 //| %empty                             { $$= new Node(NULL,NULL,NodeType::Stmts,0);}
 | Statement {$$ = $1;}
 ;
-M: %empty { $$ = new Node(NULL,NULL,NodeType::Empty,0);
-            $$->instr.Init(); 
-            Output::gen($$->instr.print()+":");
+M: %empty { $$ = new Node(NULL,NULL,NodeType::Empty,0); 
+            $$->instr.Init(Output::gen(":"));
 }
 ;
 N: %empty { $$ = new Node(NULL,NULL,NodeType::Empty,0);

@@ -6,6 +6,7 @@
         "type_traits": "cpp",
         "tuple": "cpp",
         "utility": "cpp",
-        "list": "cpp"
+        "list": "cpp",
+        "sstream": "cpp"
     }
 }
