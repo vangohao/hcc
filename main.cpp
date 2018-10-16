@@ -39,5 +39,6 @@ int main(int argc, char * args[])
     yyparse();
     fclose(yyin);
     fclose(yyout);
+    remove(s);
     return 0;
 }
