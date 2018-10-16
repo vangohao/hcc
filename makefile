@@ -19,4 +19,4 @@ lex.yy.c : lexer.l
 y.tab.c y.tab.h : parser.y node.h symbol.h gotolist.h gotolist.cpp symbol.cpp node.cpp
 	bison -y -d parser.y
 clean:
-	rm hcc lex.yy.o y.tab.o lex.yy.c y.tab.c y.tab.h gotolist.o symbol.o node.o main.o
+	rm hcc lex.yy.o y.tab.o lex.yy.c y.tab.c y.tab.h gotolist.o symbol.o node.o main.o pre.o
