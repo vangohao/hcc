@@ -1,5 +1,7 @@
-hcc : lex.yy.o y.tab.o main.o gotolist.o symbol.o node.o
-	g++ -o hcc lex.yy.o y.tab.o main.o gotolist.o symbol.o node.o
+hcc : lex.yy.o y.tab.o main.o gotolist.o symbol.o node.o pre.o
+	g++ -o hcc lex.yy.o y.tab.o main.o gotolist.o symbol.o node.o pre.o
+pre.o : pre.cpp pre.h
+	g++ -c pre.cpp
 gotolist.o : gotolist.cpp gotolist.h
 	g++ -c gotolist.cpp
 symbol.o : symbol.cpp symbol.h

@@ -20,6 +20,7 @@
 }
 
 %code{
+    extern FILE* yyout;
     SymbolTable * top = new SymbolTable(NULL); 
     std::stack<SymbolTable*> save;
     namespace Output
@@ -34,7 +35,7 @@
         {
             for(std::string s : list)
             {
-                std::cout<<s;
+                fprintf(yyout,"%s",s.c_str());
             }
         }
         void patch(int i,Label& l,int x =0)
