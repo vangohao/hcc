@@ -2,6 +2,7 @@ int putint();
 int getint();
 int a;
 ;
+int fud(int a[]){;}
 int func(int a[],int b)
 {
     int i;

@@ -10,7 +10,15 @@ int pre(FILE* input, FILE* output)
     bool ou=false;
     while((ch=fgetc(input))!=EOF)
     {
-        if(ch=='/' && com==false && str==false)
+        if(ch=='}' && com==false && str==false)
+        {
+            if(q == '{')
+            {
+                fputc(';',output);
+            }
+            fputc('}',output);
+        }
+        else if(ch=='/' && com==false && str==false)
         {
 
         }
