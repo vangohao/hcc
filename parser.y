@@ -387,5 +387,6 @@ Identifier: IDENTIFIER             {    $$ = new Node(NULL,NULL,NodeType::Symbol
 int yyerror(const char *msg)            //输出错误信息的yyerror()函数
 {
 std::cerr<<"Error encountered: "<<msg<<std::endl;
+Output::print();
 return 0;
 }

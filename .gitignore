@@ -12,3 +12,4 @@ y.tab.o
 *.txt
 *.out
 *.gch
+*.tmp.pre
