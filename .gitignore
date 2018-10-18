@@ -9,7 +9,6 @@ y.tab.h
 y.tab.c
 y.tab.o
 *.o
-*.txt
 *.out
 *.gch
 *.tmp.pre

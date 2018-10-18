@@ -1,0 +1,33 @@
+var T0
+var 40 T1
+f_main [0]
+T0 = call f_getint
+var t0
+t0 = T0 - 10
+var t1
+t1 = t0 > 0
+if t1 == 0 goto l0
+return 1
+l0:
+var T2
+var T3
+T3 = 0
+T2 = T3
+l1:
+var t2
+t2 = T3 < T0
+if t2 == 0 goto l2
+var t3
+t3 = 4 * T3
+var t4
+t4 = call f_getint
+T1 [t3] = t4
+var t5
+t5 = T1 [t3]
+T2 = T2 + t5
+T3 = T3 + 1
+l2:
+param T2
+call f_putint
+return 0
+end f_main
