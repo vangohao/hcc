@@ -1,5 +1,6 @@
 #include<iostream>
 #include<sstream>
+#include<string.h>
 #include<map>
 #include<string>
 #include<vector>
@@ -69,6 +70,16 @@ Symbol::Symbol()
     Symbol* Symbol::ProcessDualOp(Symbol* s1,Symbol* s2,const char * x)
     {
         Symbol* tmpsym = new Symbol(SymbolType::Int);
+        if(s1->type != SymbolType::Int && s1->type != SymbolType::Immediate)
+        {
+            std::string str = s1->funName;
+            ReportError("Identifier " + str.substr(2,str.length()-2) + " is not a number  !");
+        }
+        else if(s2->type != SymbolType::Int && s2->type != SymbolType::Immediate)
+        {
+            std::string str = s2->funName;
+            ReportError("Identifier " + str.substr(2,str.length()-2) + " is not a number  !");
+        }
         // printf("var ");tmpsym->print();putchar('\n');
         // tmpsym->print();printf(" = ");s1->print();
         // printf(" %s ",x);s2->print();putchar('\n');
@@ -132,9 +143,9 @@ Symbol::Symbol()
             ReportError("Redefined");
         }
     }
-    void Symbol::ReportError(const char * s)
+    void Symbol::ReportError(std::string s)
     {
-        std::cerr<<s<<":"<<funName<<std::endl;
+        std::cerr<<s<<std::endl;
     }
 
 

@@ -38,7 +38,7 @@ struct Symbol //符号
     void Declear(SymbolType _type,int _paramCount=-1, int _val=0);
     void Define(SymbolType _type,int _paramCount, int _val);
     void Define();
-    void ReportError(const char * s);
+    static void ReportError(std::string s);
 };
 
 struct SymbolTable

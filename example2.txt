@@ -1,10 +1,10 @@
-int func(int a,int b)
+int func(int a[],int b)
 {
     int i;
     i = 0;
     int s;
     s = 0;
-        s = s + i;
+        s = a + i;
         if(i == 5) i = 0;
         if(i >6 && (i>7 || i>8))
         {
@@ -14,8 +14,8 @@ int func(int a,int b)
 }
 int main()
 {
-    int aa;
+    int aa[20];
     int b;
     b = func(aa,b);
-    return 0
+    return 0;
 }
