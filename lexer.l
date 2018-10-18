@@ -3,6 +3,7 @@
 %}
 
 %%
+"/*"([^/*]*|[^/]*[^*]+"/")*"*/"         {}
 ==    {return EQUAL;}
 !=    {return NOTEQUAL;}
 &&    {return LAND;}

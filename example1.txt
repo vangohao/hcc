@@ -23,7 +23,7 @@ int func(int a[],int b)
 int b;
 int main()
 {
-    int aa[5];   /*fuck you */
+    int aa[5];   /*fuck you/****88// */
     int b;/*
 	b = 1;*/
 	int i;

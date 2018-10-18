@@ -60,3 +60,12 @@ int pre(FILE* input, FILE* output)
     }
     return 0;
 }
+int pred(FILE* input,FILE* output)
+{
+    char ch;
+    while((ch=fgetc(input)) != EOF)
+    {
+        fputc(ch,output);
+    }
+    return 0;
+}

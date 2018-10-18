@@ -32,13 +32,13 @@ int main(int argc, char * args[])
         preoutput = fopen(s,"w");
         output = fopen(args[2],"w");
     }
-    pre(input,preoutput);
+    pred(input,preoutput);
     fclose(preoutput);
     yyin = fopen(s,"r");
     yyout = output;
     yyparse();
     fclose(yyin);
     fclose(yyout);
-    remove(s);
+    //remove(s);
     return 0;
 }
