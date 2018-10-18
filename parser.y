@@ -6,7 +6,8 @@
     #include<stack>
     #include "symbol.h"
     #include "node.h"
-    
+    #include "fault.h"
+
     int yylex();  
     int yyparse();
     int yyerror(const char *);
@@ -18,6 +19,9 @@
     } foryystype;
     #define YYSTYPE foryystype
 }
+%{
+    #define YYERROR_VERBOSE 1
+%}
 
 %code{
     extern FILE* yyout;
@@ -77,7 +81,7 @@ BeforeMain: BeforeMain BeforeMainStatement
 ;
 BeforeMainStatement: VarDefn | FuncDefn | FuncDecl | ';'
 ;
-VarDefn: Type Identifier ';'    {   $$ = new Node($2,NULL,NodeType::Vardfn,0);
+VarDefn: Type Identifier ';'    {   $$ = new Node($2,NULL,NodeType::Vardfn,0,linenum);
                                     if($2->val == 1)
                                     {
                                         Symbol * tmp = $2->sym;
@@ -92,7 +96,7 @@ VarDefn: Type Identifier ';'    {   $$ = new Node($2,NULL,NodeType::Vardfn,0);
                                     Output::gen(ss.str());
                                 }
 | Type Identifier'['INTEGER']' ';'  {
-                                    $$ = new Node($2,NULL,NodeType::Vardfn,4 * $4);
+                                    $$ = new Node($2,NULL,NodeType::Vardfn,4 * $4,linenum);
                                     if($2->val == 1)
                                     {
                                         Symbol * tmp = $2->sym;
@@ -107,19 +111,19 @@ VarDefn: Type Identifier ';'    {   $$ = new Node($2,NULL,NodeType::Vardfn,0);
                                     Output::gen(ss.str());
 }
 ;
-VarDecls:VarDecls ',' VarDecl   {   $$ = new Node($1,$3,NodeType::Params,$1->val + 1);
+VarDecls:VarDecls ',' VarDecl   {   $$ = new Node($1,$3,NodeType::Params,$1->val + 1,linenum);
                                     $3->sym->paramCount = $1->val;
                                     $3->sym->Define();
 }
 | VarDecl                        {
-                                    $$ = new Node(NULL,$1,NodeType::Params,1);
+                                    $$ = new Node(NULL,$1,NodeType::Params,1,linenum);
                                     $1->sym->paramCount = 0;
                                     $1->sym->Define();
 } 
-| %empty                      {$$ = new Node(NULL,NULL,NodeType::Params,0);
+| %empty                      {$$ = new Node(NULL,NULL,NodeType::Params,0,linenum);
 }
 ;
-VarDecl: Type Identifier        {   $$ = new Node($2,NULL,NodeType::VarDcl,0);
+VarDecl: Type Identifier        {   $$ = new Node($2,NULL,NodeType::VarDcl,0,linenum);
                                     if($2->val == 1)
                                     {
                                         Symbol * tmp = $2->sym;
@@ -131,7 +135,7 @@ VarDecl: Type Identifier        {   $$ = new Node($2,NULL,NodeType::VarDcl,0);
                                     $2->sym->Declear($1,0);
                                     $$->sym = $2->sym;
 }
-| Type Identifier '[' INTEGER ']' {   $$ = new Node($2,NULL,NodeType::VarDcl,4 * $4);
+| Type Identifier '[' INTEGER ']' {   $$ = new Node($2,NULL,NodeType::VarDcl,4 * $4,linenum);
                                     if($2->val == 1)
                                     {
                                         Symbol * tmp = $2->sym;
@@ -142,7 +146,7 @@ VarDecl: Type Identifier        {   $$ = new Node($2,NULL,NodeType::VarDcl,0);
                                     $2->sym->Declear(SymbolType::IntPtr,0,4 * $4);
                                     $$->sym = $2->sym;
 }
-| Type Identifier '[' ']'          {   $$ = new Node($2,NULL,NodeType::VarDcl,0);
+| Type Identifier '[' ']'          {   $$ = new Node($2,NULL,NodeType::VarDcl,0,linenum);
                                     if($2->val == 1)
                                     {
                                         Symbol * tmp = $2->sym;
@@ -167,17 +171,17 @@ FuncDefn: FuncCreateIdTable VarDecls ')'    { $1->sym->Define(SymbolType::FunPtr
 '{'    
 InsideFuncStatements M
 '}'    {   delete top;  top = save.top();save.pop();//恢复符号表
-         $$ = new Node($1,$6,NodeType::Fundfn,$2->val); 
+         $$ = new Node($1,$6,NodeType::Fundfn,$2->val,linenum); 
          $6->nextlist.backpatch($7->instr);
          Output::gen("end ");$1->sym->print();Output::gen("\n");
 }
 ;
 InsideFuncStatements: InsideFuncStatements M FuncDecl        { 
-                                            $$ = new Node($1,$3,NodeType::Stmts,0);
+                                            $$ = new Node($1,$3,NodeType::Stmts,0,linenum);
                                             $1->nextlist.backpatch($2->instr);
 }
 | InsideFuncStatements M Statement                          { 
-                                            $$ = new Node($1,$3,NodeType::Stmts,0);
+                                            $$ = new Node($1,$3,NodeType::Stmts,0,linenum);
                                             $1->nextlist.backpatch($2->instr);
                                             $$->nextlist = $3->nextlist;
 }
@@ -185,7 +189,7 @@ InsideFuncStatements: InsideFuncStatements M FuncDecl        {
 | Statement                     {$$ = $1;}
 ;
 FuncDecl: FuncCreateIdTable VarDecls ')' ';'
-        {     $$ = new Node($1,$2,NodeType::Fundcl,$2->val);
+        {     $$ = new Node($1,$2,NodeType::Fundcl,$2->val,linenum);
             $1->sym->Declear(SymbolType::FunPtr,0,$2->val);
             delete top;  top = save.top(); save.pop();}
 ;
@@ -202,18 +206,18 @@ MainFunc: T_INT MAIN '(' ')'            {   save.push(top);top = new SymbolTable
 Type: T_INT   {$$ = SymbolType::Int;}
 ;
 Statements: Statements M Statement      { 
-                                            $$ = new Node($1,$3,NodeType::Stmts,0);
+                                            $$ = new Node($1,$3,NodeType::Stmts,0,linenum);
                                             $1->nextlist.backpatch($2->instr);
                                             $$->nextlist = $3->nextlist;
 }
-//| %empty                             { $$= new Node(NULL,NULL,NodeType::Stmts,0);}
+//| %empty                             { $$= new Node(NULL,NULL,NodeType::Stmts,0,linenum);}
 | Statement {$$ = $1;}
 ;
-M: %empty { $$ = new Node(NULL,NULL,NodeType::Empty,0); 
+M: %empty { $$ = new Node(NULL,NULL,NodeType::Empty,0,linenum); 
             $$->instr.Init(Output::gen(""));
 }
 ;
-N: %empty { $$ = new Node(NULL,NULL,NodeType::Empty,0);
+N: %empty { $$ = new Node(NULL,NULL,NodeType::Empty,0,linenum);
             $$->nextlist = Gotolist(Output::gen("goto "));
 }
 ;
@@ -223,19 +227,19 @@ Statement: '{'    {save.push(top);top = new SymbolTable(top);}
 }      
 | ';'           {$$ = new Node(NULL,NULL,NodeType::Stmts,0);}
 | IF '('  Expression ')' M Statement {   $3->truelist.backpatch($5->instr);
-                                         $$ = new Node($3,$6,NodeType::If,0);
+                                         $$ = new Node($3,$6,NodeType::If,0,linenum);
                                          $$->nextlist = $3->falselist.merge($6->nextlist);
                                         
 }
 | IF '('  Expression ')' M Statement N ELSE M Statement  {
-                                        $$ = new Node($3,$6,NodeType::IfElse,0);
+                                        $$ = new Node($3,$6,NodeType::IfElse,0,linenum);
                                         $3->truelist.backpatch($5->instr);
                                         $3->falselist.backpatch($9->instr);
                                         $$->nextlist = $6->nextlist.merge($10->nextlist);
                                         $$->nextlist = $$->nextlist.merge($7->nextlist);
 }
 | WHILE M '(' Expression ')' M Statement           {
-                                        $$ = new Node($4,$7,NodeType::While,0);
+                                        $$ = new Node($4,$7,NodeType::While,0,linenum);
                                         $7->nextlist.backpatch($2->instr);
                                         $4->truelist.backpatch($6->instr);
                                         $$->nextlist = $4->falselist;
@@ -243,7 +247,7 @@ Statement: '{'    {save.push(top);top = new SymbolTable(top);}
                                         // Output::gen("goto "+$2->instr.print());
                                         
 }
-| Identifier '=' Expression ';'           {$$ =new Node($1,$3,NodeType::Assign,'=');
+| Identifier '=' Expression ';'           {$$ =new Node($1,$3,NodeType::Assign,'=',linenum);
                                             $1->sym->print();
                                             Output::gen(" = ");
                                             $3->sym->print();
@@ -254,7 +258,7 @@ Statement: '{'    {save.push(top);top = new SymbolTable(top);}
                                         $3->sym = Symbol::ProcessDualOp(four,$3->sym,"*");
 
 }
- Expression ';'  {$$ =new Node($1,$3,NodeType::ArrayAssign,'=');
+ Expression ';'  {$$ =new Node($1,$3,NodeType::ArrayAssign,'=',linenum);
                                             $1->sym->print();
                                             Output::gen(" [");
                                             $3->sym->print();
@@ -263,66 +267,66 @@ Statement: '{'    {save.push(top);top = new SymbolTable(top);}
                                             Output::gen("\n");
 }
 | VarDefn
-| RETURN Expression ';'                 {$$ = new Node($2,NULL,NodeType::Return,0);
+| RETURN Expression ';'                 {$$ = new Node($2,NULL,NodeType::Return,0,linenum);
                                             Output::gen("return ");$2->sym->print();Output::gen("\n");}
 ;
-Expression:  Expression '+' Expression    {$$ = new Node($1,$3,NodeType::DualArith,'+');
+Expression:  Expression '+' Expression    {$$ = new Node($1,$3,NodeType::DualArith,'+',linenum);
                                            $$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"+");
 }
-| Expression '-' Expression               {$$ = new Node($1,$3,NodeType::DualArith,'-');
+| Expression '-' Expression               {$$ = new Node($1,$3,NodeType::DualArith,'-',linenum);
                                            $$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"-");
 }
-| Expression '*' Expression               {$$ = new Node($1,$3,NodeType::DualArith,'*');
+| Expression '*' Expression               {$$ = new Node($1,$3,NodeType::DualArith,'*',linenum);
                                            $$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"*");
 }
-| Expression '/' Expression               {$$ = new Node($1,$3,NodeType::DualArith,'/');
+| Expression '/' Expression               {$$ = new Node($1,$3,NodeType::DualArith,'/',linenum);
                                            $$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"/");
 }
-| Expression '%' Expression               {$$ = new Node($1,$3,NodeType::DualArith,'%');
+| Expression '%' Expression               {$$ = new Node($1,$3,NodeType::DualArith,'%',linenum);
                                            $$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"%%");
 }
-| Expression '<' Expression               {$$ = new Node($1,$3,NodeType::DualLogic,'<');
+| Expression '<' Expression               {$$ = new Node($1,$3,NodeType::DualLogic,'<',linenum);
                                         //    $$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"<");
                                             Output::gen("if ");$1->sym->print();Output::gen(" < ");
                                             $3->sym->print();
                                             $$->truelist = Gotolist(Output::gen(" goto "));
                                             $$->falselist = Gotolist(Output::gen("goto "));
 }
-| Expression '>' Expression               {$$ = new Node($1,$3,NodeType::DualLogic,'>');
+| Expression '>' Expression               {$$ = new Node($1,$3,NodeType::DualLogic,'>',linenum);
                                            //$$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,">");
                                            Output::gen("if ");$1->sym->print();Output::gen(" > ");
                                             $3->sym->print();
                                             $$->truelist = Gotolist(Output::gen(" goto "));
                                             $$->falselist = Gotolist(Output::gen("goto "));
 }
-| Expression EQUAL Expression             {$$ = new Node($1,$3,NodeType::DualLogic,EQUAL);
+| Expression EQUAL Expression             {$$ = new Node($1,$3,NodeType::DualLogic,EQUAL,linenum);
                                            //$$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"==");
                                            Output::gen("if ");$1->sym->print();Output::gen(" == ");
                                             $3->sym->print();
                                             $$->truelist = Gotolist(Output::gen(" goto "));
                                             $$->falselist = Gotolist(Output::gen("goto "));
 }
-| Expression NOTEQUAL Expression          {$$ = new Node($1,$3,NodeType::DualLogic,NOTEQUAL);
+| Expression NOTEQUAL Expression          {$$ = new Node($1,$3,NodeType::DualLogic,NOTEQUAL,linenum);
                                            //$$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"!=");
                                            Output::gen("if ");$1->sym->print();Output::gen(" != ");
                                             $3->sym->print();
                                             $$->truelist = Gotolist(Output::gen(" goto "));
                                             $$->falselist = Gotolist(Output::gen("goto "));
 }
-| Expression LAND M Expression               {$$ = new Node($1,$3,NodeType::DualLogic,LAND);
+| Expression LAND M Expression               {$$ = new Node($1,$3,NodeType::DualLogic,LAND,linenum);
                                            //$$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"&&");
                                            $1->truelist.backpatch($3->instr);
                                            $$->truelist = $4->truelist;
                                            $$->falselist = $1->falselist.merge($4->falselist);
 }
-| Expression LOR M Expression               {$$ = new Node($1,$3,NodeType::DualLogic,LOR);
+| Expression LOR M Expression               {$$ = new Node($1,$3,NodeType::DualLogic,LOR,linenum);
                                            //$$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"||");
                                            $1->falselist.backpatch($3->instr);
                                            $$->falselist = $4->falselist;
                                            $$->truelist = $1->truelist.merge($4->truelist);
                                             
 }
-| Expression '[' Expression ']'               {$$ = new Node($1,$3,NodeType::DualArith,'[');
+| Expression '[' Expression ']'               {$$ = new Node($1,$3,NodeType::DualArith,'[',linenum);
                                                 Symbol * four = new Symbol(SymbolType::Immediate,4);
                                                 Symbol * tmpans = Symbol::ProcessDualOp(four,$3->sym,"*");
                                                 Symbol* tmpsym = new Symbol(SymbolType::Int);
@@ -331,20 +335,20 @@ Expression:  Expression '+' Expression    {$$ = new Node($1,$3,NodeType::DualAri
                                                 Output::gen(" [");tmpans->print();Output::gen("]\n");
                                                 $$->sym = tmpsym;
 }
-| INTEGER                                     {$$ = new Node(NULL,NULL,NodeType::Symbol1,$1);
+| INTEGER                                     {$$ = new Node(NULL,NULL,NodeType::Symbol1,$1,linenum);
                                                 $$->sym = new Symbol(SymbolType::Immediate,$1);
 }
 | Identifier                                  {if($1->sym->decleared == false) {$1->sym->ReportError("Undecleared");}
     $$ = $1;}
-| '!' Expression                              {$$ = new Node($2,NULL,NodeType::SingleLogic,'!');
+| '!' Expression                              {$$ = new Node($2,NULL,NodeType::SingleLogic,'!',linenum);
                                                 // $$->sym = Symbol::ProcessSingleOp($2->sym,"!");
                                                 $$->falselist = $2->truelist;
                                                 $$->truelist = $2->falselist;
 } 
-| '-' Expression %prec NEGA                   {$$ = new Node($2,NULL,NodeType::SingleArith,'-');
+| '-' Expression %prec NEGA                   {$$ = new Node($2,NULL,NodeType::SingleArith,'-',linenum);
                                                 $$->sym = Symbol::ProcessSingleOp($2->sym,"-");
 }
-| Identifier '(' Params ')'                   {$$ = new Node($1,$3,NodeType::Funcall,$3->val);
+| Identifier '(' Params ')'                   {$$ = new Node($1,$3,NodeType::Funcall,$3->val,linenum);
                                                 Symbol* tmpsym = new Symbol(SymbolType::Int);
                                                 Output::gen("var ");tmpsym->print();Output::gen("\n");
                                                 tmpsym->print();Output::gen(" = ");
@@ -355,15 +359,15 @@ Expression:  Expression '+' Expression    {$$ = new Node($1,$3,NodeType::DualAri
 | '(' Expression ')'                          {$$ = $2;
 }
 ;
-Params: Params ',' Expression       {   $$ = new Node($1,$3,NodeType::Params,$1->val + 1);
+Params: Params ',' Expression       {   $$ = new Node($1,$3,NodeType::Params,$1->val + 1,linenum);
                                         Output::gen("param ");$3->sym->print();Output::gen("\n");
 }
-|   Expression                         { $$=new Node(NULL,$1,NodeType::Params,1);
+|   Expression                         { $$=new Node(NULL,$1,NodeType::Params,1,linenum);
                                         Output::gen("param ");$1->sym->print();Output::gen("\n");
 }
 | %empty        {$$ = new Node(NULL,NULL,NodeType::Params,0);}
 ;
-Identifier: IDENTIFIER             {    $$ = new Node(NULL,NULL,NodeType::Symbol1,0);
+Identifier: IDENTIFIER             {    $$ = new Node(NULL,NULL,NodeType::Symbol1,0,linenum);
                                         Symbol * sym = top->get($1);
                                         Symbol * here = top->gethere($1);
                                         if(sym == NULL)
@@ -386,7 +390,7 @@ Identifier: IDENTIFIER             {    $$ = new Node(NULL,NULL,NodeType::Symbol
 
 int yyerror(const char *msg)            //输出错误信息的yyerror()函数
 {
-std::cerr<<"Error encountered: "<<msg<<std::endl;
+std::cerr<<"Error encountered: "<<msg<<" at line "<<linenum<<"."<<std::endl;
 Output::print();
 return 0;
 }

@@ -17,5 +17,5 @@ int main()
     int aa;
     int b;
     b = func(aa,b);
-    return 0;
+    return 0
 }
