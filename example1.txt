@@ -1,7 +1,8 @@
 int putint(int b);
 int getint();
 int a;
-int func(int a[],int b)
+int func(int a[],int b,int d);
+int func(int a[],int b,int c)
 {
     int i;
     i = 1;

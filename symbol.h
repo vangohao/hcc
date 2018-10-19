@@ -23,11 +23,12 @@ struct Symbol //符号
     SymbolType type;
     int val; //附加值，函数参数个数或数组大小
     Node* appear; //第一次出现的位置
+    Node* paramlist; //若为函数,指向它的参数表
     bool decleared;
     bool defined;
     int paramCount;
     int immediate;
-    char * funName; //函数名称
+    std::string funName; //函数名称
     Symbol();
     Symbol(Node* _appear);
     Symbol(SymbolType _type); //创建临时符号
@@ -37,8 +38,13 @@ struct Symbol //符号
     static Symbol* ProcessSingleOp(Symbol* s1,const char * x);
     void Declear(SymbolType _type,int _paramCount=-1, int _val=0);
     void Define(SymbolType _type,int _paramCount, int _val);
+    void DefineParamList(Node * pl);
     void Define();
-    static void ReportError(std::string s);
+    void ReportUndecleared();
+    void CallWithParams(Node * n1);
+    //static void ReportError(std::string s);
+private:
+    bool checkParams(Node *n1);
 };
 
 struct SymbolTable

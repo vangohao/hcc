@@ -1,5 +1,6 @@
 {
     "files.associations": {
+        "*.lex": "lex",
         "array": "cpp",
         "istream": "cpp",
         "ostream": "cpp",
@@ -32,6 +33,11 @@
         "string_view": "cpp",
         "system_error": "cpp",
         "cinttypes": "cpp",
-        "typeinfo": "cpp"
+        "typeinfo": "cpp",
+        "cstdarg": "cpp",
+        "cstring": "cpp",
+        "deque": "cpp",
+        "functional": "cpp",
+        "string": "cpp"
     }
 }

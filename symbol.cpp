@@ -5,14 +5,16 @@
 #include<string>
 #include<vector>
 #include "symbol.h"
-struct Node;
+#include "node.h"
+extern int linenumber;
+int yyerror(std::string s);
 namespace Output
 {
 int gen(std::string);
 }
 Symbol::Symbol()
     {
-        id = -1;type = SymbolType::Error;val = -1;tempid=-1;
+        id = -1;type = SymbolType::Error;val = -1;tempid=-1;paramlist=NULL;
         appear = NULL;decleared = false;defined = false;paramCount = -1;
     }
     Symbol::Symbol(Node* _appear)
@@ -21,6 +23,7 @@ Symbol::Symbol()
         decleared = false;
         defined = false;
         paramCount = -1;
+        paramlist=NULL;
         tempid=-1;
     }
     Symbol::Symbol(SymbolType _type) //创建临时符号
@@ -30,6 +33,7 @@ Symbol::Symbol()
         paramCount = -1;
         id = -1;
         decleared = true;
+        paramlist=NULL;
         defined = true;
     }
     Symbol::Symbol(SymbolType _type, int _immediate) //创建直接数符号
@@ -40,6 +44,7 @@ Symbol::Symbol()
         id =-1;
         tempid = -1;
         decleared = true;
+        paramlist=NULL;
         defined = true;
     }
     void Symbol::print()
@@ -47,7 +52,7 @@ Symbol::Symbol()
         std::stringstream ss;
         if(type==SymbolType::FunPtr)
         {
-            ss<<funName;
+            ss<<"f_"<<funName;
         }
         else if(type==SymbolType::Immediate)
         {
@@ -72,17 +77,12 @@ Symbol::Symbol()
         Symbol* tmpsym = new Symbol(SymbolType::Int);
         if(s1->type != SymbolType::Int && s1->type != SymbolType::Immediate)
         {
-            std::string str = s1->funName;
-            ReportError("Identifier " + str.substr(2,str.length()-2) + " is not a number  !");
+            yyerror((std::string)"Identifier " + s1->funName + " is not a number  !");
         }
         else if(s2->type != SymbolType::Int && s2->type != SymbolType::Immediate)
         {
-            std::string str = s2->funName;
-            ReportError("Identifier " + str.substr(2,str.length()-2) + " is not a number  !");
+            yyerror((std::string)"Identifier " + s2->funName + " is not a number  !");
         }
-        // printf("var ");tmpsym->print();putchar('\n');
-        // tmpsym->print();printf(" = ");s1->print();
-        // printf(" %s ",x);s2->print();putchar('\n');
         Output::gen("var ");tmpsym->print();Output::gen("\n");
         tmpsym->print();Output::gen(" = ");s1->print();
         Output::gen(" ");Output::gen(x);Output::gen(" ");
@@ -92,9 +92,6 @@ Symbol::Symbol()
     Symbol* Symbol::ProcessSingleOp(Symbol* s1,const char * x)
     {
         Symbol* tmpsym = new Symbol(SymbolType::Int);
-        // printf("var ");tmpsym->print();putchar('\n');
-        // tmpsym->print();printf(" = ");
-        // printf("%s",x);s1->print();putchar('\n');
         Output::gen("var ");tmpsym->print();Output::gen("\n");
         tmpsym->print();
         Output::gen(" = ");Output::gen(x);Output::gen(" ");
@@ -114,7 +111,7 @@ Symbol::Symbol()
             decleared = true;}
         else 
         {
-            ReportError("Redecleared");
+            yyerror((std::string)"Redecleared");
         }
     }
     void Symbol::Define(SymbolType _type,int _paramCount, int _val)
@@ -128,11 +125,22 @@ Symbol::Symbol()
             type = _type;
             val = _val;
             decleared = true;}
-        else if(_val != val || type!=_type)
+        else if(type!=_type)
         {
-            ReportError("Function Defined does not match Decleared");
+            yyerror((std::string)"Identifier" + funName +" Defined as a different type");
         }
         Define();
+    }
+    void Symbol::DefineParamList(Node * pl)
+    {
+        if(  !paramlist|| checkParams(pl))
+        {
+            paramlist = pl;
+        }
+        else
+        {
+            yyerror((std::string)"Function " + funName + " Defined does not match its declear");
+        }
     }
     void Symbol::Define()
     {
@@ -140,13 +148,48 @@ Symbol::Symbol()
             defined = true;
         else
         {
-            ReportError("Redefined");
+            yyerror((std::string)"Identifier " + funName + " Redefined");
         }
     }
-    void Symbol::ReportError(std::string s)
+    void Symbol::CallWithParams(Node * n1)
     {
-        std::cerr<<s<<std::endl;
+        if(!checkParams(n1))
+        {
+            yyerror((std::string)"Call of function " + funName + " has wrong params");
+        }
     }
+    bool Symbol::checkParams(Node * n1)
+    {
+        Node * n0 = paramlist;
+            //std::cerr<<n0->right->sym->type <<" "<<n1->right->sym->type<<std::endl;
+        if(! (n0->right) && !(n1->right)) return true;
+        while (n0 && n1)
+        {
+            //std::cerr<<1;
+            if(!((n0->right->sym->type == SymbolType::Int && n1->right->sym->type == SymbolType::Immediate)
+                ||
+              (n1->right->sym->type == SymbolType::Int && n0->right->sym->type == SymbolType::Immediate)  
+              )&&
+              (n0->right->sym->type != n1->right->sym->type))
+              {
+                //std::cerr<<n0->right->sym->type <<" "<<n1->right->sym->type<<std::endl;
+                return false;
+              }
+            n0 = n0->left;
+            n1 = n1->left;
+        }
+        if(n0 || n1)
+        {
+            //std::cerr<<n0<<" "<<n1<<std::endl;
+            return false;
+        }
+        else return true;
+    }
+    void Symbol::ReportUndecleared()
+    {
+        yyerror((std::string)"Identifier " + funName + " not decleared"); 
+    }
+
 
 
 

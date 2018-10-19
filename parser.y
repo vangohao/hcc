@@ -2,6 +2,7 @@
     #include<stdio.h>
     #include<stdlib.h>
     #include<string.h>
+    #include<string>
     #include<map>
     #include<stack>
     #include "symbol.h"
@@ -87,7 +88,7 @@ VarDefn: Type Identifier ';'    {   $$ = new Node($2,NULL,NodeType::Vardfn,0,lin
                                         Symbol * tmp = $2->sym;
                                         $2->sym = new Symbol($2);
                                         $2->sym->funName = tmp->funName;
-                                        top->put(tmp->funName+2,$2->sym);
+                                        top->put(tmp->funName.c_str(),$2->sym);
                                     }
                                     $2->sym->Declear($1);
                                     $2->sym->Define();
@@ -102,7 +103,7 @@ VarDefn: Type Identifier ';'    {   $$ = new Node($2,NULL,NodeType::Vardfn,0,lin
                                         Symbol * tmp = $2->sym;
                                         $2->sym = new Symbol($2);
                                         $2->sym->funName = tmp->funName;
-                                        top->put(tmp->funName+2,$2->sym);
+                                        top->put(tmp->funName.c_str(),$2->sym);
                                     }
                                     $2->sym->Declear(SymbolType::IntPtr,-1,4 * $4);
                                     $2->sym->Define();
@@ -123,39 +124,42 @@ VarDecls:VarDecls ',' VarDecl   {   $$ = new Node($1,$3,NodeType::Params,$1->val
 | %empty                      {$$ = new Node(NULL,NULL,NodeType::Params,0,linenum);
 }
 ;
-VarDecl: Type Identifier        {   $$ = new Node($2,NULL,NodeType::VarDcl,0,linenum);
+VarDecl: Type Identifier        {   //$$ = new Node($2,NULL,NodeType::VarDcl,0,linenum);
                                     if($2->val == 1)
                                     {
                                         Symbol * tmp = $2->sym;
                                         $2->sym = new Symbol($2);
                                         $2->sym->funName = tmp->funName;
                                         // std::cerr<<tmp->funName +2<<std::endl;
-                                        top->put(tmp->funName+2,$2->sym);
+                                        top->put(tmp->funName.c_str(),$2->sym);
                                     }
                                     $2->sym->Declear($1,0);
-                                    $$->sym = $2->sym;
+                                    //$$->sym = $2->sym;
+                                    $$=$2;
 }
-| Type Identifier '[' INTEGER ']' {   $$ = new Node($2,NULL,NodeType::VarDcl,4 * $4,linenum);
+| Type Identifier '[' INTEGER ']' {   //$$ = new Node($2,NULL,NodeType::VarDcl,4 * $4,linenum);
                                     if($2->val == 1)
                                     {
                                         Symbol * tmp = $2->sym;
                                         $2->sym = new Symbol($2);
                                         $2->sym->funName = tmp->funName;
-                                        top->put(tmp->funName+2,$2->sym);
+                                        top->put(tmp->funName.c_str(),$2->sym);
                                     }
                                     $2->sym->Declear(SymbolType::IntPtr,0,4 * $4);
-                                    $$->sym = $2->sym;
+                                    //$$->sym = $2->sym;
+                                    $$=$2;
 }
-| Type Identifier '[' ']'          {   $$ = new Node($2,NULL,NodeType::VarDcl,0,linenum);
+| Type Identifier '[' ']'          {   //$$ = new Node($2,NULL,NodeType::VarDcl,0,linenum);
                                     if($2->val == 1)
                                     {
                                         Symbol * tmp = $2->sym;
                                         $2->sym = new Symbol($2);
                                         $2->sym->funName = tmp->funName;
-                                        top->put(tmp->funName+2,$2->sym);
+                                        top->put(tmp->funName.c_str(),$2->sym);
                                     }
                                     $2->sym->Declear(SymbolType::IntPtr,0,0);
-                                    $$->sym = $2->sym;
+                                    // $$->sym = $2->sym;
+                                    $$ = $2;
 }
 ;
 FuncCreateIdTable: Type Identifier '(' {save.push(top);top = new SymbolTable(top);/*函数前的创建符号表*/
@@ -163,6 +167,7 @@ FuncCreateIdTable: Type Identifier '(' {save.push(top);top = new SymbolTable(top
 }
 ;
 FuncDefn: FuncCreateIdTable VarDecls ')'    { $1->sym->Define(SymbolType::FunPtr,0,$2->val);
+                                            $1->sym->DefineParamList($2);  //传入参数node表
                                             $1->sym->print();//printf(" [%d]\n",$2->val);
                                             std::stringstream ss;
                                             ss<<" ["<< $2->val <<"]\n";
@@ -191,6 +196,7 @@ InsideFuncStatements: InsideFuncStatements M FuncDecl        {
 FuncDecl: FuncCreateIdTable VarDecls ')' ';'
         {     $$ = new Node($1,$2,NodeType::Fundcl,$2->val,linenum);
             $1->sym->Declear(SymbolType::FunPtr,0,$2->val);
+            $1->sym->DefineParamList($2);  //传入参数node表
             delete top;  top = save.top(); save.pop();}
 ;
 MainFunc: T_INT MAIN '(' ')'            {   save.push(top);top = new SymbolTable(top);/*函数前的创建符号表*/ 
@@ -338,7 +344,7 @@ Expression:  Expression '+' Expression    {$$ = new Node($1,$3,NodeType::DualAri
 | INTEGER                                     {$$ = new Node(NULL,NULL,NodeType::Symbol1,$1,linenum);
                                                 $$->sym = new Symbol(SymbolType::Immediate,$1);
 }
-| Identifier                                  {if($1->sym->decleared == false) {$1->sym->ReportError("Undecleared");}
+| Identifier                                  {if($1->sym->decleared == false) {$1->sym->ReportUndecleared();}
     $$ = $1;}
 | '!' Expression                              {$$ = new Node($2,NULL,NodeType::SingleLogic,'!',linenum);
                                                 // $$->sym = Symbol::ProcessSingleOp($2->sym,"!");
@@ -350,6 +356,7 @@ Expression:  Expression '+' Expression    {$$ = new Node($1,$3,NodeType::DualAri
 }
 | Identifier '(' Params ')'                   {$$ = new Node($1,$3,NodeType::Funcall,$3->val,linenum);
                                                 Symbol* tmpsym = new Symbol(SymbolType::Int);
+                                                $1->sym->CallWithParams($3);
                                                 Output::gen("var ");tmpsym->print();Output::gen("\n");
                                                 tmpsym->print();Output::gen(" = ");
                                                 Output::gen("call ");$1->sym->print();Output::gen("\n");
@@ -379,16 +386,20 @@ Identifier: IDENTIFIER             {    $$ = new Node(NULL,NULL,NodeType::Symbol
                                         {
                                             $$->val = 1;//标记该标识符在最内层函数中未定义。
                                         }
-                                        sym->funName = (char*)malloc(4+strlen($1));
-                                        strcpy(sym->funName,"f_");
-                                        strcat(sym->funName,$1);
+                                        sym->funName = $1;
                                         $$->sym = sym;
 }
 ;
 
 %%
 
-int yyerror(const char *msg)            //输出错误信息的yyerror()函数
+int yyerror(std::string msg)            //输出错误信息的yyerror()函数
+{
+std::cerr<<"Error encountered: "<<msg<<" at line "<<linenum<<"."<<std::endl;
+Output::print();
+return 0;
+}
+int yyerror(const char * msg)            //输出错误信息的yyerror()函数
 {
 std::cerr<<"Error encountered: "<<msg<<" at line "<<linenum<<"."<<std::endl;
 Output::print();
