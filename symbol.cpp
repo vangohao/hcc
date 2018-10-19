@@ -161,18 +161,15 @@ Symbol::Symbol()
     bool Symbol::checkParams(Node * n1)
     {
         Node * n0 = paramlist;
-            //std::cerr<<n0->right->sym->type <<" "<<n1->right->sym->type<<std::endl;
         if(! (n0->right) && !(n1->right)) return true;
         while (n0 && n1)
         {
-            //std::cerr<<1;
             if(!((n0->right->sym->type == SymbolType::Int && n1->right->sym->type == SymbolType::Immediate)
                 ||
               (n1->right->sym->type == SymbolType::Int && n0->right->sym->type == SymbolType::Immediate)  
               )&&
               (n0->right->sym->type != n1->right->sym->type))
               {
-                //std::cerr<<n0->right->sym->type <<" "<<n1->right->sym->type<<std::endl;
                 return false;
               }
             n0 = n0->left;
@@ -180,7 +177,6 @@ Symbol::Symbol()
         }
         if(n0 || n1)
         {
-            //std::cerr<<n0<<" "<<n1<<std::endl;
             return false;
         }
         else return true;
