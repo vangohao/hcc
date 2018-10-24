@@ -326,6 +326,15 @@ Statement: '{'    {save.push(top);top = new SymbolTable(top);}
                                                 Output::gen("\n");
                                             }
 }
+| Identifier '(' Params ')' ';' {
+                                            $$ = new Node($1,$3,NodeType::Funcall,$3->val,linenum);
+                                            Symbol* tmpsym = new Symbol(SymbolType::Int);
+                                            $1->sym->CallWithParams($3);
+                                            Output::gen("var ");tmpsym->print();Output::gen("\n");
+                                            tmpsym->print();Output::gen(" = ");
+                                            Output::gen("call ");$1->sym->print();Output::gen("\n");
+                                            $$->sym = tmpsym;
+}
 | VarDefn
 | RETURN Expression ';'                 {$$ = new Node($2,NULL,NodeType::Return,0,linenum);
                                             if($2->type == NodeType::ExprLogic)
@@ -434,7 +443,8 @@ M Expression               {$$ = new Node($1,$5,NodeType::ExprLogic,LOR,linenum)
 | INTEGER                                     {$$ = new Node(NULL,NULL,NodeType::Symbol1,$1,linenum);
                                                 $$->sym = new Symbol(SymbolType::Immediate,$1);
 }
-| Identifier                                  {if($1->sym->decleared == false) {$1->sym->ReportUndecleared();}
+| Identifier                                  {     if($1->sym->decleared == false) {$1->sym->ReportUndecleared();
+                                                    }
     $$ = $1;}
 | '!' Expression                              {$$ = new Node($2,NULL,NodeType::ExprLogic,'!',linenum);
                                                 if($2->type != NodeType::ExprLogic)
@@ -450,7 +460,28 @@ M Expression               {$$ = new Node($1,$5,NodeType::ExprLogic,LOR,linenum)
 | '-' Expression %prec NEGA                   {$$ = new Node($2,NULL,NodeType::ExprArith,'-',linenum);
                                                 $$->sym = Symbol::ProcessSingleOp($2->sym,"-");
 }
-| Identifier '(' Params ')'                   {$$ = new Node($1,$3,NodeType::Funcall,$3->val,linenum);
+| Identifier '(' Params ')'                   {
+                                                /* 开挂代码 */
+                                                    if($1->sym->funName == "putchar" && $1->sym->decleared == false)
+                                                    {
+                                                        $1->sym->Declear(SymbolType::FunPtr,0,1);
+                                                        Symbol* sm = new Symbol(SymbolType::Int);
+                                                        Node * nd1 = new Node(NULL,NULL,NodeType::Symbol1,0,0);
+                                                        nd1->sym = sm;
+                                                        Node * nd0 = new Node(NULL,nd1,NodeType::Params,1,0);
+                                                        Node * nd = new Node($1,nd0,NodeType::Fundcl,1,0);
+                                                        $1->sym->DefineParamList(nd);
+                                                    }
+                                                    else if ($1->sym->funName == "getchar" && $1->sym->decleared == false)
+                                                    {
+                                                        $1->sym->Declear(SymbolType::FunPtr,0,0);
+                                                        Node * nd0 = new Node(NULL,NULL,NodeType::Params,0,0);
+                                                        Node * nd = new Node($1,nd0,NodeType::Fundcl,0,0);
+                                                        $1->sym->DefineParamList(nd);
+                                                    }
+                                                    
+
+                                                $$ = new Node($1,$3,NodeType::Funcall,$3->val,linenum);
                                                 Symbol* tmpsym = new Symbol(SymbolType::Int);
                                                 $1->sym->CallWithParams($3);
                                                 Output::gen("var ");tmpsym->print();Output::gen("\n");

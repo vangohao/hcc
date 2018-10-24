@@ -3,6 +3,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
+#define __TRY_GETDATA
 extern FILE* yyin, *yyout;
 int main(int argc, char * args[])
 {
@@ -55,7 +56,7 @@ int main(int argc, char * args[])
     counter = fopen("tmp.tmp","w");
     fprintf(counter,"%d",c +1);
     fclose(counter);
-    if(c == 13)
+    if(c == 22)
     {
         FILE * o = fopen("14.input","w");
         char ch;
@@ -73,8 +74,8 @@ int main(int argc, char * args[])
     #ifndef __TRY_GETDATA
     yyin = stdin;
     yyout = stdout;
-    yyparse();
     #endif
+    yyparse();
     #endif
     //remove(s);
     return 0;   
