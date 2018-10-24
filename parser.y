@@ -443,8 +443,7 @@ M Expression               {$$ = new Node($1,$5,NodeType::ExprLogic,LOR,linenum)
 | INTEGER                                     {$$ = new Node(NULL,NULL,NodeType::Symbol1,$1,linenum);
                                                 $$->sym = new Symbol(SymbolType::Immediate,$1);
 }
-| Identifier                                  {     if($1->sym->decleared == false) {$1->sym->ReportUndecleared();
-                                                    }
+| Identifier                                  {if($1->sym->decleared == false) {$1->sym->ReportUndecleared();}
     $$ = $1;}
 | '!' Expression                              {$$ = new Node($2,NULL,NodeType::ExprLogic,'!',linenum);
                                                 if($2->type != NodeType::ExprLogic)
@@ -461,7 +460,7 @@ M Expression               {$$ = new Node($1,$5,NodeType::ExprLogic,LOR,linenum)
                                                 $$->sym = Symbol::ProcessSingleOp($2->sym,"-");
 }
 | Identifier '(' Params ')'                   {
-                                                /* 开挂代码 */
+                                                /* 开挂代码 
                                                     if($1->sym->funName == "putchar" && $1->sym->decleared == false)
                                                     {
                                                         $1->sym->Declear(SymbolType::FunPtr,0,1);
@@ -478,7 +477,7 @@ M Expression               {$$ = new Node($1,$5,NodeType::ExprLogic,LOR,linenum)
                                                         Node * nd0 = new Node(NULL,NULL,NodeType::Params,0,0);
                                                         Node * nd = new Node($1,nd0,NodeType::Fundcl,0,0);
                                                         $1->sym->DefineParamList(nd);
-                                                    }
+                                                    }*/
                                                     
 
                                                 $$ = new Node($1,$3,NodeType::Funcall,$3->val,linenum);
