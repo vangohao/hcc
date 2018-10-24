@@ -1,5 +1,5 @@
-hcc : lex.yy.o y.tab.o main.o gotolist.o symbol.o node.o pre.o fault.o
-	g++-5 -o hcc lex.yy.o y.tab.o main.o gotolist.o symbol.o node.o pre.o fault.o
+a.out : lex.yy.o y.tab.o main.o gotolist.o symbol.o node.o pre.o fault.o
+	g++-5 -o eeyore lex.yy.o y.tab.o main.o gotolist.o symbol.o node.o pre.o fault.o
 fault.o : fault.cpp node.h symbol.h gotolist.h fault.h pre.h
 	g++-5 -c fault.cpp --std=c++11
 pre.o : pre.cpp node.h symbol.h gotolist.h fault.h pre.h
@@ -23,4 +23,4 @@ y.tab.c y.tab.h : parser.y node.h symbol.h gotolist.h fault.h pre.h
 clean:
 	rm hcc lex.yy.o y.tab.o lex.yy.c y.tab.c y.tab.h gotolist.o symbol.o node.o main.o pre.o
 tarfile:
-	tar -cv parser.y lexer.l *.h *.cpp -f 1700010686.tar
+	tar -cv parser.y lexer.l *.h *.cpp makefile -f 1700010686.tar

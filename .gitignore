@@ -1,5 +1,6 @@
 .vscode
 a.out
+eeyore
 hcc
 lex.yy.o
 lex.yy.c
@@ -8,6 +9,7 @@ y.output
 y.tab.h
 y.tab.c
 y.tab.o
+*.tar
 *.o
 *.out
 *.gch
