@@ -1,4 +1,4 @@
-a.out : lex.yy.o y.tab.o main.o gotolist.o symbol.o node.o pre.o fault.o
+eeyore : lex.yy.o y.tab.o main.o gotolist.o symbol.o node.o pre.o fault.o
 	g++-5 -o eeyore lex.yy.o y.tab.o main.o gotolist.o symbol.o node.o pre.o fault.o
 fault.o : fault.cpp node.h symbol.h gotolist.h fault.h pre.h
 	g++-5 -c fault.cpp --std=c++11

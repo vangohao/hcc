@@ -289,7 +289,7 @@ Expression:  Expression '+' Expression    {$$ = new Node($1,$3,NodeType::DualAri
                                            $$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"/");
 }
 | Expression '%' Expression               {$$ = new Node($1,$3,NodeType::DualArith,'%',linenum);
-                                           $$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"%%");
+                                           $$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"%");
 }
 | Expression '<' Expression               {$$ = new Node($1,$3,NodeType::DualLogic,'<',linenum);
                                         //    $$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"<");
