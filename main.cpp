@@ -44,6 +44,7 @@ int main(int argc, char * args[])
     #ifndef __LOCAL_HAO
     yyin = stdin;
     yyout = stdout;
+    yyparse();
     #endif
     //remove(s);
     return 0;
