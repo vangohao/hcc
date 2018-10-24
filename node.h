@@ -10,8 +10,8 @@ namespace Output
 }
 enum NodeType //语法树节点所对应语句类型
 {
-DualArith=0,
-DualLogic=1,
+ExprArith=0,
+ExprLogic=1,
 Assign=2,
 SingleArith=3,
 SingleLogic=4,

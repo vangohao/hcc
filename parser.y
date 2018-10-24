@@ -254,10 +254,27 @@ Statement: '{'    {save.push(top);top = new SymbolTable(top);}
                                         
 }
 | Identifier '=' Expression ';'           {$$ =new Node($1,$3,NodeType::Assign,'=',linenum);
-                                            $1->sym->print();
-                                            Output::gen(" = ");
-                                            $3->sym->print();
-                                            Output::gen("\n");
+                                            //处理逻辑表达式赋值
+                                            if($3->type == NodeType::ExprLogic)
+                                            {
+                                                Label l1;
+                                                l1.Init(Output::gen(""));
+                                                $1->sym->print();
+                                                Output::gen(" = 1\n");
+                                                Label l2;
+                                                l2.Init(Output::gen(""));
+                                                $1->sym->print();
+                                                Output::gen(" = 0\n");
+                                                $3->truelist.backpatch(l1);
+                                                $3->falselist.backpatch(l2);
+                                            }
+                                            else
+                                            {
+                                                $1->sym->print();
+                                                Output::gen(" = ");
+                                                $3->sym->print();
+                                                Output::gen("\n");
+                                            }
 }
 | Identifier '[' Expression ']' '='  {
                                         Symbol * four = new Symbol(SymbolType::Immediate,4);
@@ -265,74 +282,108 @@ Statement: '{'    {save.push(top);top = new SymbolTable(top);}
 
 }
  Expression ';'  {$$ =new Node($1,$3,NodeType::ArrayAssign,'=',linenum);
-                                            $1->sym->print();
-                                            Output::gen(" [");
-                                            $3->sym->print();
-                                            Output::gen("] = ");
-                                            $7->sym->print();
-                                            Output::gen("\n");
+                                            if($7->type == NodeType::ExprLogic)
+                                            {
+                                                Label l1;
+                                                l1.Init(Output::gen(""));
+                                                $1->sym->print();
+                                                Output::gen(" [");
+                                                $3->sym->print();
+                                                Output::gen("] = 1\n");
+                                                Label l2;
+                                                l2.Init(Output::gen(""));
+                                                $1->sym->print();
+                                                Output::gen(" [");
+                                                $3->sym->print();
+                                                Output::gen("] = 0\n");
+                                                $7->truelist.backpatch(l1);
+                                                $7->falselist.backpatch(l2);
+                                            }
+                                            else
+                                            {
+                                                $1->sym->print();
+                                                Output::gen(" [");
+                                                $3->sym->print();
+                                                Output::gen("] = ");
+                                                $7->sym->print();
+                                                Output::gen("\n");
+                                            }
 }
 | VarDefn
 | RETURN Expression ';'                 {$$ = new Node($2,NULL,NodeType::Return,0,linenum);
-                                            Output::gen("return ");$2->sym->print();Output::gen("\n");}
+                                            if($2->type == NodeType::ExprLogic)
+                                            {
+                                                Label l1;
+                                                l1.Init(Output::gen(""));
+                                                Output::gen("return 1\n");
+                                                Label l2;
+                                                l2.Init(Output::gen(""));
+                                                Output::gen("return 0\n");
+                                                $2->truelist.backpatch(l1);
+                                                $2->falselist.backpatch(l2);
+                                            }
+                                            else{
+                                                Output::gen("return ");$2->sym->print();Output::gen("\n");
+                                            }
+}
 ;
-Expression:  Expression '+' Expression    {$$ = new Node($1,$3,NodeType::DualArith,'+',linenum);
+Expression:  Expression '+' Expression    {$$ = new Node($1,$3,NodeType::ExprArith,'+',linenum);
                                            $$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"+");
 }
-| Expression '-' Expression               {$$ = new Node($1,$3,NodeType::DualArith,'-',linenum);
+| Expression '-' Expression               {$$ = new Node($1,$3,NodeType::ExprArith,'-',linenum);
                                            $$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"-");
 }
-| Expression '*' Expression               {$$ = new Node($1,$3,NodeType::DualArith,'*',linenum);
+| Expression '*' Expression               {$$ = new Node($1,$3,NodeType::ExprArith,'*',linenum);
                                            $$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"*");
 }
-| Expression '/' Expression               {$$ = new Node($1,$3,NodeType::DualArith,'/',linenum);
+| Expression '/' Expression               {$$ = new Node($1,$3,NodeType::ExprArith,'/',linenum);
                                            $$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"/");
 }
-| Expression '%' Expression               {$$ = new Node($1,$3,NodeType::DualArith,'%',linenum);
+| Expression '%' Expression               {$$ = new Node($1,$3,NodeType::ExprArith,'%',linenum);
                                            $$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"%");
 }
-| Expression '<' Expression               {$$ = new Node($1,$3,NodeType::DualLogic,'<',linenum);
+| Expression '<' Expression               {$$ = new Node($1,$3,NodeType::ExprLogic,'<',linenum);
                                         //    $$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"<");
                                             Output::gen("if ");$1->sym->print();Output::gen(" < ");
                                             $3->sym->print();
                                             $$->truelist = Gotolist(Output::gen(" goto "));
                                             $$->falselist = Gotolist(Output::gen("goto "));
 }
-| Expression '>' Expression               {$$ = new Node($1,$3,NodeType::DualLogic,'>',linenum);
+| Expression '>' Expression               {$$ = new Node($1,$3,NodeType::ExprLogic,'>',linenum);
                                            //$$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,">");
                                            Output::gen("if ");$1->sym->print();Output::gen(" > ");
                                             $3->sym->print();
                                             $$->truelist = Gotolist(Output::gen(" goto "));
                                             $$->falselist = Gotolist(Output::gen("goto "));
 }
-| Expression EQUAL Expression             {$$ = new Node($1,$3,NodeType::DualLogic,EQUAL,linenum);
+| Expression EQUAL Expression             {$$ = new Node($1,$3,NodeType::ExprLogic,EQUAL,linenum);
                                            //$$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"==");
                                            Output::gen("if ");$1->sym->print();Output::gen(" == ");
                                             $3->sym->print();
                                             $$->truelist = Gotolist(Output::gen(" goto "));
                                             $$->falselist = Gotolist(Output::gen("goto "));
 }
-| Expression NOTEQUAL Expression          {$$ = new Node($1,$3,NodeType::DualLogic,NOTEQUAL,linenum);
+| Expression NOTEQUAL Expression          {$$ = new Node($1,$3,NodeType::ExprLogic,NOTEQUAL,linenum);
                                            //$$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"!=");
                                            Output::gen("if ");$1->sym->print();Output::gen(" != ");
                                             $3->sym->print();
                                             $$->truelist = Gotolist(Output::gen(" goto "));
                                             $$->falselist = Gotolist(Output::gen("goto "));
 }
-| Expression LAND M Expression               {$$ = new Node($1,$3,NodeType::DualLogic,LAND,linenum);
+| Expression LAND M Expression               {$$ = new Node($1,$3,NodeType::ExprLogic,LAND,linenum);
                                            //$$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"&&");
                                            $1->truelist.backpatch($3->instr);
                                            $$->truelist = $4->truelist;
                                            $$->falselist = $1->falselist.merge($4->falselist);
 }
-| Expression LOR M Expression               {$$ = new Node($1,$3,NodeType::DualLogic,LOR,linenum);
+| Expression LOR M Expression               {$$ = new Node($1,$3,NodeType::ExprLogic,LOR,linenum);
                                            //$$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"||");
                                            $1->falselist.backpatch($3->instr);
                                            $$->falselist = $4->falselist;
                                            $$->truelist = $1->truelist.merge($4->truelist);
                                             
 }
-| Expression '[' Expression ']'               {$$ = new Node($1,$3,NodeType::DualArith,'[',linenum);
+| Expression '[' Expression ']'               {$$ = new Node($1,$3,NodeType::ExprArith,'[',linenum);
                                                 Symbol * four = new Symbol(SymbolType::Immediate,4);
                                                 Symbol * tmpans = Symbol::ProcessDualOp(four,$3->sym,"*");
                                                 Symbol* tmpsym = new Symbol(SymbolType::Int);
@@ -346,12 +397,12 @@ Expression:  Expression '+' Expression    {$$ = new Node($1,$3,NodeType::DualAri
 }
 | Identifier                                  {if($1->sym->decleared == false) {$1->sym->ReportUndecleared();}
     $$ = $1;}
-| '!' Expression                              {$$ = new Node($2,NULL,NodeType::SingleLogic,'!',linenum);
+| '!' Expression                              {$$ = new Node($2,NULL,NodeType::ExprLogic,'!',linenum);
                                                 // $$->sym = Symbol::ProcessSingleOp($2->sym,"!");
                                                 $$->falselist = $2->truelist;
                                                 $$->truelist = $2->falselist;
 } 
-| '-' Expression %prec NEGA                   {$$ = new Node($2,NULL,NodeType::SingleArith,'-',linenum);
+| '-' Expression %prec NEGA                   {$$ = new Node($2,NULL,NodeType::ExprArith,'-',linenum);
                                                 $$->sym = Symbol::ProcessSingleOp($2->sym,"-");
 }
 | Identifier '(' Params ')'                   {$$ = new Node($1,$3,NodeType::Funcall,$3->val,linenum);
