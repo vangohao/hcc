@@ -60,7 +60,7 @@
 %token EQUAL NOTEQUAL LAND LOR T_INT MAIN IF ELSE WHILE RETURN
 %token<number> INTEGER
 %token<name> IDENTIFIER
-%type<node> Goal BeforeMainStatement VarDefn VarDecls VarDecl FuncDefn FuncCreateIdTable
+%type<node> Goal BeforeMainStatement VarDefn VarDecls VarDecl FuncDefn FuncCreateIdTable Ifhead
 %type<node> InsideFuncStatements FuncDecl MainFunc Statements Statement Expression Params Identifier
 %type<node> M N
 %type<type> Type
@@ -227,31 +227,48 @@ N: %empty { $$ = new Node(NULL,NULL,NodeType::Empty,0,linenum);
             $$->nextlist = Gotolist(Output::gen("goto "));
 }
 ;
+Ifhead:  IF '('  Expression ')'    {   if($3->type != NodeType::ExprLogic)
+                                            {
+                                                Output::gen("if ");
+                                                $3->sym->print();
+                                                $3->truelist = Gotolist(Output::gen(" != 0 goto "));
+                                                $3->falselist = Gotolist(Output::gen("goto "));
+                                            }
+                                            $$ = $3;
+}
+;
 Statement: '{'    {save.push(top);top = new SymbolTable(top);}
             Statements '}'        { delete top;  top = save.top(); save.pop();
                                      $$ = $3;
 }      
 | ';'           {$$ = new Node(NULL,NULL,NodeType::Stmts,0);}
-| IF '('  Expression ')' M Statement {   $3->truelist.backpatch($5->instr);
-                                         $$ = new Node($3,$6,NodeType::If,0,linenum);
-                                         $$->nextlist = $3->falselist.merge($6->nextlist);
-                                        
+| Ifhead M Statement {  
+                                        $$ = new Node($1,$3,NodeType::If,0,linenum);
+                                        $1->truelist.backpatch($2->instr);
+                                        $$->nextlist = $1->falselist.merge($3->nextlist);
 }
-| IF '('  Expression ')' M Statement N ELSE M Statement  {
-                                        $$ = new Node($3,$6,NodeType::IfElse,0,linenum);
-                                        $3->truelist.backpatch($5->instr);
-                                        $3->falselist.backpatch($9->instr);
-                                        $$->nextlist = $6->nextlist.merge($10->nextlist);
-                                        $$->nextlist = $$->nextlist.merge($7->nextlist);
+| Ifhead M Statement N ELSE M Statement  {
+                                        $$ = new Node($1,$3,NodeType::IfElse,0,linenum);
+                                        $1->truelist.backpatch($2->instr);
+                                        $1->falselist.backpatch($6->instr);
+                                        $$->nextlist = $3->nextlist.merge($7->nextlist);
+                                        $$->nextlist = $$->nextlist.merge($4->nextlist);
 }
-| WHILE M '(' Expression ')' M Statement           {
-                                        $$ = new Node($4,$7,NodeType::While,0,linenum);
-                                        $7->nextlist.backpatch($2->instr);
-                                        $4->truelist.backpatch($6->instr);
+| WHILE M '(' Expression ')'      {
+                                        if($4->type != NodeType::ExprLogic)
+                                        {
+                                            Output::gen("if ");
+                                            $4->sym->print();
+                                            $4->truelist = Gotolist(Output::gen(" != 0 goto "));
+                                            $4->falselist = Gotolist(Output::gen("goto "));
+                                        }
+}
+ M Statement           {
+                                        $$ = new Node($4,$8,NodeType::While,0,linenum);
+                                        $8->nextlist.backpatch($2->instr);
+                                        $4->truelist.backpatch($7->instr);
                                         $$->nextlist = $4->falselist;
                                         Gotolist(Output::gen("goto ")).backpatch($2->instr);
-                                        // Output::gen("goto "+$2->instr.print());
-                                        
 }
 | Identifier '=' Expression ';'           {$$ =new Node($1,$3,NodeType::Assign,'=',linenum);
                                             //处理逻辑表达式赋值
