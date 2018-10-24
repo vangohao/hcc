@@ -6,6 +6,7 @@
 extern FILE* yyin, *yyout;
 int main(int argc, char * args[])
 {
+    #ifdef __LOCAL_HAO
     FILE* input,* preoutput,* output;
     char * s;
     if(argc <= 1)
@@ -39,6 +40,11 @@ int main(int argc, char * args[])
     yyparse();
     fclose(yyin);
     fclose(yyout);
+    #endif
+    #ifndef __LOCAL_HAO
+    yyin = stdin;
+    yyout = stdout;
+    #endif
     //remove(s);
     return 0;
 }
