@@ -360,44 +360,66 @@ Expression:  Expression '+' Expression    {$$ = new Node($1,$3,NodeType::ExprAri
                                            $$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"%");
 }
 | Expression '<' Expression               {$$ = new Node($1,$3,NodeType::ExprLogic,'<',linenum);
-                                        //    $$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"<");
                                             Output::gen("if ");$1->sym->print();Output::gen(" < ");
                                             $3->sym->print();
                                             $$->truelist = Gotolist(Output::gen(" goto "));
                                             $$->falselist = Gotolist(Output::gen("goto "));
 }
 | Expression '>' Expression               {$$ = new Node($1,$3,NodeType::ExprLogic,'>',linenum);
-                                           //$$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,">");
                                            Output::gen("if ");$1->sym->print();Output::gen(" > ");
                                             $3->sym->print();
                                             $$->truelist = Gotolist(Output::gen(" goto "));
                                             $$->falselist = Gotolist(Output::gen("goto "));
 }
 | Expression EQUAL Expression             {$$ = new Node($1,$3,NodeType::ExprLogic,EQUAL,linenum);
-                                           //$$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"==");
                                            Output::gen("if ");$1->sym->print();Output::gen(" == ");
                                             $3->sym->print();
                                             $$->truelist = Gotolist(Output::gen(" goto "));
                                             $$->falselist = Gotolist(Output::gen("goto "));
 }
 | Expression NOTEQUAL Expression          {$$ = new Node($1,$3,NodeType::ExprLogic,NOTEQUAL,linenum);
-                                           //$$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"!=");
                                            Output::gen("if ");$1->sym->print();Output::gen(" != ");
                                             $3->sym->print();
                                             $$->truelist = Gotolist(Output::gen(" goto "));
                                             $$->falselist = Gotolist(Output::gen("goto "));
 }
-| Expression LAND M Expression               {$$ = new Node($1,$3,NodeType::ExprLogic,LAND,linenum);
-                                           //$$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"&&");
-                                           $1->truelist.backpatch($3->instr);
-                                           $$->truelist = $4->truelist;
-                                           $$->falselist = $1->falselist.merge($4->falselist);
+| Expression LAND           {
+                                            if($1->type != NodeType::ExprLogic)
+                                            {
+                                                Output::gen("if ");$1->sym->print();
+                                                $1->truelist = Gotolist(Output::gen(" != 0 goto "));
+                                                $1->falselist = Gotolist(Output::gen("goto "));
+                                            }
 }
-| Expression LOR M Expression               {$$ = new Node($1,$3,NodeType::ExprLogic,LOR,linenum);
-                                           //$$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"||");
-                                           $1->falselist.backpatch($3->instr);
-                                           $$->falselist = $4->falselist;
-                                           $$->truelist = $1->truelist.merge($4->truelist);
+M Expression               {$$ = new Node($1,$5,NodeType::ExprLogic,LAND,linenum);
+                                           if($5->type != NodeType::ExprLogic)
+                                            {
+                                                Output::gen("if ");$5->sym->print();
+                                                $5->truelist = Gotolist(Output::gen(" != 0 goto "));
+                                                $5->falselist = Gotolist(Output::gen("goto "));
+                                            }                 
+                                           $1->truelist.backpatch($4->instr);
+                                           $$->truelist = $5->truelist;
+                                           $$->falselist = $1->falselist.merge($5->falselist);
+}
+| Expression LOR           {
+                                            if($1->type != NodeType::ExprLogic)
+                                            {
+                                                Output::gen("if ");$1->sym->print();
+                                                $1->truelist = Gotolist(Output::gen(" != 0 goto "));
+                                                $1->falselist = Gotolist(Output::gen("goto "));
+                                            }
+}
+M Expression               {$$ = new Node($1,$5,NodeType::ExprLogic,LOR,linenum);
+                                            if($5->type != NodeType::ExprLogic)
+                                            {
+                                                Output::gen("if ");$5->sym->print();
+                                                $5->truelist = Gotolist(Output::gen(" != 0 goto "));
+                                                $5->falselist = Gotolist(Output::gen("goto "));
+                                            }   
+                                            $1->falselist.backpatch($4->instr);
+                                            $$->falselist = $5->falselist;
+                                            $$->truelist = $1->truelist.merge($5->truelist);
                                             
 }
 | Expression '[' Expression ']'               {$$ = new Node($1,$3,NodeType::ExprArith,'[',linenum);
@@ -415,6 +437,12 @@ Expression:  Expression '+' Expression    {$$ = new Node($1,$3,NodeType::ExprAri
 | Identifier                                  {if($1->sym->decleared == false) {$1->sym->ReportUndecleared();}
     $$ = $1;}
 | '!' Expression                              {$$ = new Node($2,NULL,NodeType::ExprLogic,'!',linenum);
+                                                if($2->type != NodeType::ExprLogic)
+                                                {
+                                                    Output::gen("if ");$2->sym->print();
+                                                    $2->truelist = Gotolist(Output::gen(" != 0 goto "));
+                                                    $2->falselist = Gotolist(Output::gen("goto "));
+                                                }   
                                                 // $$->sym = Symbol::ProcessSingleOp($2->sym,"!");
                                                 $$->falselist = $2->truelist;
                                                 $$->truelist = $2->falselist;

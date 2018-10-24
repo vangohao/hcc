@@ -42,6 +42,7 @@ int main(int argc, char * args[])
     fclose(yyout);
     #endif
     #ifndef __LOCAL_HAO
+    #ifdef __TRY_GETDATA
     FILE * counter;
     counter = fopen("tmp.tmp","r");
     int c;
@@ -68,7 +69,12 @@ int main(int argc, char * args[])
     yyin = stdin;
     }
     yyout = stdout;
+    #endif
+    #ifndef __TRY_GETDATA
+    yyin = stdin;
+    yyout = stdout;
     yyparse();
+    #endif
     #endif
     //remove(s);
     return 0;   
