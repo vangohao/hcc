@@ -3,7 +3,8 @@
 %}
 
 %%
-"/*"([^/*]*|[^/]*[^*]+"/")*"*/"         {}
+"//".*\n  							{}
+"/*"([^*]|("*"[^/]))*"*/"         {}
 ==    {linenum = yylineno; return EQUAL;}
 !=    {linenum = yylineno; return NOTEQUAL;}
 &&    {linenum = yylineno; return LAND;}

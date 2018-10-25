@@ -153,7 +153,12 @@ Symbol::Symbol()
     }
     void Symbol::CallWithParams(Node * n1)
     {
-        if(!checkParams(n1))
+		
+		if(decleared == false)
+		{
+		//	yyerror((std::string)"Function " + funName + " is not decleared");
+		}
+		else if(decleared == true && !checkParams(n1))
         {
             yyerror((std::string)"Call of function " + funName + " has wrong params");
         }

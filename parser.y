@@ -478,7 +478,6 @@ M Expression               {$$ = new Node($1,$5,NodeType::ExprLogic,LOR,linenum)
                                                         Node * nd = new Node($1,nd0,NodeType::Fundcl,0,0);
                                                         $1->sym->DefineParamList(nd);
                                                     }*/
-                                                    
 
                                                 $$ = new Node($1,$3,NodeType::Funcall,$3->val,linenum);
                                                 Symbol* tmpsym = new Symbol(SymbolType::Int);
