@@ -460,25 +460,6 @@ M Expression               {$$ = new Node($1,$5,NodeType::ExprLogic,LOR,linenum)
                                                 $$->sym = Symbol::ProcessSingleOp($2->sym,"-");
 }
 | Identifier '(' Params ')'                   {
-                                                /* 开挂代码 
-                                                    if($1->sym->funName == "putchar" && $1->sym->decleared == false)
-                                                    {
-                                                        $1->sym->Declear(SymbolType::FunPtr,0,1);
-                                                        Symbol* sm = new Symbol(SymbolType::Int);
-                                                        Node * nd1 = new Node(NULL,NULL,NodeType::Symbol1,0,0);
-                                                        nd1->sym = sm;
-                                                        Node * nd0 = new Node(NULL,nd1,NodeType::Params,1,0);
-                                                        Node * nd = new Node($1,nd0,NodeType::Fundcl,1,0);
-                                                        $1->sym->DefineParamList(nd);
-                                                    }
-                                                    else if ($1->sym->funName == "getchar" && $1->sym->decleared == false)
-                                                    {
-                                                        $1->sym->Declear(SymbolType::FunPtr,0,0);
-                                                        Node * nd0 = new Node(NULL,NULL,NodeType::Params,0,0);
-                                                        Node * nd = new Node($1,nd0,NodeType::Fundcl,0,0);
-                                                        $1->sym->DefineParamList(nd);
-                                                    }*/
-
                                                 $$ = new Node($1,$3,NodeType::Funcall,$3->val,linenum);
                                                 Symbol* tmpsym = new Symbol(SymbolType::Int);
                                                 $1->sym->CallWithParams($3);
