@@ -5,14 +5,15 @@
 #include<map>
 #include<string>
 #include<vector>
-struct Node;
+#include"node.h"
 enum SymbolType //符号类型
 {
     Int=0,
     IntPtr=1,
     FunPtr=2,
     Immediate=3,
-    Error=4,
+    Logic=4,
+    Error=5,
 };
 struct Symbol //符号
 {
@@ -26,7 +27,7 @@ struct Symbol //符号
     Node* paramlist; //若为函数,指向它的参数表
     bool decleared;
     bool defined;
-    int paramCount;
+    int paramCount; //p0,p1这样的变量计数
     int immediate;
     std::string funName; //函数名称
     Symbol();
@@ -34,8 +35,8 @@ struct Symbol //符号
     Symbol(SymbolType _type); //创建临时符号
     Symbol(SymbolType _type, int _immediate); //创建直接数符号
     void print();
-    static Symbol* ProcessDualOp(Symbol* s1,Symbol* s2,const char * x);
-    static Symbol* ProcessSingleOp(Symbol* s1,const char * x);
+    static Symbol* ProcessDualOp(Node* n1,Node* n2,const char * x);
+    static Symbol* ProcessSingleOp(Node* n1,const char * x);
     void Declear(SymbolType _type,int _paramCount=-1, int _val=0);
     void Define(SymbolType _type,int _paramCount, int _val);
     void DefineParamList(Node * pl);

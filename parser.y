@@ -26,6 +26,7 @@
 
 %code{
     extern FILE* yyout;
+    extern int yylineno;
     SymbolTable * top = new SymbolTable(NULL); 
     std::stack<SymbolTable*> save;
     namespace Output
@@ -80,9 +81,9 @@ Goal: BeforeMain MainFunc           {Output::print();}
 BeforeMain: BeforeMain BeforeMainStatement
 |   %empty
 ;
-BeforeMainStatement: VarDefn | FuncDefn | FuncDecl | ';'
+BeforeMainStatement: VarDefn | FuncDefn | FuncDecl | ';' {$$=NULL;}
 ;
-VarDefn: Type Identifier ';'    {   $$ = new Node($2,NULL,NodeType::Vardfn,0,linenum);
+VarDefn: Type Identifier ';'    {   $$ = new Node($2,NULL,NodeType::Vardfn,0,yylineno);
                                     if($2->val == 1)
                                     {
                                         Symbol * tmp = $2->sym;
@@ -97,7 +98,7 @@ VarDefn: Type Identifier ';'    {   $$ = new Node($2,NULL,NodeType::Vardfn,0,lin
                                     Output::gen(ss.str());
                                 }
 | Type Identifier'['INTEGER']' ';'  {
-                                    $$ = new Node($2,NULL,NodeType::Vardfn,4 * $4,linenum);
+                                    $$ = new Node($2,NULL,NodeType::Vardfn,4 * $4,yylineno);
                                     if($2->val == 1)
                                     {
                                         Symbol * tmp = $2->sym;
@@ -112,19 +113,19 @@ VarDefn: Type Identifier ';'    {   $$ = new Node($2,NULL,NodeType::Vardfn,0,lin
                                     Output::gen(ss.str());
 }
 ;
-VarDecls:VarDecls ',' VarDecl   {   $$ = new Node($1,$3,NodeType::Params,$1->val + 1,linenum);
+VarDecls:VarDecls ',' VarDecl   {   $$ = new Node($1,$3,NodeType::Params,$1->val + 1,yylineno);
                                     $3->sym->paramCount = $1->val;
                                     $3->sym->Define();
 }
 | VarDecl                        {
-                                    $$ = new Node(NULL,$1,NodeType::Params,1,linenum);
+                                    $$ = new Node(NULL,$1,NodeType::Params,1,yylineno);
                                     $1->sym->paramCount = 0;
                                     $1->sym->Define();
 } 
-| %empty                      {$$ = new Node(NULL,NULL,NodeType::Params,0,linenum);
+| %empty                      {$$ = new Node(NULL,NULL,NodeType::Params,0,yylineno);
 }
 ;
-VarDecl: Type Identifier        {   //$$ = new Node($2,NULL,NodeType::VarDcl,0,linenum);
+VarDecl: Type Identifier        {   //$$ = new Node($2,NULL,NodeType::VarDcl,0,yylineno);
                                     if($2->val == 1)
                                     {
                                         Symbol * tmp = $2->sym;
@@ -137,7 +138,7 @@ VarDecl: Type Identifier        {   //$$ = new Node($2,NULL,NodeType::VarDcl,0,l
                                     //$$->sym = $2->sym;
                                     $$=$2;
 }
-| Type Identifier '[' INTEGER ']' {   //$$ = new Node($2,NULL,NodeType::VarDcl,4 * $4,linenum);
+| Type Identifier '[' INTEGER ']' {   //$$ = new Node($2,NULL,NodeType::VarDcl,4 * $4,yylineno);
                                     if($2->val == 1)
                                     {
                                         Symbol * tmp = $2->sym;
@@ -149,7 +150,7 @@ VarDecl: Type Identifier        {   //$$ = new Node($2,NULL,NodeType::VarDcl,0,l
                                     //$$->sym = $2->sym;
                                     $$=$2;
 }
-| Type Identifier '[' ']'          {   //$$ = new Node($2,NULL,NodeType::VarDcl,0,linenum);
+| Type Identifier '[' ']'          {   //$$ = new Node($2,NULL,NodeType::VarDcl,0,yylineno);
                                     if($2->val == 1)
                                     {
                                         Symbol * tmp = $2->sym;
@@ -176,17 +177,17 @@ FuncDefn: FuncCreateIdTable VarDecls ')'    { $1->sym->Define(SymbolType::FunPtr
 '{'    
 InsideFuncStatements M
 '}'    {   delete top;  top = save.top();save.pop();//恢复符号表
-         $$ = new Node($1,$6,NodeType::Fundfn,$2->val,linenum); 
+         $$ = new Node($1,$6,NodeType::Fundfn,$2->val,yylineno); 
          $6->nextlist.backpatch($7->instr);
          Output::gen("end ");$1->sym->print();Output::gen("\n");
 }
 ;
 InsideFuncStatements: InsideFuncStatements M FuncDecl        { 
-                                            $$ = new Node($1,$3,NodeType::Stmts,0,linenum);
+                                            $$ = new Node($1,$3,NodeType::Stmts,0,yylineno);
                                             $1->nextlist.backpatch($2->instr);
 }
 | InsideFuncStatements M Statement                          { 
-                                            $$ = new Node($1,$3,NodeType::Stmts,0,linenum);
+                                            $$ = new Node($1,$3,NodeType::Stmts,0,yylineno);
                                             $1->nextlist.backpatch($2->instr);
                                             $$->nextlist = $3->nextlist;
 }
@@ -194,7 +195,7 @@ InsideFuncStatements: InsideFuncStatements M FuncDecl        {
 | Statement                     {$$ = $1;}
 ;
 FuncDecl: FuncCreateIdTable VarDecls ')' ';'
-        {     $$ = new Node($1,$2,NodeType::Fundcl,$2->val,linenum);
+        {     $$ = new Node($1,$2,NodeType::Fundcl,$2->val,yylineno);
             $1->sym->Declear(SymbolType::FunPtr,0,$2->val);
             $1->sym->DefineParamList($2);  //传入参数node表
             delete top;  top = save.top(); save.pop();}
@@ -212,18 +213,18 @@ MainFunc: T_INT MAIN '(' ')'            {   save.push(top);top = new SymbolTable
 Type: T_INT   {$$ = SymbolType::Int;}
 ;
 Statements: Statements M Statement      { 
-                                            $$ = new Node($1,$3,NodeType::Stmts,0,linenum);
+                                            $$ = new Node($1,$3,NodeType::Stmts,0,yylineno);
                                             $1->nextlist.backpatch($2->instr);
                                             $$->nextlist = $3->nextlist;
 }
-//| %empty                             { $$= new Node(NULL,NULL,NodeType::Stmts,0,linenum);}
+//| %empty                             { $$= new Node(NULL,NULL,NodeType::Stmts,0,yylineno);}
 | Statement {$$ = $1;}
 ;
-M: %empty { $$ = new Node(NULL,NULL,NodeType::Empty,0,linenum); 
+M: %empty { $$ = new Node(NULL,NULL,NodeType::Empty,0,yylineno); 
             $$->instr.Init(Output::gen(""));
 }
 ;
-N: %empty { $$ = new Node(NULL,NULL,NodeType::Empty,0,linenum);
+N: %empty { $$ = new Node(NULL,NULL,NodeType::Empty,0,yylineno);
             $$->nextlist = Gotolist(Output::gen("goto "));
 }
 ;
@@ -243,12 +244,12 @@ Statement: '{'    {save.push(top);top = new SymbolTable(top);}
 }      
 | ';'           {$$ = new Node(NULL,NULL,NodeType::Stmts,0);}
 | Ifhead M Statement {  
-                                        $$ = new Node($1,$3,NodeType::If,0,linenum);
+                                        $$ = new Node($1,$3,NodeType::If,0,yylineno);
                                         $1->truelist.backpatch($2->instr);
                                         $$->nextlist = $1->falselist.merge($3->nextlist);
 }
 | Ifhead M Statement N ELSE M Statement  {
-                                        $$ = new Node($1,$3,NodeType::IfElse,0,linenum);
+                                        $$ = new Node($1,$3,NodeType::IfElse,0,yylineno);
                                         $1->truelist.backpatch($2->instr);
                                         $1->falselist.backpatch($6->instr);
                                         $$->nextlist = $3->nextlist.merge($7->nextlist);
@@ -264,13 +265,13 @@ Statement: '{'    {save.push(top);top = new SymbolTable(top);}
                                         }
 }
  M Statement           {
-                                        $$ = new Node($4,$8,NodeType::While,0,linenum);
+                                        $$ = new Node($4,$8,NodeType::While,0,yylineno);
                                         $8->nextlist.backpatch($2->instr);
                                         $4->truelist.backpatch($7->instr);
                                         $$->nextlist = $4->falselist;
                                         Gotolist(Output::gen("goto ")).backpatch($2->instr);
 }
-| Identifier '=' Expression ';'           {$$ =new Node($1,$3,NodeType::Assign,'=',linenum);
+| Identifier '=' Expression ';'           {$$ =new Node($1,$3,NodeType::Assign,'=',yylineno);
                                             //处理逻辑表达式赋值
                                             if($3->type == NodeType::ExprLogic)
                                             {
@@ -294,11 +295,12 @@ Statement: '{'    {save.push(top);top = new SymbolTable(top);}
                                             }
 }
 | Identifier '[' Expression ']' '='  {
-                                        Symbol * four = new Symbol(SymbolType::Immediate,4);
-                                        $3->sym = Symbol::ProcessDualOp(four,$3->sym,"*");
+                                        Node * tmpnode = new Node(NULL,NULL,Symbol1,0,yylineno);
+                                        tmpnode -> sym = new Symbol(SymbolType::Immediate,4);
+                                        $3->sym = Symbol::ProcessDualOp(tmpnode,$3,"*");
 
 }
- Expression ';'  {$$ =new Node($1,$3,NodeType::ArrayAssign,'=',linenum);
+ Expression ';'  {$$ =new Node($1,$3,NodeType::ArrayAssign,'=',yylineno);
                                             if($7->type == NodeType::ExprLogic)
                                             {
                                                 Label l1;
@@ -327,7 +329,7 @@ Statement: '{'    {save.push(top);top = new SymbolTable(top);}
                                             }
 }
 | Identifier '(' Params ')' ';' {
-                                            $$ = new Node($1,$3,NodeType::Funcall,$3->val,linenum);
+                                            $$ = new Node($1,$3,NodeType::Funcall,$3->val,yylineno);
                                             Symbol* tmpsym = new Symbol(SymbolType::Int);
                                             $1->sym->CallWithParams($3);
                                             Output::gen("var ");tmpsym->print();Output::gen("\n");
@@ -336,7 +338,12 @@ Statement: '{'    {save.push(top);top = new SymbolTable(top);}
                                             $$->sym = tmpsym;
 }
 | VarDefn
-| RETURN Expression ';'                 {$$ = new Node($2,NULL,NodeType::Return,0,linenum);
+| RETURN Expression ';'                 {$$ = new Node($2,NULL,NodeType::Return,0,yylineno);
+                                            if($2->sym->type != Int)
+                                            {
+                                                yyerror("Return expression is not an int");
+                                                if(errorstatus) {YYERROR;}
+                                            }
                                             if($2->type == NodeType::ExprLogic)
                                             {
                                                 Label l1;
@@ -352,45 +359,59 @@ Statement: '{'    {save.push(top);top = new SymbolTable(top);}
                                                 Output::gen("return ");$2->sym->print();Output::gen("\n");
                                             }
 }
+| error ';'                                 {
+                                            yyclearin;
+                                            errorstatus = false;
+                                            return 0;
+}
 ;
-Expression:  Expression '+' Expression    {$$ = new Node($1,$3,NodeType::ExprArith,'+',linenum);
-                                           $$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"+");
+Expression:  Expression '+' Expression    {$$ = new Node($1,$3,NodeType::ExprArith,'+',yylineno);
+                                           $$->sym = Symbol::ProcessDualOp($1,$3,"+");
+                                           if(errorstatus) {YYERROR;}
 }
-| Expression '-' Expression               {$$ = new Node($1,$3,NodeType::ExprArith,'-',linenum);
-                                           $$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"-");
+| Expression '-' Expression               {$$ = new Node($1,$3,NodeType::ExprArith,'-',yylineno);
+                                           $$->sym = Symbol::ProcessDualOp($1,$3,"-");
+                                           if(errorstatus) {YYERROR;}
 }
-| Expression '*' Expression               {$$ = new Node($1,$3,NodeType::ExprArith,'*',linenum);
-                                           $$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"*");
+| Expression '*' Expression               {$$ = new Node($1,$3,NodeType::ExprArith,'*',yylineno);
+                                           $$->sym = Symbol::ProcessDualOp($1,$3,"*");
+                                           if(errorstatus) {YYERROR;}
 }
-| Expression '/' Expression               {$$ = new Node($1,$3,NodeType::ExprArith,'/',linenum);
-                                           $$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"/");
+| Expression '/' Expression               {$$ = new Node($1,$3,NodeType::ExprArith,'/',yylineno);
+                                           $$->sym = Symbol::ProcessDualOp($1,$3,"/");
+                                           if(errorstatus) {YYERROR;}
 }
-| Expression '%' Expression               {$$ = new Node($1,$3,NodeType::ExprArith,'%',linenum);
-                                           $$->sym = Symbol::ProcessDualOp($1->sym,$3->sym,"%");
+| Expression '%' Expression               {$$ = new Node($1,$3,NodeType::ExprArith,'%',yylineno);
+                                           $$->sym = Symbol::ProcessDualOp($1,$3,"%");
+                                           if(errorstatus) {YYERROR;}
 }
-| Expression '<' Expression               {$$ = new Node($1,$3,NodeType::ExprLogic,'<',linenum);
+| Expression '<' Expression               {$$ = new Node($1,$3,NodeType::ExprLogic,'<',yylineno);
                                             Output::gen("if ");$1->sym->print();Output::gen(" < ");
                                             $3->sym->print();
                                             $$->truelist = Gotolist(Output::gen(" goto "));
                                             $$->falselist = Gotolist(Output::gen("goto "));
+                                            
 }
-| Expression '>' Expression               {$$ = new Node($1,$3,NodeType::ExprLogic,'>',linenum);
+| Expression '>' Expression               {$$ = new Node($1,$3,NodeType::ExprLogic,'>',yylineno);
                                            Output::gen("if ");$1->sym->print();Output::gen(" > ");
                                             $3->sym->print();
                                             $$->truelist = Gotolist(Output::gen(" goto "));
                                             $$->falselist = Gotolist(Output::gen("goto "));
+                                            
 }
-| Expression EQUAL Expression             {$$ = new Node($1,$3,NodeType::ExprLogic,EQUAL,linenum);
+| Expression EQUAL Expression             {$$ = new Node($1,$3,NodeType::ExprLogic,EQUAL,yylineno);
                                            Output::gen("if ");$1->sym->print();Output::gen(" == ");
                                             $3->sym->print();
                                             $$->truelist = Gotolist(Output::gen(" goto "));
                                             $$->falselist = Gotolist(Output::gen("goto "));
+                                            
 }
-| Expression NOTEQUAL Expression          {$$ = new Node($1,$3,NodeType::ExprLogic,NOTEQUAL,linenum);
+| Expression NOTEQUAL Expression          {$$ = new Node($1,$3,NodeType::ExprLogic,NOTEQUAL,yylineno);
                                            Output::gen("if ");$1->sym->print();Output::gen(" != ");
                                             $3->sym->print();
                                             $$->truelist = Gotolist(Output::gen(" goto "));
                                             $$->falselist = Gotolist(Output::gen("goto "));
+                                            
 }
 | Expression LAND           {
                                             if($1->type != NodeType::ExprLogic)
@@ -400,7 +421,7 @@ Expression:  Expression '+' Expression    {$$ = new Node($1,$3,NodeType::ExprAri
                                                 $1->falselist = Gotolist(Output::gen("goto "));
                                             }
 }
-M Expression               {$$ = new Node($1,$5,NodeType::ExprLogic,LAND,linenum);
+M Expression               {$$ = new Node($1,$5,NodeType::ExprLogic,LAND,yylineno);
                                            if($5->type != NodeType::ExprLogic)
                                             {
                                                 Output::gen("if ");$5->sym->print();
@@ -410,6 +431,7 @@ M Expression               {$$ = new Node($1,$5,NodeType::ExprLogic,LAND,linenum
                                            $1->truelist.backpatch($4->instr);
                                            $$->truelist = $5->truelist;
                                            $$->falselist = $1->falselist.merge($5->falselist);
+                                            
 }
 | Expression LOR           {
                                             if($1->type != NodeType::ExprLogic)
@@ -419,7 +441,7 @@ M Expression               {$$ = new Node($1,$5,NodeType::ExprLogic,LAND,linenum
                                                 $1->falselist = Gotolist(Output::gen("goto "));
                                             }
 }
-M Expression               {$$ = new Node($1,$5,NodeType::ExprLogic,LOR,linenum);
+M Expression               {$$ = new Node($1,$5,NodeType::ExprLogic,LOR,yylineno);
                                             if($5->type != NodeType::ExprLogic)
                                             {
                                                 Output::gen("if ");$5->sym->print();
@@ -430,57 +452,74 @@ M Expression               {$$ = new Node($1,$5,NodeType::ExprLogic,LOR,linenum)
                                             $$->falselist = $5->falselist;
                                             $$->truelist = $1->truelist.merge($5->truelist);
                                             
+                                            
 }
-| Expression '[' Expression ']'               {$$ = new Node($1,$3,NodeType::ExprArith,'[',linenum);
-                                                Symbol * four = new Symbol(SymbolType::Immediate,4);
-                                                Symbol * tmpans = Symbol::ProcessDualOp(four,$3->sym,"*");
-                                                Symbol* tmpsym = new Symbol(SymbolType::Int);
-                                                Output::gen("var ");tmpsym->print();Output::gen("\n");
-                                                tmpsym->print();Output::gen(" = ");$1->sym->print();
-                                                Output::gen(" [");tmpans->print();Output::gen("]\n");
-                                                $$->sym = tmpsym;
+| Expression '[' Expression ']'               {$$ = new Node($1,$3,NodeType::ExprArith,'[',yylineno);
+                                                if($1->sym->type != IntPtr)
+                                                {
+                                                    yyerror("Expression before \'[\' is not an int pointer");
+                                                    if(errorstatus) {YYERROR;}
+                                                }
+                                                else
+                                                {
+                                                    Node * tmpnode = new Node(NULL,NULL,Symbol1,0,yylineno);
+                                                    tmpnode -> sym = new Symbol(SymbolType::Immediate,4);
+                                                    Symbol * tmpans = Symbol::ProcessDualOp(tmpnode,$3,"*");
+                                                    Symbol* tmpsym = new Symbol(SymbolType::Int);
+                                                    Output::gen("var ");tmpsym->print();Output::gen("\n");
+                                                    tmpsym->print();Output::gen(" = ");$1->sym->print();
+                                                    Output::gen(" [");tmpans->print();Output::gen("]\n");
+                                                    $$->sym = tmpsym;
+                                                }
 }
-| INTEGER                                     {$$ = new Node(NULL,NULL,NodeType::Symbol1,$1,linenum);
+| INTEGER                                     {$$ = new Node(NULL,NULL,NodeType::Symbol1,$1,yylineno);
                                                 $$->sym = new Symbol(SymbolType::Immediate,$1);
 }
 | Identifier                                  {if($1->sym->decleared == false) {$1->sym->ReportUndecleared();}
-    $$ = $1;}
-| '!' Expression                              {$$ = new Node($2,NULL,NodeType::ExprLogic,'!',linenum);
+                                                $$ = $1;
+                                                if(errorstatus) {YYERROR;}
+    }
+| '!' Expression                              {$$ = new Node($2,NULL,NodeType::ExprLogic,'!',yylineno);
                                                 if($2->type != NodeType::ExprLogic)
                                                 {
                                                     Output::gen("if ");$2->sym->print();
                                                     $2->truelist = Gotolist(Output::gen(" != 0 goto "));
                                                     $2->falselist = Gotolist(Output::gen("goto "));
                                                 }   
-                                                // $$->sym = Symbol::ProcessSingleOp($2->sym,"!");
                                                 $$->falselist = $2->truelist;
                                                 $$->truelist = $2->falselist;
+                                                
 } 
-| '-' Expression %prec NEGA                   {$$ = new Node($2,NULL,NodeType::ExprArith,'-',linenum);
-                                                $$->sym = Symbol::ProcessSingleOp($2->sym,"-");
+| '-' Expression %prec NEGA                   {$$ = new Node($2,NULL,NodeType::ExprArith,'-',yylineno);
+                                                if($2->sym->type != Int)
+                                                {
+                                                    yyerror("Expression after \'-\' is not an int");
+                                                    if(errorstatus) {YYERROR;}
+                                                }else
+                                                $$->sym = Symbol::ProcessSingleOp($2,"-");
 }
 | Identifier '(' Params ')'                   {
-                                                $$ = new Node($1,$3,NodeType::Funcall,$3->val,linenum);
+                                                $$ = new Node($1,$3,NodeType::Funcall,$3->val,yylineno);
                                                 Symbol* tmpsym = new Symbol(SymbolType::Int);
                                                 $1->sym->CallWithParams($3);
                                                 Output::gen("var ");tmpsym->print();Output::gen("\n");
                                                 tmpsym->print();Output::gen(" = ");
                                                 Output::gen("call ");$1->sym->print();Output::gen("\n");
                                                 $$->sym = tmpsym;
-                                                
+                                                if(errorstatus) {YYERROR;}
 }
 | '(' Expression ')'                          {$$ = $2;
 }
 ;
-Params: Params ',' Expression       {   $$ = new Node($1,$3,NodeType::Params,$1->val + 1,linenum);
+Params: Params ',' Expression       {   $$ = new Node($1,$3,NodeType::Params,$1->val + 1,yylineno);
                                         Output::gen("param ");$3->sym->print();Output::gen("\n");
 }
-|   Expression                         { $$=new Node(NULL,$1,NodeType::Params,1,linenum);
+|   Expression                         { $$=new Node(NULL,$1,NodeType::Params,1,yylineno);
                                         Output::gen("param ");$1->sym->print();Output::gen("\n");
 }
 | %empty        {$$ = new Node(NULL,NULL,NodeType::Params,0);}
 ;
-Identifier: IDENTIFIER             {    $$ = new Node(NULL,NULL,NodeType::Symbol1,0,linenum);
+Identifier: IDENTIFIER             {    $$ = new Node(NULL,NULL,NodeType::Symbol1,0,yylineno);
                                         Symbol * sym = top->get($1);
                                         Symbol * here = top->gethere($1);
                                         if(sym == NULL)
@@ -499,15 +538,3 @@ Identifier: IDENTIFIER             {    $$ = new Node(NULL,NULL,NodeType::Symbol
 
 %%
 
-int yyerror(std::string msg)            //输出错误信息的yyerror()函数
-{
-std::cerr<<"Error encountered: "<<msg<<" at line "<<linenum<<"."<<std::endl;
-Output::print();
-return 0;
-}
-int yyerror(const char * msg)            //输出错误信息的yyerror()函数
-{
-std::cerr<<"Error encountered: "<<msg<<" at line "<<linenum<<"."<<std::endl;
-Output::print();
-return 0;
-}
