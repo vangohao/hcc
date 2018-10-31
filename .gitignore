@@ -6,6 +6,7 @@ hcc
 lex.yy.o
 lex.yy.c
 main.o
+*.old
 y.output
 y.tab.h
 y.tab.c
