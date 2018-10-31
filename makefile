@@ -21,6 +21,6 @@ lex.yy.c : lexer.l
 y.tab.c y.tab.h : parser.y node.h symbol.h gotolist.h fault.h pre.h
 	bison -y -d parser.y
 clean:
-	rm hcc lex.yy.o y.tab.o lex.yy.c y.tab.c y.tab.h gotolist.o symbol.o node.o main.o pre.o
+	rm eeyore lex.yy.o y.tab.o lex.yy.c y.tab.c y.tab.h gotolist.o symbol.o node.o main.o pre.o fault.o
 tarfile:
 	tar -cv parser.y lexer.l *.h *.cpp makefile -f 1700010686.tar
