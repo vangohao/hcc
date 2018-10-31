@@ -58,7 +58,7 @@
 
 
 
-%token EQUAL NOTEQUAL LAND LOR T_INT MAIN IF ELSE WHILE RETURN
+%token EQUAL NOTEQUAL LAND LOR T_INT MAIN IF ELSE WHILE RETURN IllegalCharacter
 %token<number> INTEGER
 %token<name> IDENTIFIER
 %type<node> Goal BeforeMainStatement VarDefn VarDecls VarDecl FuncDefn FuncCreateIdTable Ifhead
@@ -125,20 +125,18 @@ VarDecls:VarDecls ',' VarDecl   {   $$ = new Node($1,$3,NodeType::Params,$1->val
 | %empty                      {$$ = new Node(NULL,NULL,NodeType::Params,0,yylineno);
 }
 ;
-VarDecl: Type Identifier        {   //$$ = new Node($2,NULL,NodeType::VarDcl,0,yylineno);
+VarDecl: Type Identifier        {  
                                     if($2->val == 1)
                                     {
                                         Symbol * tmp = $2->sym;
                                         $2->sym = new Symbol($2);
                                         $2->sym->funName = tmp->funName;
-                                        // std::cerr<<tmp->funName +2<<std::endl;
                                         top->put(tmp->funName.c_str(),$2->sym);
                                     }
                                     $2->sym->Declear($1,0);
-                                    //$$->sym = $2->sym;
                                     $$=$2;
 }
-| Type Identifier '[' INTEGER ']' {   //$$ = new Node($2,NULL,NodeType::VarDcl,4 * $4,yylineno);
+| Type Identifier '[' INTEGER ']' {  
                                     if($2->val == 1)
                                     {
                                         Symbol * tmp = $2->sym;
@@ -147,10 +145,9 @@ VarDecl: Type Identifier        {   //$$ = new Node($2,NULL,NodeType::VarDcl,0,y
                                         top->put(tmp->funName.c_str(),$2->sym);
                                     }
                                     $2->sym->Declear(SymbolType::IntPtr,0,4 * $4);
-                                    //$$->sym = $2->sym;
                                     $$=$2;
 }
-| Type Identifier '[' ']'          {   //$$ = new Node($2,NULL,NodeType::VarDcl,0,yylineno);
+| Type Identifier '[' ']'          {   
                                     if($2->val == 1)
                                     {
                                         Symbol * tmp = $2->sym;
@@ -159,7 +156,6 @@ VarDecl: Type Identifier        {   //$$ = new Node($2,NULL,NodeType::VarDcl,0,y
                                         top->put(tmp->funName.c_str(),$2->sym);
                                     }
                                     $2->sym->Declear(SymbolType::IntPtr,0,0);
-                                    // $$->sym = $2->sym;
                                     $$ = $2;
 }
 ;
@@ -169,7 +165,7 @@ FuncCreateIdTable: Type Identifier '(' {save.push(top);top = new SymbolTable(top
 ;
 FuncDefn: FuncCreateIdTable VarDecls ')'    { $1->sym->Define(SymbolType::FunPtr,0,$2->val);
                                             $1->sym->DefineParamList($2);  //传入参数node表
-                                            $1->sym->print();//printf(" [%d]\n",$2->val);
+                                            $1->sym->print();
                                             std::stringstream ss;
                                             ss<<" ["<< $2->val <<"]\n";
                                             Output::gen(ss.str());
@@ -339,11 +335,7 @@ Statement: '{'    {save.push(top);top = new SymbolTable(top);}
 }
 | VarDefn
 | RETURN Expression ';'                 {$$ = new Node($2,NULL,NodeType::Return,0,yylineno);
-                                            if($2->sym->type != Int)
-                                            {
-                                                yyerror("Return expression is not an int");
-                                                if(errorstatus) {YYERROR;}
-                                            }
+                                            
                                             if($2->type == NodeType::ExprLogic)
                                             {
                                                 Label l1;
@@ -354,6 +346,11 @@ Statement: '{'    {save.push(top);top = new SymbolTable(top);}
                                                 Output::gen("return 0\n");
                                                 $2->truelist.backpatch(l1);
                                                 $2->falselist.backpatch(l2);
+                                            }
+                                            else if($2->sym->type != Int && $2->sym->type !=Immediate)
+                                            {
+                                                yyerror("Return expression is not an int");
+                                                if(errorstatus) {YYERROR;}
                                             }
                                             else{
                                                 Output::gen("return ");$2->sym->print();Output::gen("\n");
@@ -491,11 +488,6 @@ M Expression               {$$ = new Node($1,$5,NodeType::ExprLogic,LOR,yylineno
                                                 
 } 
 | '-' Expression %prec NEGA                   {$$ = new Node($2,NULL,NodeType::ExprArith,'-',yylineno);
-                                                if($2->sym->type != Int)
-                                                {
-                                                    yyerror("Expression after \'-\' is not an int");
-                                                    if(errorstatus) {YYERROR;}
-                                                }else
                                                 $$->sym = Symbol::ProcessSingleOp($2,"-");
 }
 | Identifier '(' Params ')'                   {

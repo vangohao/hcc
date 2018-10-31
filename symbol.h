@@ -43,7 +43,6 @@ struct Symbol //符号
     void Define();
     void ReportUndecleared();
     void CallWithParams(Node * n1);
-    //static void ReportError(std::string s);
 private:
     bool checkParams(Node *n1);
 };

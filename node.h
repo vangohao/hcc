@@ -25,16 +25,13 @@ Fundcl=11,
 Fundfn=12,
 MainFun=13,
 ArrayAssign=14,
-//Identifier=15,
 Symbol1 = 15,
 Params=16,
-//Immediate=17,
 Funcall=18,
 ArrayItem=19,
 VarDcl = 20,
 Empty = 21,
 Stmts = 22,
-// Stmt = 23,
 };
 struct Symbol;
 struct Label

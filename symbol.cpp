@@ -142,6 +142,10 @@ Symbol* Symbol::ProcessSingleOp(Node* n1,const char * x)
         s1 = tmpsym1;
     }
     Symbol* tmpsym = new Symbol(SymbolType::Int);
+    if(s1->type != SymbolType::Int && s1->type != SymbolType::Immediate)
+    {
+        yyerror((std::string)"Expression for "+x+" is not a number");
+    }
     Output::gen("var ");tmpsym->print();Output::gen("\n");
     tmpsym->print();
     Output::gen(" = ");Output::gen(x);Output::gen(" ");
