@@ -53,6 +53,7 @@ struct SymbolTable
     SymbolTable * prev;
     SymbolTable(SymbolTable * st);
     void put(const char * s, Symbol* sym);
+    void put(std::string s, Symbol* sym);
     Symbol* get(const char * s);
     Symbol* gethere(const char * s);
 };

@@ -163,7 +163,7 @@ void Symbol::Declear(SymbolType _type,int _paramCount, int _val)
         type = _type;
         val = _val;
         decleared = true;}
-    else 
+    else if(_type != FunPtr)
     {
         yyerror((std::string)"Redecleared");
     }
@@ -259,6 +259,10 @@ SymbolTable::SymbolTable(SymbolTable * st)
     prev = st;
 }
 void SymbolTable::put(const char * s, Symbol* sym)
+{
+    table.insert(std::make_pair(s,sym));
+}
+void SymbolTable::put(std::string s, Symbol* sym)
 {
     table.insert(std::make_pair(s,sym));
 }

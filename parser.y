@@ -159,7 +159,14 @@ VarDecl: Type Identifier        {
                                     $$ = $2;
 }
 ;
-FuncCreateIdTable: Type Identifier '(' {save.push(top);top = new SymbolTable(top);/*函数前的创建符号表*/
+FuncCreateIdTable: Type Identifier '(' {
+                                        if($2->val == 1)  //该符号在最内层程序体中未定义.
+                                        {
+                                            Symbol * sym = new Symbol($2);
+                                            top->put($2->sym->funName,sym);
+                                            $2->sym = sym;
+                                        }
+                                        save.push(top);top = new SymbolTable(top);/*函数前的创建符号表*/
                                         $$ = $2;
 }
 ;
@@ -191,10 +198,11 @@ InsideFuncStatements: InsideFuncStatements M FuncDecl        {
 | Statement                     {$$ = $1;}
 ;
 FuncDecl: FuncCreateIdTable VarDecls ')' ';'
-        {     $$ = new Node($1,$2,NodeType::Fundcl,$2->val,yylineno);
+        {   $$ = new Node($1,$2,NodeType::Fundcl,$2->val,yylineno);
             $1->sym->Declear(SymbolType::FunPtr,0,$2->val);
             $1->sym->DefineParamList($2);  //传入参数node表
-            delete top;  top = save.top(); save.pop();}
+            delete top;  top = save.top(); save.pop();
+}
 ;
 MainFunc: T_INT MAIN '(' ')'            {   save.push(top);top = new SymbolTable(top);/*函数前的创建符号表*/ 
                                             Output::gen("f_main [0]\n");
@@ -204,7 +212,7 @@ MainFunc: T_INT MAIN '(' ')'            {   save.push(top);top = new SymbolTable
                                             Output::gen("end f_main\n");
                                             delete top;
                                             top = save.top(); save.pop(); //恢复符号表
-                                    }
+}
 ;
 Type: T_INT   {$$ = SymbolType::Int;}
 ;
