@@ -22,3 +22,7 @@ Func& Analyz::currentFunc()
 {
     return *(funcs.rbegin());
 }
+void Analyz::process()
+{
+    
+}

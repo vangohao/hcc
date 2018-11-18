@@ -13,16 +13,16 @@
 %token  VAR END IF RETURN GOTO CALL PARAM
 %token<name> FUNCTION
 %token<val> INTEGER AOP LOP VARIABLE LABEL
-%type<expr> Expression
+%type<expr> Expression ExpressionWithLabel Statements
 %%
 Program: 
-Program ProgramStatement '\n'
+Program ProgramStatement  '\n'
 |
 %empty
 ;
 ProgramStatement:
 FunctionDecl
-|GlobalDeclaration
+|GlobalDeclaration 
 ;
 GlobalDeclaration: 
 VAR VARIABLE                                   {Analyz::Instance.insert();}
@@ -30,36 +30,34 @@ VAR VARIABLE                                   {Analyz::Instance.insert();}
 ;
 Declaration: 
 VAR VARIABLE                                   {}
-| VAR INTEGER VARIABLE                         {}
+| VAR INTEGER VARIABLE                         {Analyz::Instance.currentFunc().insert(4*($2));}
 ;
 FunctionDecl:
-FUNCTION '[' INTEGER ']' '\n'                  {Analyz::Instance.funcs.push_back(Func($3,$1));}
-Statements                                      
-END FUNCTION                                   
+FUNCTION '[' INTEGER ']' '\n'                  {Analyz::Instance.funcs.push_back(Func($3,$1));
+                                                Analyz::Instance.FuncMap[$1] = &(Analyz::Instance.currentFunc());}
+Statements                                     {}                        
 ;
 Statements:
-Statements Statement '\n'                       
-|%empty
-;
-Statement:
-ExpressionWithLabel
-|Declaration
+Statements ExpressionWithLabel '\n'            {if($1->type != Goto) $1->nexts.push_back($2); 
+                                                $$=$2;} 
+/*
+|Statements LABEL ':' '\n'                     {$$=new Expression(Label,{},{},{$2});
+                                                $1->nexts.push_back($$);
+                                                Analyz::Instance.labelTable[$2] = $$;}
+*/
+|Statements Declaration '\n'                       {$$ = $1;}    
+|%empty                                        {$$=new Expression(Begin,{},{},{});}
 ;
 ExpressionWithLabel:
-LABEL ':' '\n' ExpressionWithLabel
-|LABEL ':' '\n'
-|Expression
+LABEL ':' '\n' ExpressionWithLabel             {$$=$4; Analyz::Instance.labelTable[$1] = $4;}
+|Expression                                    {$$=$1;}
 ;
 Expression:
 VARIABLE '=' VARIABLE AOP VARIABLE             {$$=new Expression(ArithRR,{$1},{$3,$5},{});}
+| VARIABLE '=' VARIABLE AOP INTEGER            {$$=new Expression(ArithRI,{$1},{$3},{$5});} //AOP allow + only
 /*
-| VARIABLE '=' VARIABLE AOP INTEGER            {$$=new Expression(ArithRR,{$1},{$3},{$5});}
 | VARIABLE '=' INTEGER AOP VARIABLE           {
                                         if($4=='+') $$=new Expression(ArithRR,{$1},{$3},{$5});
-                                        else
-                                        {
-                                            
-                                        }
                                         }
 */
 | VARIABLE '=' INTEGER AOP INTEGER            {$$=new Expression(MoveRI,{$1},{},{calcarith($3,$4,$5)});}
@@ -82,12 +80,12 @@ VARIABLE '=' VARIABLE AOP VARIABLE             {$$=new Expression(ArithRR,{$1},{
 | IF INTEGER LOP VARIABLE GOTO LABEL            {$$=new Expression(IfIR,{},{$4},{$3,$6,$2});}
 | IF INTEGER LOP INTEGER GOTO LABEL             {if(calclogic($2,$3,$4)) $$=new Expression(Goto,{},{},{$6});}
 | GOTO LABEL                                    {$$=new Expression(Goto,{},{},{$2});}
-//| LABEL ':'                                     {/* ?? */}
 | PARAM VARIABLE                                {$$=new Expression(ParamR,{},{$2},{});}
 | PARAM INTEGER                                 {$$=new Expression(ParamI,{},{},{$2});}
 | VARIABLE '=' CALL FUNCTION                    {$$=new Expression(Call,{$1},{},{},$4);}
 | RETURN VARIABLE                               {$$=new Expression(ReturnR,{},{$2},{});}
 | RETURN INTEGER                                {$$=new Expression(ReturnI,{},{},{$2});}
+| END FUNCTION                                  {$$=new Expression(Empty,{},{},{});}
 ;
 
 

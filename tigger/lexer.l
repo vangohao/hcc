@@ -13,6 +13,7 @@ end    {return END;}
 if     {return IF;}
 var    {return VAR;}
 call   {return CALL;}
+param  {return PARAM;}
 "\n"   {return '\n';}
 [ \t]+   {}
 "+"    {yylval.val = '+'; return AOP;}
@@ -40,5 +41,4 @@ t[0-9]+                   {int temp = atoi(yytext+1);
                              return VARIABLE;}
 p[0-9]+                      {yylval.val = atoi(yytext+1); return PARAM;}
 l[0-9]+                      {yylval.val = atoi(yytext+1); return LABEL;}
-<<EOF>>                          {return '\n';}
 %%

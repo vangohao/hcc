@@ -3,6 +3,7 @@
 #include "tigger.h"
 enum ExprType
 {
+    Invalid,
     MoveRI,
     MoveRR,
     ArithRR,
@@ -18,8 +19,9 @@ enum ExprType
     ReturnI,
     ParamR,
     ParamI,
-    Label,
+    Empty,
     Call,
+    Begin,
 };
 class Expression
 {
@@ -32,10 +34,8 @@ public:
     int jmp;
     string funtocall;
     string funin;
-    //Expression(ExprType _type,vector<int> _def,
-        //vector<int> _use,vector<int> _imm,string _funtocall="",string _funin="",int _jmp = 0);
-        Expression(ExprType _type,std::initializer_list<int> _def,
-        std::initializer_list<int> _use,std::initializer_list<int> _imm,string _funtocall="",string _funin="");
+    Expression(ExprType _type,std::initializer_list<int> _def,
+    std::initializer_list<int> _use,std::initializer_list<int> _imm,string _funtocall="",string _funin="");
 };
 class Func
 {
@@ -57,10 +57,12 @@ public:
     int globalSize;
     vector<int> offset;
     vector<int> size;
-    std::map<string,Func*> Map;
+    std::map<string,Func*> FuncMap;
+    std::map<int,Expression*> labelTable; 
     void insert(int s=4);
     vector<Func> funcs;
     Func& currentFunc();
+    void process();
 };
 
 #endif
