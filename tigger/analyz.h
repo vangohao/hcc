@@ -35,7 +35,7 @@ public:
     //Expression(ExprType _type,vector<int> _def,
         //vector<int> _use,vector<int> _imm,string _funtocall="",string _funin="",int _jmp = 0);
         Expression(ExprType _type,std::initializer_list<int> _def,
-        std::initializer_list<int> _use,std::initializer_list<int> _imm,string _funtocall="",string _funin="",int _jmp = 0);
+        std::initializer_list<int> _use,std::initializer_list<int> _imm,string _funtocall="",string _funin="");
 };
 class Func
 {

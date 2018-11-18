@@ -1,7 +1,7 @@
 #include "analyz.h"
 Expression::Expression(ExprType _type,std::initializer_list<int> _def,
-        std::initializer_list<int> _use,std::initializer_list<int> _imm,string _funtocall,string _funin,int _jmp)
-:type(_type),def(_def),use(_use),imm(_imm),funtocall(_funtocall),funin(_funin),jmp(_jmp)
+        std::initializer_list<int> _use,std::initializer_list<int> _imm,string _funtocall,string _funin)
+:type(_type),def(_def),use(_use),imm(_imm),funtocall(_funtocall),funin(_funin)
 {
     Analyz::Instance.currentFunc().exprs.push_back(this);
 }

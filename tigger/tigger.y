@@ -42,8 +42,13 @@ Statements Statement '\n'
 |%empty
 ;
 Statement:
-Expression
+ExpressionWithLabel
 |Declaration
+;
+ExpressionWithLabel:
+LABEL ':' '\n' ExpressionWithLabel
+|LABEL ':' '\n'
+|Expression
 ;
 Expression:
 VARIABLE '=' VARIABLE AOP VARIABLE             {$$=new Expression(ArithRR,{$1},{$3,$5},{});}
@@ -75,9 +80,9 @@ VARIABLE '=' VARIABLE AOP VARIABLE             {$$=new Expression(ArithRR,{$1},{
 | IF VARIABLE LOP VARIABLE GOTO LABEL           {$$=new Expression(IfRR,{},{$2,$4},{$3,$6});}
 | IF VARIABLE LOP INTEGER GOTO LABEL            {$$=new Expression(IfRI,{},{$2},{$3,$6,$4});}
 | IF INTEGER LOP VARIABLE GOTO LABEL            {$$=new Expression(IfIR,{},{$4},{$3,$6,$2});}
-| IF INTEGER LOP INTEGER GOTO LABEL             {/* ?? */}
+| IF INTEGER LOP INTEGER GOTO LABEL             {if(calclogic($2,$3,$4)) $$=new Expression(Goto,{},{},{$6});}
 | GOTO LABEL                                    {$$=new Expression(Goto,{},{},{$2});}
-| LABEL ':'                                     {/* ?? */}
+//| LABEL ':'                                     {/* ?? */}
 | PARAM VARIABLE                                {$$=new Expression(ParamR,{},{$2},{});}
 | PARAM INTEGER                                 {$$=new Expression(ParamI,{},{},{$2});}
 | VARIABLE '=' CALL FUNCTION                    {$$=new Expression(Call,{$1},{},{},$4);}

@@ -16,4 +16,5 @@ using std::endl;
 int yylex();
 int yyerror(string s);
 int calcarith(int a,int op,int b);
+int calclogic(int a,int op,int b);
 #endif
