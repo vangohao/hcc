@@ -27,15 +27,22 @@ class Expression
 {
 public:
     ExprType type;
+    bool isMove;
+    vector<int> left;
+    vector<int> right;
+    vector<int> imm;
     vector<int> use;
     vector<int> def;
-    vector<int> imm;
+    vector<int> in;
+    vector<int> in1;
+    vector<int> out;
+    vector<int> out1;
     vector<Expression*> nexts;
-    int jmp;
+    vector<Expression*> prevs;
     string funtocall;
     string funin;
-    Expression(ExprType _type,std::initializer_list<int> _def,
-    std::initializer_list<int> _use,std::initializer_list<int> _imm,string _funtocall="",string _funin="");
+    Expression(ExprType _type,std::initializer_list<int> _left,
+    std::initializer_list<int> _right,std::initializer_list<int> _imm,string _funtocall="",string _funin="");
 };
 class Func
 {
@@ -48,6 +55,11 @@ public:
     vector<Expression*> exprs;
     void insert(int s);
     Func(int _paramCount,string _name);
+    void genFlow();
+    void livelyAnalyz();
+    void DebugPrint();
+    void DebugPrint(vector<int> & v);
+    
 private:
 };
 class Analyz

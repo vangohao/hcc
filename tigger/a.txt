@@ -1,0 +1,13 @@
+f_main[0]
+var T0
+var T1
+var t0
+T0 = 0
+l1:
+T1 = T0 + 1
+t0 = t0 + T1
+T0 = T1 * 2
+if T0<10 goto l1
+return t0
+end f_main
+

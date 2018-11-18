@@ -69,7 +69,7 @@ VARIABLE '=' VARIABLE AOP VARIABLE             {$$=new Expression(ArithRR,{$1},{
 | VARIABLE '[' VARIABLE ']' '=' VARIABLE
 | VARIABLE '[' VARIABLE ']' '=' INTEGER
 */
-| VARIABLE '[' INTEGER ']' '=' VARIABLE       {$$=new Expression(ArrayWrite,{$1},{$6},{$3});}
+| VARIABLE '[' INTEGER ']' '=' VARIABLE       {$$=new Expression(ArrayWrite,{},{$1,$6},{$3});}
 //| VARIABLE '[' INTEGER ']' '=' INTEGER        {$$=new Expression(ArrayWriteR,{$1},{$6},{});}
 //| VARIABLE '[' '*' ']' '=' VARIABLE           {$$=new Expression(ArrayWriteR,{$1},{$6},{0});}
 //| VARIABLE '[' '*' ']' '=' INTEGER            {$$=new Expression(ArrayWriteI,{$1},{},{0,$6});}

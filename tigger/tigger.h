@@ -8,9 +8,12 @@
 #include <map>
 #include <vector>
 #include <initializer_list>
+#include <set>
+#include <algorithm>
 
 using std::string;
 using std::vector;
+using std::set;
 using std::cerr;
 using std::endl;
 int yylex();
