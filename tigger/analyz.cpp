@@ -1,4 +1,6 @@
 #include "analyz.h"
+/* Variable::Variable(int _val,bool _param,int _pid):
+    val(_val),param(_param),pid(_pid){} */
 Expression::Expression(ExprType _type,std::initializer_list<int> _left,
         std::initializer_list<int> _right,
         std::initializer_list<int> _imm,string _funtocall,string _funin)
@@ -19,7 +21,14 @@ void Func::insert(int s)
     size.push_back(s);
     frameSize += s;
 }
-Func::Func(int _paramCount,string _name):paramCount(_paramCount),name(_name){}
+Func::Func(int _paramCount,string _name):paramCount(_paramCount),name(_name)
+{
+    for(int i = 0;i<_paramCount;i++)
+    {
+        paramTable.push_back(++Analyz::vcount);
+        paramTableReverse[Analyz::vcount] = i;
+    }
+}
 Func& Analyz::currentFunc()
 {
     return *(funcs.rbegin());
@@ -56,7 +65,6 @@ void Func::genFlow()
 void Func::livelyAnalyz()
 {
     
-        DebugPrint();
     for(auto e:exprs)
     {
         e->use = e->right;
@@ -64,7 +72,6 @@ void Func::livelyAnalyz()
         std::sort(e->use.begin(),e->use.end());
         std::sort(e->def.begin(),e->def.end());
     }
-        DebugPrint();
     do
     {
         bool flag = true;
@@ -117,14 +124,14 @@ void Func::livelyAnalyz()
             {
                 flag = false;
             }
-        DebugPrint();
         }
         if(flag) break;
-    }
-    while(1);
+    }while(1);
+    DebugPrint();
 }
 void Func::DebugPrint()
 {
+    cerr<<name<<endl;
     for(auto e: exprs)
     {
         cerr<<"def :";DebugPrint(e->def);

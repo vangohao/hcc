@@ -13,7 +13,7 @@
 
 using std::string;
 using std::vector;
-using std::set;
+using std::map;
 using std::cerr;
 using std::endl;
 int yylex();

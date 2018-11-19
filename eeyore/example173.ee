@@ -1,0 +1,20 @@
+f_f [2]
+var T0
+var T1
+T0 = 0
+T1 = p0
+var t0
+l0:
+t0 = T0 + p1
+T0 = t0
+var t1
+t1 = T1 - 1
+T1 = t1
+if T1 > 0 goto l0
+return T0
+end f_f
+
+f_main [0]
+return 0
+end f_main
+

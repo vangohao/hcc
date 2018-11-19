@@ -12,8 +12,9 @@
 
 %token  VAR END IF RETURN GOTO CALL PARAM
 %token<name> FUNCTION
-%token<val> INTEGER AOP LOP VARIABLE LABEL
+%token<val> INTEGER AOP LOP VARIABLE LABEL PARAMVARIABLE
 %type<expr> Expression ExpressionWithLabel Statements
+%type<val> Symbol
 %%
 Program: 
 Program ProgramStatement  '\n'
@@ -25,16 +26,17 @@ FunctionDecl
 |GlobalDeclaration 
 ;
 GlobalDeclaration: 
-VAR VARIABLE                                   {Analyz::Instance.insert();}
-| VAR INTEGER VARIABLE                         {Analyz::Instance.insert(4*($2));}
+VAR Symbol                                   {Analyz::Instance.insert();}
+| VAR INTEGER Symbol                         {Analyz::Instance.insert(4*($2));}
 ;
 Declaration: 
-VAR VARIABLE                                   {}
-| VAR INTEGER VARIABLE                         {Analyz::Instance.currentFunc().insert(4*($2));}
+VAR Symbol                                   {}
+| VAR INTEGER Symbol                         {Analyz::Instance.currentFunc().insert(4*($2));}
 ;
 FunctionDecl:
 FUNCTION '[' INTEGER ']' '\n'                  {Analyz::Instance.funcs.push_back(Func($3,$1));
-                                                Analyz::Instance.FuncMap[$1] = &(Analyz::Instance.currentFunc());}
+                                                Analyz::Instance.FuncMap[$1] = &(Analyz::Instance.currentFunc());
+                                                }
 Statements                                     {}                        
 ;
 Statements:
@@ -53,40 +55,42 @@ LABEL ':' '\n' ExpressionWithLabel             {$$=$4; Analyz::Instance.labelTab
 |Expression                                    {$$=$1;}
 ;
 Expression:
-VARIABLE '=' VARIABLE AOP VARIABLE             {$$=new Expression(ArithRR,{$1},{$3,$5},{});}
-| VARIABLE '=' VARIABLE AOP INTEGER            {$$=new Expression(ArithRI,{$1},{$3},{$5});} //AOP allow + only
+Symbol '=' Symbol AOP Symbol             {$$=new Expression(ArithRR,{$1},{$3,$5},{});}
+| Symbol '=' Symbol AOP INTEGER            {$$=new Expression(ArithRI,{$1},{$3},{$5});} //AOP allow + only
 /*
-| VARIABLE '=' INTEGER AOP VARIABLE           {
+| Symbol '=' INTEGER AOP Symbol           {
                                         if($4=='+') $$=new Expression(ArithRR,{$1},{$3},{$5});
                                         }
 */
-| VARIABLE '=' INTEGER AOP INTEGER            {$$=new Expression(MoveRI,{$1},{},{calcarith($3,$4,$5)});}
-| VARIABLE '=' AOP VARIABLE                   {$$=new Expression(Negative,{$1},{$4},{});}
-| VARIABLE '=' AOP INTEGER                    {$$=new Expression(MoveRI,{$1},{},{calcarith(0,$3,$4)});}
-| VARIABLE '=' VARIABLE                       {$$=new Expression(MoveRR,{$1},{$3},{});}
-| VARIABLE '=' INTEGER                        {$$=new Expression(MoveRI,{$1},{},{$3});}
+| Symbol '=' INTEGER AOP INTEGER            {$$=new Expression(MoveRI,{$1},{},{calcarith($3,$4,$5)});}
+| Symbol '=' AOP Symbol                   {$$=new Expression(Negative,{$1},{$4},{});}
+| Symbol '=' AOP INTEGER                    {$$=new Expression(MoveRI,{$1},{},{calcarith(0,$3,$4)});}
+| Symbol '=' Symbol                       {$$=new Expression(MoveRR,{$1},{$3},{});}
+| Symbol '=' INTEGER                        {$$=new Expression(MoveRI,{$1},{},{$3});}
 /*
-| VARIABLE '[' VARIABLE ']' '=' VARIABLE
-| VARIABLE '[' VARIABLE ']' '=' INTEGER
+| Symbol '[' Symbol ']' '=' Symbol
+| Symbol '[' Symbol ']' '=' INTEGER
 */
-| VARIABLE '[' INTEGER ']' '=' VARIABLE       {$$=new Expression(ArrayWrite,{},{$1,$6},{$3});}
-//| VARIABLE '[' INTEGER ']' '=' INTEGER        {$$=new Expression(ArrayWriteR,{$1},{$6},{});}
-//| VARIABLE '[' '*' ']' '=' VARIABLE           {$$=new Expression(ArrayWriteR,{$1},{$6},{0});}
-//| VARIABLE '[' '*' ']' '=' INTEGER            {$$=new Expression(ArrayWriteI,{$1},{},{0,$6});}
-//| VARIABLE '=' VARIABLE '[' '*' ']'             {$$=new Expression(ArrayRead,{$1},{$3},{0});}
-| VARIABLE '=' VARIABLE '[' INTEGER ']'         {$$=new Expression(ArrayRead,{$1},{$3},{$5});}
-| IF VARIABLE LOP VARIABLE GOTO LABEL           {$$=new Expression(IfRR,{},{$2,$4},{$3,$6});}
-| IF VARIABLE LOP INTEGER GOTO LABEL            {$$=new Expression(IfRI,{},{$2},{$3,$6,$4});}
-| IF INTEGER LOP VARIABLE GOTO LABEL            {$$=new Expression(IfIR,{},{$4},{$3,$6,$2});}
+| Symbol '[' INTEGER ']' '=' Symbol       {$$=new Expression(ArrayWrite,{},{$1,$6},{$3});}
+//| Symbol '[' INTEGER ']' '=' INTEGER        {$$=new Expression(ArrayWriteR,{$1},{$6},{});}
+//| Symbol '[' '*' ']' '=' Symbol           {$$=new Expression(ArrayWriteR,{$1},{$6},{0});}
+//| Symbol '[' '*' ']' '=' INTEGER            {$$=new Expression(ArrayWriteI,{$1},{},{0,$6});}
+//| Symbol '=' Symbol '[' '*' ']'             {$$=new Expression(ArrayRead,{$1},{$3},{0});}
+| Symbol '=' Symbol '[' INTEGER ']'         {$$=new Expression(ArrayRead,{$1},{$3},{$5});}
+| IF Symbol LOP Symbol GOTO LABEL           {$$=new Expression(IfRR,{},{$2,$4},{$3,$6});}
+| IF Symbol LOP INTEGER GOTO LABEL            {$$=new Expression(IfRI,{},{$2},{$3,$6,$4});}
+| IF INTEGER LOP Symbol GOTO LABEL            {$$=new Expression(IfIR,{},{$4},{$3,$6,$2});}
 | IF INTEGER LOP INTEGER GOTO LABEL             {if(calclogic($2,$3,$4)) $$=new Expression(Goto,{},{},{$6});}
 | GOTO LABEL                                    {$$=new Expression(Goto,{},{},{$2});}
-| PARAM VARIABLE                                {$$=new Expression(ParamR,{},{$2},{});}
+| PARAM Symbol                                {$$=new Expression(ParamR,{},{$2},{});}
 | PARAM INTEGER                                 {$$=new Expression(ParamI,{},{},{$2});}
-| VARIABLE '=' CALL FUNCTION                    {$$=new Expression(Call,{$1},{},{},$4);}
-| RETURN VARIABLE                               {$$=new Expression(ReturnR,{},{$2},{});}
+| Symbol '=' CALL FUNCTION                    {$$=new Expression(Call,{$1},{},{},$4);}
+| RETURN Symbol                               {$$=new Expression(ReturnR,{},{$2},{});}
 | RETURN INTEGER                                {$$=new Expression(ReturnI,{},{},{$2});}
 | END FUNCTION                                  {$$=new Expression(Empty,{},{},{});}
 ;
-
+Symbol:
+VARIABLE                                        {$$ = $1;}
+|PARAMVARIABLE                                  {$$ = Analyz::Instance.currentFunc().paramTable[$1];}
 
 %%

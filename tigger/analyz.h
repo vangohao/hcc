@@ -23,6 +23,13 @@ enum ExprType
     Call,
     Begin,
 };
+/* struct Variable
+{
+    int val;
+    bool param;
+    int pid;
+    Variable(int _val,bool _param=false,int _pid=0);
+}; */
 class Expression
 {
 public:
@@ -52,6 +59,8 @@ public:
     int frameSize;
     vector<int> offset;
     vector<int> size;
+    vector<int> paramTable;
+    map<int,int> paramTableReverse;
     vector<Expression*> exprs;
     void insert(int s);
     Func(int _paramCount,string _name);
@@ -65,6 +74,7 @@ private:
 class Analyz
 {
 public:
+    static int vcount;
     static Analyz Instance;
     int globalSize;
     vector<int> offset;

@@ -1,8 +1,9 @@
 %{
 #include"y.tab.h"
+#include"analyz.h"
 int Tcount = -1;
 int tcount = -1;
-int vcount = -1;
+int Analyz::vcount = -1;
 vector<int> Tmap;
 vector<int> tmap;
 %}
@@ -32,13 +33,13 @@ param  {return PARAM;}
 [0-9]+ {yylval.val = atoi(yytext); return INTEGER;}
 "f_"[A-Za-z_][A-Za-z_0-9]*   {yylval.name = yytext; return FUNCTION;}
 T[0-9]+                   {int temp = atoi(yytext+1); 
-                            if(temp>Tcount){Tcount++;vcount++;Tmap.push_back(vcount);}
+                            if(temp>Tcount){Tcount++;Analyz::vcount++;Tmap.push_back(Analyz::vcount);}
                              yylval.val = Tmap[temp];
                              return VARIABLE;}
 t[0-9]+                   {int temp = atoi(yytext+1); 
-                            if(temp>tcount){tcount++;vcount++;tmap.push_back(vcount);}
+                            if(temp>tcount){tcount++;Analyz::vcount++;tmap.push_back(Analyz::vcount);}
                              yylval.val = tmap[temp];
                              return VARIABLE;}
-p[0-9]+                      {yylval.val = atoi(yytext+1); return PARAM;}
+p[0-9]+                      {yylval.val = atoi(yytext+1); return PARAMVARIABLE;}
 l[0-9]+                      {yylval.val = atoi(yytext+1); return LABEL;}
 %%
