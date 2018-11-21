@@ -10,12 +10,16 @@
 #include <initializer_list>
 #include <set>
 #include <algorithm>
+#include <stack>
+#include <list>
 
 using std::string;
 using std::vector;
 using std::map;
 using std::cerr;
 using std::endl;
+using std::stack;
+using std::list;
 int yylex();
 int yyerror(string s);
 int calcarith(int a,int op,int b);

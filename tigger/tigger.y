@@ -65,7 +65,12 @@ Symbol '=' Symbol AOP Symbol             {$$=new Expression(ArithRR,{$1},{$3,$5}
 | Symbol '=' INTEGER AOP INTEGER            {$$=new Expression(MoveRI,{$1},{},{calcarith($3,$4,$5)});}
 | Symbol '=' AOP Symbol                   {$$=new Expression(Negative,{$1},{$4},{});}
 | Symbol '=' AOP INTEGER                    {$$=new Expression(MoveRI,{$1},{},{calcarith(0,$3,$4)});}
-| Symbol '=' Symbol                       {$$=new Expression(MoveRR,{$1},{$3},{});}
+| Symbol '=' Symbol                       {
+    if($1 != $3)
+    $$=new Expression(MoveRR,{$1},{$3},{});
+    else 
+    $$=new Expression(Empty,{},{},{});
+    }
 | Symbol '=' INTEGER                        {$$=new Expression(MoveRI,{$1},{},{$3});}
 /*
 | Symbol '[' Symbol ']' '=' Symbol

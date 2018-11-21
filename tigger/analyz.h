@@ -23,13 +23,17 @@ enum ExprType
     Call,
     Begin,
 };
-/* struct Variable
+enum NodeStatus
 {
-    int val;
-    bool param;
-    int pid;
-    Variable(int _val,bool _param=false,int _pid=0);
-}; */
+    Simple,
+    Hard,
+    Spilled,
+    Freeze,
+    Colored,
+    Stacked,
+    Coalesced,
+    Precolored,
+};
 class Expression
 {
 public:
@@ -62,10 +66,54 @@ public:
     vector<int> paramTable;
     map<int,int> paramTableReverse;
     vector<Expression*> exprs;
+
+    //Color Algorithm
+    static int colorNumber;
+    list<int> precolored;
+    list<int> initial;
+    list<int> simplifyWorklist;
+    list<int> freezeWorklist;
+    list<int> spillWorklist;          //高度数节点表
+    list<int> spilledNodes;
+    list<int> coalescedNodes;
+    list<int> coloredNodes;
+    list<int> selectStack;
+    list<Expression*> coalescedMoves;
+    list<Expression*> constrainedMoves;
+    list<Expression*> frozenMoves;
+    list<Expression*> worklistMoves;
+    list<Expression*> activeMoves;
+    vector<vector<int>> adjMatrix;
+    vector<list<int>> adjList;
+    vector<int> degrees;
+    vector<NodeStatus> status;
+    vector<vector<Expression*>> moveList;
+    vector<int> alias;
+    vector<int> color;
+    void AddEdge(int x,int y);
+    void livelyAnalyz();
+    void initColorAlgorithm();
+    void DecrementDegree(int m);
+    bool MoveRelated(int n);
+    list<Expression*>& NodeMoves(int n);
+    list<int>& Adjacent(int n);
+    void Simplify();
+    void Coalesce();
+    int GetAlias(int x);
+    void AddWorklist(int u);
+    bool TestPrecoloredCombine(int u/*precolored*/,int v);
+    bool TestConservative(int u,int v);
+    void Combine(int u,int v);
+    void EnableMoves(int m);
+    void FreezeMoves(int u);
+    void FreezeAction();
+    void SelectSpill();
+    void AssignColors();
+    void RewriteProgram();
+
     void insert(int s);
     Func(int _paramCount,string _name);
     void genFlow();
-    void livelyAnalyz();
     void DebugPrint();
     void DebugPrint(vector<int> & v);
     
