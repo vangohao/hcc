@@ -6,6 +6,7 @@
 #include <iostream>
 #include <string>
 #include <map>
+#include <unordered_map>
 #include <vector>
 #include <initializer_list>
 #include <set>
@@ -15,7 +16,7 @@
 
 using std::string;
 using std::vector;
-using std::map;
+using std::unordered_map;
 using std::cerr;
 using std::endl;
 using std::stack;

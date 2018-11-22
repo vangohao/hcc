@@ -7,6 +7,7 @@ enum ExprType
     MoveRI,
     MoveRR,
     ArithRR,
+    ArithRRSame,
     ArithRI,  //Allow + Only
     Negative,
     ArrayWrite,
@@ -22,6 +23,11 @@ enum ExprType
     Empty,
     Call,
     Begin,
+    FrameStore,
+    FrameLoad,
+    FrameLoadAddr,
+    GlobalLoad,
+    GlobalLoadAddr,
 };
 enum NodeStatus
 {
@@ -33,6 +39,12 @@ enum NodeStatus
     Stacked,
     Coalesced,
     Precolored,
+};
+enum PhysicsRegs
+{
+    a0,a1,a2,a3,a4,a5,a6,a7,                 //参数
+    s0,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10,s11,  //被调用者保存
+    t0,t1,t2,t3,t4,t5,t6,                   //调用者保存
 };
 class Expression
 {
@@ -48,12 +60,17 @@ public:
     vector<int> in1;
     vector<int> out;
     vector<int> out1;
-    vector<Expression*> nexts;
-    vector<Expression*> prevs;
+    list<Expression*> nexts;
+    list<Expression*> prevs;
     string funtocall;
     string funin;
     Expression(ExprType _type,std::initializer_list<int> _left,
     std::initializer_list<int> _right,std::initializer_list<int> _imm,string _funtocall="",string _funin="");
+};
+class Reg
+{
+    public:
+    static vector<string> names;
 };
 class Func
 {
@@ -64,11 +81,13 @@ public:
     vector<int> offset;
     vector<int> size;
     vector<int> paramTable;
-    map<int,int> paramTableReverse;
+    unordered_map<int,int> paramTableReverse;
     vector<Expression*> exprs;
+    vector<int> spilledVariableFrameMap; //由变量id映射到上面的offset和size数组的下标
 
     //Color Algorithm
     static int colorNumber;
+    int maxVariable;
     list<int> precolored;
     list<int> initial;
     list<int> simplifyWorklist;
@@ -86,13 +105,18 @@ public:
     vector<vector<int>> adjMatrix;
     vector<list<int>> adjList;
     vector<int> degrees;
-    vector<NodeStatus> status;
-    vector<vector<Expression*>> moveList;
     vector<int> alias;
     vector<int> color;
+    vector<NodeStatus> status;
+    vector<list<Expression*>> useList;
+    vector<list<Expression*>> defList;
+    vector<vector<Expression*>> moveList;
+
+
+    void ColorAlgorithmMain();
     void AddEdge(int x,int y);
     void livelyAnalyz();
-    void initColorAlgorithm();
+    void InitColorAlgorithm();
     void DecrementDegree(int m);
     bool MoveRelated(int n);
     list<Expression*>& NodeMoves(int n);
@@ -110,13 +134,31 @@ public:
     void SelectSpill();
     void AssignColors();
     void RewriteProgram();
+    void InsertExprForWrite(Expression* e,int v);
+    void InsertExprForRead(Expression* e,int v);
+    int GenTempVariable();
 
-    void insert(int s);
+    int insert(int s = 4);
     Func(int _paramCount,string _name);
     void genFlow();
+    void InitializeVectorSpace();
+    void Processor();
+    
+    //AssignPhysicsRegs
+    vector<int> PhysicsColor;    //由寄存器索引颜色
+    vector<int> ColorPhysics;   //由颜色索引寄存器
+    vector<PhysicsRegs> PriorityRegs;
+    void AssignPhysicsRegs();
+    int paramReg(int i);
+
+    //GenCode
+    void GenCode();
+
+    //Debug
     void DebugPrint();
     void DebugPrint(vector<int> & v);
-    
+    void DebugPrintColorResult();
+    void DebugPrintPhysicsResult();
 private:
 };
 class Analyz
@@ -125,14 +167,19 @@ public:
     static int vcount;
     static Analyz Instance;
     int globalSize;
+    int globalVariableCount;
     vector<int> offset;
     vector<int> size;
-    std::map<string,Func*> FuncMap;
-    std::map<int,Expression*> labelTable; 
-    void insert(int s=4);
+    unordered_map<string,Func*> FuncMap;
+    unordered_map<int,Expression*> labelTable; 
+    unordered_map<int,int> globalVaribleMap;
+    unordered_map<int,int> globalVaribleType;
+    void insert(int var,int s=4,int type = 0);
+                //type0表示int,1表示数组
     vector<Func> funcs;
     Func& currentFunc();
     void process();
+    Analyz();
 };
 
 #endif

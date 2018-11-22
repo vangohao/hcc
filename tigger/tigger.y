@@ -26,8 +26,8 @@ FunctionDecl
 |GlobalDeclaration 
 ;
 GlobalDeclaration: 
-VAR Symbol                                   {Analyz::Instance.insert();}
-| VAR INTEGER Symbol                         {Analyz::Instance.insert(4*($2));}
+VAR Symbol                                   {Analyz::Instance.insert($2,4,0);}
+| VAR INTEGER Symbol                         {Analyz::Instance.insert($3,4*($2),1);}
 ;
 Declaration: 
 VAR Symbol                                   {}
@@ -55,8 +55,13 @@ LABEL ':' '\n' ExpressionWithLabel             {$$=$4; Analyz::Instance.labelTab
 |Expression                                    {$$=$1;}
 ;
 Expression:
-Symbol '=' Symbol AOP Symbol             {$$=new Expression(ArithRR,{$1},{$3,$5},{});}
-| Symbol '=' Symbol AOP INTEGER            {$$=new Expression(ArithRI,{$1},{$3},{$5});} //AOP allow + only
+Symbol '=' Symbol AOP Symbol             {  if($3!=$5)
+                                                $$=new Expression(ArithRR,{$1},{$3,$5},{});
+                                            else
+                                                $$=new Expression(ArithRRSame,{$1},{$3},{});
+                                                }
+| Symbol '=' Symbol AOP INTEGER            {$$=new Expression(ArithRI,{$1},{$3},{$5});} 
+//AOP allow + * only
 /*
 | Symbol '=' INTEGER AOP Symbol           {
                                         if($4=='+') $$=new Expression(ArithRR,{$1},{$3},{$5});
