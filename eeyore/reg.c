@@ -1,13 +1,6 @@
 //sample:input n number, sort them and print them;
 int n;
-   int getint()
-   {
-	   int c0;
-	   int c1;
-	   c0 = 1;
-	   c1 = c0 + 2;
-	   return c1;
-   }
+   int getint();
    int putint(int i);
    int putchar(int c);
    int main()
