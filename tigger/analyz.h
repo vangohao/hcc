@@ -16,8 +16,7 @@ enum ExprType
     IfRI,
     IfIR,
     Goto,
-    ReturnR,
-    ReturnI,
+    Return,
     ParamR,
     ParamI,
     Empty,
@@ -65,8 +64,8 @@ public:
     list<Expression*> prevs;
     string funtocall;
     string funin;
-    Expression(ExprType _type,std::initializer_list<int> _left,
-    std::initializer_list<int> _right,std::initializer_list<int> _imm,
+    Expression(ExprType _type,vector<int> _left,
+    vector<int> _right,vector<int> _imm,
     string _funtocall="",string _funin="",bool push=true);
 };
 class Reg
@@ -78,7 +77,9 @@ class Func
 {
 public:
     string name;
+    vector<int> calledStoredRegs;
     int paramCount;
+    int paramToCallWithCount;
     int frameSize;
     vector<int> offset;
     vector<int> size;
@@ -92,7 +93,7 @@ public:
 
     //Color Algorithm
     static int colorNumber;
-    int maxVariable;
+    //int maxVariable;
     list<int> initial;
     list<int> simplifyWorklist;
     list<int> freezeWorklist;
@@ -158,6 +159,9 @@ public:
     //GenCode
     string opstring(int op);
     void GenCode();
+    void ReturnFunc(int v,int t);
+    void CallParam(int v,int t);
+    void CallFunc(int v,string f);
 
     //Debug
     void DebugPrint();

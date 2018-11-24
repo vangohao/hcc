@@ -1,5 +1,5 @@
-var T0
 f_getint [0]
+var T0
 var T1
 var T2
 T1 = 1

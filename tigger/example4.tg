@@ -1,0 +1,155 @@
+f_getint [0] [0]
+a0 = 1
+a0 = a0 + 2
+return
+end f_getint
+f_main [0] [76]
+call f_getint
+t1 = a1
+l1:
+if t1 == 5 goto l0
+goto l2
+l0:
+t1 = t1 + 1
+goto l1
+l2:
+a1 = 0
+a0 = a1 + 1
+store a0 18
+load 18 a0
+a0 = a0 + 1
+store a0 17
+load 17 a0
+a0 = a0 + 1
+store a0 16
+load 16 a0
+a0 = a0 + 1
+store a0 15
+load 15 a0
+a0 = a0 + 1
+store a0 14
+load 14 a0
+a0 = a0 + 1
+store a0 13
+load 13 a0
+a0 = a0 + 1
+store a0 12
+load 12 a0
+a0 = a0 + 1
+store a0 11
+load 11 a0
+a0 = a0 + 1
+store a0 10
+load 10 a0
+a0 = a0 + 1
+store a0 9
+load 9 a0
+a0 = a0 + 1
+store a0 8
+load 8 a0
+a0 = a0 + 1
+store a0 7
+load 7 a0
+a0 = a0 + 1
+store a0 6
+load 6 a0
+a0 = a0 + 1
+store a0 5
+load 5 a0
+a0 = a0 + 1
+store a0 4
+load 4 a0
+a0 = a0 + 1
+store a0 3
+load 3 a0
+a0 = a0 + 1
+store a0 2
+load 2 a0
+a0 = a0 + 1
+store a0 1
+load 1 a0
+a0 = a0 + 1
+store a0 0
+load 0 a0
+t6 = a0 + 1
+t5 = t6 + 1
+t4 = t5 + 1
+t3 = t4 + 1
+t2 = t3 + 1
+a0 = t2 + 1
+call f_putint
+load 18 a1
+call f_putint
+load 17 a1
+a0 = a1
+call f_putint
+load 16 a1
+a0 = a1
+call f_putint
+load 15 a1
+a0 = a1
+call f_putint
+load 14 a1
+a0 = a1
+call f_putint
+load 13 a1
+a0 = a1
+call f_putint
+load 12 a1
+a0 = a1
+call f_putint
+load 11 a1
+t0 = a1
+call f_putint
+load 10 a1
+s4 = a1
+call f_putint
+load 9 a1
+s3 = a1
+call f_putint
+load 8 a1
+s2 = a1
+call f_putint
+load 7 a1
+s1 = a1
+call f_putint
+load 6 a1
+s5 = a1
+call f_putint
+load 5 a1
+s6 = a1
+call f_putint
+load 4 a1
+s7 = a1
+call f_putint
+load 3 a1
+s8 = a1
+call f_putint
+load 2 a1
+s9 = a1
+call f_putint
+load 1 a1
+s10 = a1
+call f_putint
+load 0 a1
+s11 = a1
+call f_putint
+s0 = t6
+call f_putint
+a7 = t5
+call f_putint
+a6 = t4
+call f_putint
+a5 = t3
+call f_putint
+a4 = t2
+call f_putint
+a3 = a0
+call f_putint
+a2 = t1
+call f_putint
+a1 = 10
+call f_putchar
+a1 = a0
+return
+end f_main
