@@ -935,9 +935,9 @@ void Func::GenCode()
             case ArrayRead:  cout<<REGNAMEFORVAR(e->left[0])<<" = "<<REGNAMEFORVAR(e->right[0])<<" ["<<e->imm[0]<<"]"<<endl;break;
             case IfRR: cout<<"if "<<REGNAMEFORVAR(e->right[0])<<" "<<opstring(e->imm[0])<<" "<<REGNAMEFORVAR(e->right[1])
                     <<" goto l"<<e->imm[1]<<endl;break;
-            case IfRI: cout<<"if "<<REGNAMEFORVAR(e->right[0])<<" "<<opstring(e->imm[0])<<" "<<e->imm[2]
+            case IfRI: cout<<"if "<<REGNAMEFORVAR(e->right[0])<<" "<<opstring(e->imm[0])<<" "<<"x0"
                     <<" goto l"<<e->imm[1]<<endl;break;
-            case IfIR: cout<<"if "<<e->imm[2]<<" "<<opstring(e->imm[0])<<" "<<REGNAMEFORVAR(e->right[0])
+            case IfIR: cout<<"if "<<"x0"<<" "<<opstring(e->imm[0])<<" "<<REGNAMEFORVAR(e->right[0])
                     <<" goto l"<<e->imm[1]<<endl;break;
             case Goto: cout<<"goto l"<<e->imm[0]<<endl;break;
             case FrameLoad: cout<<"load "<<e->imm[0]<<" "<<REGNAMEFORVAR(e->left[0])<<endl;break;
