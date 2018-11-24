@@ -85,8 +85,25 @@ Symbol '=' Symbol AOP Symbol             {  if($3!=$5)
 //| Symbol '=' Symbol '[' '*' ']'             {$$=new Expression(ArrayRead,{$1},{$3},{0});}
 | Symbol '=' Symbol '[' INTEGER ']'         {$$=new Expression(ArrayRead,{$1},{$3},{$5});}
 | IF Symbol LOP Symbol GOTO LABEL           {$$=new Expression(IfRR,{},{$2,$4},{$3,$6});}
-| IF Symbol LOP INTEGER GOTO LABEL            {$$=new Expression(IfRI,{},{$2},{$3,$6,$4});}
-| IF INTEGER LOP Symbol GOTO LABEL            {$$=new Expression(IfIR,{},{$4},{$3,$6,$2});}
+| IF Symbol LOP INTEGER GOTO LABEL            {if($4==0)
+                                                $$=new Expression(IfRI,{},{$2},{$3,$6,$4});
+                                                else
+                                                {
+                                                    int tmp1 = ++Analyz::vcount;
+                                                    auto e = new Expression(MoveRI,{tmp1},{},{$4});
+                                                    $$ = new Expression(IfRR,{},{$2,tmp1},{$3,$6});
+                                                }
+
+}
+| IF INTEGER LOP Symbol GOTO LABEL            {if($2 ==0)
+                                                $$=new Expression(IfIR,{},{$4},{$3,$6,$2});
+                                                else
+                                                {
+                                                    int tmp1 = ++Analyz::vcount;
+                                                    auto e = new Expression(MoveRI,{tmp1},{},{$2});
+                                                    $$ = new Expression(IfRR,{},{tmp1,$4},{$3,$6});
+                                                }
+}
 | IF INTEGER LOP INTEGER GOTO LABEL             {if(calclogic($2,$3,$4)) $$=new Expression(Goto,{},{},{$6});}
 | GOTO LABEL                                    {$$=new Expression(Goto,{},{},{$2});}
 | PARAM Symbol                                {Analyz::Instance.currentFunc().CallParam($2,1);}
