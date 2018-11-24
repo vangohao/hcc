@@ -125,6 +125,7 @@ void Func::InitFunEnv()//此函数处理函数入口和出口出的寄存器管�
         auto e= new Expression(MoveRR,{paramTable[i]},{r},{},"","",false);
         exprs.push_front(e);
     }
+    if(name != "f_main")
     //保存被调用者保存的寄存器
     for(int i = 0; i<= 11; i++)
     {
@@ -178,6 +179,7 @@ void Func::ReturnFunc(int v,int t)
     {
         InitFunEnv();
     }
+    if(name != "f_main")
     //恢复被调用者保存的寄存器
     for(int i = 0; i<= 11; i++)
     {
@@ -195,10 +197,13 @@ void Func::ReturnFunc(int v,int t)
     {
         auto e = new Expression(MoveRI,{(int)(a0)},{},{v});
     }
+    if(name != "f_main")
     //s开头的寄存器需要设为出口活跃以免冲突,a0也需要
     auto e = new Expression(Return,{},{(int)(a0),(int)(s0),(int)(s0)+1,(int)(s0)+2,(int)(s0)+3,
                                             (int)(s0)+4,(int)(s0)+5,(int)(s0)+6,(int)(s0)+7,(int)(s0)+8,(int)(s0)+9,
                                             (int)(s0)+10,(int)(s0)+11},{});
+    else
+    auto e = new Expression(Return,{},{(int)(a0)},{});
 }
 void Func::CallParam(int v,int t)
 {
@@ -214,6 +219,8 @@ void Func::CallParam(int v,int t)
 }
 void Func::CallFunc(int v,string f)
 {
+    if(f!="f_getint" && f!="f_putint" && f!="f_putchar")
+    {
     vector<int> paramvec;
     for(int i = 0; i<paramToCallWithCount;i ++)
     {
@@ -255,6 +262,13 @@ void Func::CallFunc(int v,string f)
         auto e = new Expression(MoveRR,{r},{tmpvec[7 - paramToCallWithCount + i]},{});
     } 
     paramToCallWithCount = 0;
+    }
+    else
+    {
+        auto e = new Expression(Call,{(int)(a0)},{(int)(a0)},{},f);
+        auto e1 = new Expression(MoveRR,{v},{(int)(a0)},{});
+        paramToCallWithCount = 0;
+    }
 }
 void Func::livelyAnalyz()
 {
