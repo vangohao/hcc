@@ -223,24 +223,38 @@ void Func::CallFunc(int v,string f)
     {
         paramvec.push_back((int)(t0) + i);
     }
-    paramToCallWithCount = 0;
     vector<int> tmpvec;
-    //需要保存调用者保存的寄存器
+    //需要保存调用者保存的寄存器 包括a1-a9中不做参数的部分
      for(int i = 0; i<=6;i ++)
     {
         int r = (int)(t0) + i;
         int tmp1 = ++ Analyz::vcount;
         tmpvec.push_back(tmp1);
         auto e = new Expression(MoveRR,{tmp1},{r},{});
+    }
+    paramToCallWithCount = paramToCallWithCount > 0 ? paramToCallWithCount : 1;
+    for(int i = paramToCallWithCount;i <= 7; i++)
+    {
+        int r =(int)(a0) + i;
+        int tmp1 = ++Analyz::vcount;
+        tmpvec.push_back(tmp1);
+        auto e = new Expression(MoveRR,{tmp1},{r},{});
     } 
-    auto e = new Expression(Call,{(int)(a0),(int)(t0),(int)(t1),(int)(t2),(int)(t3),(int)(t4),(int)(t5),(int)(t6)}
+    auto e = new Expression(Call,{(int)(a0),(int)(a1),(int)(a2),(int)(a3),(int)(a4),(int)(a5),(int)(a6),(int)(a7),
+    (int)(t0),(int)(t1),(int)(t2),(int)(t3),(int)(t4),(int)(t5),(int)(t6)}
     ,paramvec,{},f);
     auto e1 = new Expression(MoveRR,{v},{(int)(a0)},{});
-     for(int i = 0; i<=6; i++)
+    for(int i = 0; i<=6; i++)
     {
         int r = (int)(t0) + i;
         auto e = new Expression(MoveRR,{r},{tmpvec[i]},{});
     } 
+    for(int i = paramToCallWithCount;i <= 7; i++)
+    {
+        int r =(int)(a0) + i;
+        auto e = new Expression(MoveRR,{r},{tmpvec[7 - paramToCallWithCount + i]},{});
+    } 
+    paramToCallWithCount = 0;
 }
 void Func::livelyAnalyz()
 {
