@@ -26,7 +26,7 @@ imm(_imm),funtocall(_funtocall),funin(_funin)
         if(Analyz::Instance.globalVaribleMap.find(l) != Analyz::Instance.globalVaribleMap.end())
         {
             leftGlobal = true;
-            // cerr<<"LEFTGLOBAL_"<<l<<endl;
+            cerr<<"LEFTGLOBAL_"<<l<<endl;
         }
     }
     for(auto iter = right.begin();iter!=right.end();iter++)
@@ -34,7 +34,7 @@ imm(_imm),funtocall(_funtocall),funin(_funin)
         if(Analyz::Instance.globalVaribleMap.find(*iter) !=
          Analyz::Instance.globalVaribleMap.end())
         {
-            // cerr<<"RIGHTGLOBAL_"<<*iter<<endl;
+            cerr<<"RIGHTGLOBAL_"<<*iter<<endl;
             //先load一下吧,有些语句可能不用load,以后再说.
             int tmp = Analyz::Instance.currentFunc().GenTempVariable();
             Expression* e1 = new Expression(GlobalLoad,{tmp},{},{*iter});
@@ -82,7 +82,7 @@ imm(_imm),funtocall(_funtocall),funin(_funin)
 }
 void Analyz::insert(int var,int s,int type)
 {
-    // cerr<<globalVariableCount<<endl;
+    cerr<<globalVariableCount<<endl;
     offset.push_back(globalSize);
     size.push_back(s);
     globalSize += s;
@@ -118,16 +118,22 @@ void Func::InitFunEnv()//此函数处理函数入口和出口出的寄存器管�
         auto e= new Expression(MoveRR,{paramTable[i]},{r},{},"","",false);
         exprs.push_front(e);
     }
-    if(name!="f_main")
     //保存被调用者保存的寄存器
     for(int i = 0; i<= 11; i++)
     {
         int r = (int)(s0) + i;
         int tmp1 = ++Analyz::vcount;
-        auto e =  new Expression(MoveRR,{tmp1},{r},{},"","",false);
+        auto e =  new Expression(MoveRR,{tmp1},{r},{},"","");
         exprs.push_front(e);
     }
-
+    //恢复被调用者保存的寄存器
+    for(int i = 0; i<= 11; i++)
+    {
+        int r = (int)(s0) + i;
+        int tmp1 = ++Analyz::vcount;
+        auto e =  new Expression(MoveRR,{r},{tmp1},{},"","");
+        exprs.push_back(e);
+    }
 }
 void Analyz::process()
 {
@@ -252,7 +258,10 @@ void Func::DebugPrint()
     case IfRI:cerr<<"IfRI"<<endl;break;
     case IfIR:cerr<<"IfIR"<<endl;break;
     case Goto:cerr<<"Goto"<<endl;break;
-    case Return:cerr<<"Return"<<endl;break;
+    case ReturnR:cerr<<"ReturnR"<<endl;break;
+    case ReturnI:cerr<<"ReturnI"<<endl;break;
+    case ParamR:cerr<<"ParamR"<<endl;break;
+    case ParamI:cerr<<"ParamI"<<endl;break;
     case Empty:cerr<<"Empty"<<endl;break;
     case Call:cerr<<"Call"<<endl;break;
     case Begin:cerr<<"Begin"<<endl;break;
@@ -353,7 +362,7 @@ void Func::InitColorAlgorithm()
     }
     for(int v = 0; v<= maxVariable; v++)
     {
-        if(tmp[v] && status[v] != Precolored)
+        if(tmp[v])
         {
             initial.push_back(v);
         }
@@ -463,7 +472,7 @@ list<int>& Func::Adjacent(int n)
 void Func::Simplify()
 {
     int n = simplifyWorklist.front();
-    // cerr<<"Simplify_"<<n<<endl;
+    cerr<<"Simplify_"<<n<<endl;
     simplifyWorklist.pop_front();
     selectStack.push_back(n);
     status[n] = Stacked;
@@ -527,7 +536,7 @@ void Func::Coalesce()
         u = x;
         v = y;
     }
-    // cerr<<"Coalesce_"<<u<<"_"<<v<<endl;
+    cerr<<"Coalesce_"<<u<<"_"<<v<<endl;
     if( u==v)
     {
         coalescedMoves.push_back(e);
@@ -596,7 +605,7 @@ int Func::GetAlias(int x)
 }
 void Func::Combine(int u,int v)
 {
-    // cerr<<"Combine_"<<u<<" "<<v<<endl;
+    cerr<<"Combine_"<<u<<" "<<v<<endl;
     if(status[v] == Freeze)
     {
         freezeWorklist.remove(v);
@@ -627,7 +636,7 @@ void Func::Combine(int u,int v)
 void Func::FreezeAction()
 {
     int u = freezeWorklist.front();
-    // cerr<<"Freeze_"<<u<<endl;
+    cerr<<"Freeze_"<<u<<endl;
     freezeWorklist.pop_front();
     simplifyWorklist.push_back(u);
     status[u]= Simple;
@@ -675,7 +684,7 @@ void Func::SelectSpill()
     spillWorklist.sort();
     int  m =spillWorklist.front();
     spillWorklist.remove(m);
-    // cerr<<"Spill_"<<m<<endl;
+    cerr<<"Spill_"<<m<<endl;
     simplifyWorklist.push_back(m);
     status[m]  = Simple;
     FreezeMoves(m);
@@ -717,7 +726,7 @@ void Func::RewriteProgram()
 {
     for(auto v:spilledNodes)
     {
-        //cerr<<"SPILL_"<<v<<endl;
+        cerr<<"SPILL_"<<v<<endl;
         //暂时默认指针类型也是4字节..
         //向栈帧中添加
         int tmp = insert();
@@ -788,7 +797,7 @@ void Func::ColorAlgorithmMain()
 {
     genFlow();
     livelyAnalyz();
-    //DebugPrint();
+    DebugPrint();
     InitializeVectorSpace();
     InitColorAlgorithm();
     while(1)
@@ -847,7 +856,6 @@ string Func::opstring(int op)
 }
 void Func::GenCode()
 {
-    cout<<name<<" ["<<paramCount<<"] ["<<frameSize<<"]"<<endl;
     for(auto e:exprs)
     {
         switch(e->type)
@@ -880,65 +888,23 @@ void Func::GenCode()
             case GlobalLoadAddr: cout<<"loadaddr G"<<Analyz::Instance.globalVaribleMap[e->imm[0]]<<" "<<REGNAMEFORVAR(e->left[0])<<endl;break;
 
             //参数,函数还未处理
-            case Call: cout<<"call "<<e->funtocall<<endl;break;
-            case Return: cout<<"return"<<endl;
+            
 
             case Empty:break;
             case Label:cout<<"l"<<e->imm[0]<<":"<<endl;break;
-            default: break;
+            default: cerr<<"TYPE_ERROR"<<endl;
         }
     }
-    cout<<"end "<<name<<endl;
 }
 void Func::Processor()
 {
     InitFunEnv();
     ColorAlgorithmMain();
-    //DebugPrintColorResult();
+    DebugPrintColorResult();
     //AssignPhysicsRegs();
-    //DebugPrintPhysicsResult();
+    DebugPrintPhysicsResult();
     GenCode();
 }
-
-void Func::CallFunc(string f,int v)
-{
-    int i = 0;
-    while(!paramsBeforeCall.empty())
-    {
-        ParamValue p = paramsBeforeCall.front();
-        paramsBeforeCall.pop_front();
-        if(p.type==1)
-        {
-            new Expression(MoveRR,{(int)(a0)+i},{p.val},{});
-        }
-        else
-        {
-            new Expression(MoveRI,{(int)(a0)+i},{},{p.val});
-        }
-    }
-    new Expression(Call,{},{},{},f);
-    new Expression(MoveRR,{v},{(int)(a0)},{});
-}
-void Func::ReturnFunc(int v,int _t)
-{
-    
-    if(name!="f_main")
-    //恢复被调用者保存的寄存器
-    for(int i = 0; i<= 11; i++)
-    {
-        int r = (int)(s0) + i;
-        int tmp1 = ++Analyz::vcount;
-        auto e =  new Expression(MoveRR,{r},{tmp1},{},"","",false);
-        exprs.push_back(e);
-    }
-
-    if(_t==1)
-        new Expression(MoveRR,{(int)(a0)},{v},{});
-    else 
-        new Expression(MoveRI,{(int)(a0)},{},{v});
-    new Expression(Return,{},{},{});
-}
-
 void Func::DebugPrintColorResult()
 {
     for(int i = 0; i<= maxVariable;i++)    {

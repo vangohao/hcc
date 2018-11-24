@@ -16,7 +16,10 @@ enum ExprType
     IfRI,
     IfIR,
     Goto,
-    Return,
+    ReturnR,
+    ReturnI,
+    ParamR,
+    ParamI,
     Empty,
     Call,
     Begin,
@@ -71,11 +74,6 @@ class Reg
     public:
     static vector<string> names;
 };
-struct ParamValue
-{
-    int type; // 0 :imm ,1:var
-    int val; 
-};
 class Func
 {
 public:
@@ -89,9 +87,6 @@ public:
     list<Expression*> exprs;
     vector<int> spilledVariableFrameMap; //由变量id映射到上面的offset和size数组的下标
 
-    list<ParamValue> paramsBeforeCall;
-    void CallFunc(string f,int v);
-    void ReturnFunc(int v,int _t);
     //进入函数环境处理
     void InitFunEnv();
 

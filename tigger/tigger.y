@@ -41,7 +41,7 @@ Statements                                     {}
 END FUNCTION                                  { new Expression(Empty,{},{},{});}
 ;
 Statements:
-Statements Expression '\n'            {
+Statements Expression '\n'            {if($1->type != Goto) $1->nexts.push_back($2); 
                                                 $$=$2;} 
 /*
 |Statements LABEL ':' '\n'                     {$$=new Expression(Label,{},{},{$2});
@@ -89,14 +89,11 @@ Symbol '=' Symbol AOP Symbol             {  if($3!=$5)
 | IF INTEGER LOP Symbol GOTO LABEL            {$$=new Expression(IfIR,{},{$4},{$3,$6,$2});}
 | IF INTEGER LOP INTEGER GOTO LABEL             {if(calclogic($2,$3,$4)) $$=new Expression(Goto,{},{},{$6});}
 | GOTO LABEL                                    {$$=new Expression(Goto,{},{},{$2});}
-| PARAM Symbol                                 {ParamValue p = {1,$2};
-                                                Analyz::Instance.currentFunc().paramsBeforeCall.push_back(p); 
-}
-| PARAM INTEGER                                 {ParamValue p = {0,$2};
-                                                Analyz::Instance.currentFunc().paramsBeforeCall.push_back(p);}
-| Symbol '=' CALL FUNCTION                    {Analyz::Instance.currentFunc().CallFunc($4,$1);}
-| RETURN Symbol                               {Analyz::Instance.currentFunc().ReturnFunc($2,1);}
-| RETURN INTEGER                              {Analyz::Instance.currentFunc().ReturnFunc($2,0);}
+| PARAM Symbol                                {$$=new Expression(ParamR,{},{$2},{});}
+| PARAM INTEGER                                 {$$=new Expression(ParamI,{},{},{$2});}
+| Symbol '=' CALL FUNCTION                    {$$=new Expression(Call,{$1},{},{},$4);}
+| RETURN Symbol                               {$$=new Expression(ReturnR,{},{$2},{});}
+| RETURN INTEGER                                {$$=new Expression(ReturnI,{},{},{$2});}
 | LABEL ':'                                     {$$=new Expression(Label,{},{},{$1});
                                                 Analyz::Instance.labelTable[$1] = $$;
 }
