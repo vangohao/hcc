@@ -57,13 +57,24 @@ Symbol '=' Symbol AOP Symbol             {  if($3!=$5)
                                             else
                                                 $$=new Expression(ArithRRSame,{$1},{$3},{$4});
                                                 }
-| Symbol '=' Symbol AOP INTEGER            {$$=new Expression(ArithRI,{$1},{$3},{$5,$4});} 
+| Symbol '=' Symbol AOP INTEGER            {if($4=='+' || $4=='*')
+                                            $$=new Expression(ArithRI,{$1},{$3},{$5,$4});
+                                            else
+                                            {
+                                                int tmp1 = ++Analyz::vcount;
+                                                $$ = new Expression(MoveRI,{tmp1},{},{$5});
+                                                auto e = new Expression(ArithRR,{$1},{$3,tmp1},{$4});
+                                            }
+} 
 //AOP allow + * only
-/*
+
 | Symbol '=' INTEGER AOP Symbol           {
-                                        if($4=='+') $$=new Expression(ArithRR,{$1},{$3},{$5});
+                                    
+                                                int tmp1 = ++Analyz::vcount;
+                                                $$ = new Expression(MoveRI,{tmp1},{},{$3});
+                                                auto e = new Expression(ArithRR,{$1},{tmp1,$5},{$4});
                                         }
-*/
+
 | Symbol '=' INTEGER AOP INTEGER            {$$=new Expression(MoveRI,{$1},{},{calcarith($3,$4,$5)});}
 | Symbol '=' AOP Symbol                   {$$=new Expression(Negative,{$1},{$4},{});}
 | Symbol '=' AOP INTEGER                    {$$=new Expression(MoveRI,{$1},{},{calcarith(0,$3,$4)});}
@@ -74,16 +85,24 @@ Symbol '=' Symbol AOP Symbol             {  if($3!=$5)
     $$=new Expression(Empty,{},{},{});
     }
 | Symbol '=' INTEGER                        {$$=new Expression(MoveRI,{$1},{},{$3});}
+| Symbol '[' Symbol ']' '=' Symbol          {
+                                            int tmp1 = ++Analyz::vcount;
+                                            auto e = new Expression(ArithRR,{tmp1},{$1,$3},{'+'});
+                                            $$ = new Expression(ArrayWrite,{},{tmp1,$6},{0});
+}
 /*
-| Symbol '[' Symbol ']' '=' Symbol
 | Symbol '[' Symbol ']' '=' INTEGER
 */
-| Symbol '[' INTEGER ']' '=' Symbol       {$$=new Expression(ArrayWrite,{},{$1,$6},{$3});}
-//| Symbol '[' INTEGER ']' '=' INTEGER        {$$=new Expression(ArrayWriteR,{$1},{$6},{});}
-//| Symbol '[' '*' ']' '=' Symbol           {$$=new Expression(ArrayWriteR,{$1},{$6},{0});}
-//| Symbol '[' '*' ']' '=' INTEGER            {$$=new Expression(ArrayWriteI,{$1},{},{0,$6});}
-//| Symbol '=' Symbol '[' '*' ']'             {$$=new Expression(ArrayRead,{$1},{$3},{0});}
+| Symbol '[' INTEGER ']' '=' Symbol         {$$=new Expression(ArrayWrite,{},{$1,$6},{$3});}
+| Symbol '[' INTEGER ']' '=' INTEGER        {int tmp1 = ++Analyz::vcount;
+                                            auto e = new Expression(MoveRI,{tmp1},{},{$6});
+                                            $$=new Expression(ArrayWrite,{},{$1,tmp1},{$3});}
 | Symbol '=' Symbol '[' INTEGER ']'         {$$=new Expression(ArrayRead,{$1},{$3},{$5});}
+| Symbol '=' Symbol '[' Symbol ']'          {
+                                            int tmp1 = ++Analyz::vcount;
+                                            auto e = new Expression(ArithRR,{tmp1},{$3,$5},{'+'});
+                                            $$ = new Expression(ArrayRead,{$1},{tmp1},{0});
+}
 | IF Symbol LOP Symbol GOTO LABEL           {$$=new Expression(IfRR,{},{$2,$4},{$3,$6});}
 | IF Symbol LOP INTEGER GOTO LABEL            {if($4==0)
                                                 $$=new Expression(IfRI,{},{$2},{$3,$6,$4});
