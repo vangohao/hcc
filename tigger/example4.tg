@@ -1,0 +1,561 @@
+v0 = 0
+f_getint [0] [0]
+a0 = 1
+a0 = a0 + 2
+return
+end f_getint
+f_main [0] [26]
+a7 = t0
+a6 = t1
+a5 = t2
+a4 = t3
+a3 = t4
+a2 = t5
+a1 = t6
+call f_getint
+t0 = a7
+t1 = a6
+t2 = a5
+t3 = a4
+t4 = a3
+t5 = a2
+t6 = a1
+store a0 0
+l1:
+a1 = 5
+load 0 a0
+if a0 == a1 goto l0
+goto l2
+l0:
+load 0 a0
+a0 = a0 + 1
+store a0 0
+goto l1
+l2:
+a0 = 0
+a1 = a0 + 1
+store a1 25
+load 25 a1
+a1 = a1 + 1
+store a1 24
+load 24 a1
+a1 = a1 + 1
+store a1 23
+load 23 a1
+a1 = a1 + 1
+store a1 22
+load 22 a1
+a1 = a1 + 1
+store a1 21
+load 21 a1
+a1 = a1 + 1
+store a1 20
+load 20 a1
+a1 = a1 + 1
+store a1 19
+load 19 a1
+a1 = a1 + 1
+store a1 18
+load 18 a1
+a1 = a1 + 1
+store a1 17
+load 17 a1
+a1 = a1 + 1
+store a1 16
+load 16 a1
+a1 = a1 + 1
+store a1 15
+load 15 a1
+a1 = a1 + 1
+store a1 14
+load 14 a1
+a1 = a1 + 1
+store a1 13
+load 13 a1
+a1 = a1 + 1
+store a1 12
+load 12 a1
+a1 = a1 + 1
+store a1 11
+load 11 a1
+a1 = a1 + 1
+store a1 10
+load 10 a1
+a1 = a1 + 1
+store a1 9
+load 9 a1
+a1 = a1 + 1
+store a1 8
+load 8 a1
+a1 = a1 + 1
+store a1 7
+load 7 a1
+a1 = a1 + 1
+store a1 6
+load 6 a1
+a1 = a1 + 1
+store a1 5
+load 5 a1
+a1 = a1 + 1
+store a1 4
+load 4 a1
+a1 = a1 + 1
+store a1 3
+load 3 a1
+a1 = a1 + 1
+store a1 2
+load 2 a1
+a1 = a1 + 1
+store a1 1
+a7 = t0
+a6 = t1
+a5 = t2
+a4 = t3
+a3 = t4
+a2 = t5
+a1 = t6
+call f_putint
+t0 = a7
+t1 = a6
+t2 = a5
+t3 = a4
+t4 = a3
+t5 = a2
+t6 = a1
+load 25 a0
+a7 = t0
+a6 = t1
+a5 = t2
+a4 = t3
+a3 = t4
+a2 = t5
+a1 = t6
+call f_putint
+t0 = a7
+t1 = a6
+t2 = a5
+t3 = a4
+t4 = a3
+t5 = a2
+t6 = a1
+loadaddr v0 a1
+a1 [0] = a0
+load 24 a0
+a7 = t0
+a6 = t1
+a5 = t2
+a4 = t3
+a3 = t4
+a2 = t5
+a1 = t6
+call f_putint
+t0 = a7
+t1 = a6
+t2 = a5
+t3 = a4
+t4 = a3
+t5 = a2
+t6 = a1
+load 23 a0
+a7 = t0
+a6 = t1
+a5 = t2
+a4 = t3
+a3 = t4
+a2 = t5
+a1 = t6
+call f_putint
+t0 = a7
+t1 = a6
+t2 = a5
+t3 = a4
+t4 = a3
+t5 = a2
+t6 = a1
+load 22 a0
+a7 = t0
+a6 = t1
+a5 = t2
+a4 = t3
+a3 = t4
+a2 = t5
+a1 = t6
+call f_putint
+t0 = a7
+t1 = a6
+t2 = a5
+t3 = a4
+t4 = a3
+t5 = a2
+t6 = a1
+load 21 a0
+a7 = t0
+a6 = t1
+a5 = t2
+a4 = t3
+a3 = t4
+a2 = t5
+a1 = t6
+call f_putint
+t0 = a7
+t1 = a6
+t2 = a5
+t3 = a4
+t4 = a3
+t5 = a2
+t6 = a1
+load 20 a0
+a7 = t0
+a6 = t1
+a5 = t2
+a4 = t3
+a3 = t4
+a2 = t5
+a1 = t6
+call f_putint
+t0 = a7
+t1 = a6
+t2 = a5
+t3 = a4
+t4 = a3
+t5 = a2
+t6 = a1
+load 19 a0
+a7 = t0
+a6 = t1
+a5 = t2
+a4 = t3
+a3 = t4
+a2 = t5
+a1 = t6
+call f_putint
+t0 = a7
+t1 = a6
+t2 = a5
+t3 = a4
+t4 = a3
+t5 = a2
+t6 = a1
+load 18 a0
+a7 = t0
+a6 = t1
+a5 = t2
+a4 = t3
+a3 = t4
+a2 = t5
+a1 = t6
+call f_putint
+t0 = a7
+t1 = a6
+t2 = a5
+t3 = a4
+t4 = a3
+t5 = a2
+t6 = a1
+load 17 a0
+a7 = t0
+a6 = t1
+a5 = t2
+a4 = t3
+a3 = t4
+a2 = t5
+a1 = t6
+call f_putint
+t0 = a7
+t1 = a6
+t2 = a5
+t3 = a4
+t4 = a3
+t5 = a2
+t6 = a1
+load 16 a0
+a7 = t0
+a6 = t1
+a5 = t2
+a4 = t3
+a3 = t4
+a2 = t5
+a1 = t6
+call f_putint
+t0 = a7
+t1 = a6
+t2 = a5
+t3 = a4
+t4 = a3
+t5 = a2
+t6 = a1
+load 15 a0
+a7 = t0
+a6 = t1
+a5 = t2
+a4 = t3
+a3 = t4
+a2 = t5
+a1 = t6
+call f_putint
+t0 = a7
+t1 = a6
+t2 = a5
+t3 = a4
+t4 = a3
+t5 = a2
+t6 = a1
+load 14 a0
+a7 = t0
+a6 = t1
+a5 = t2
+a4 = t3
+a3 = t4
+a2 = t5
+a1 = t6
+call f_putint
+t0 = a7
+t1 = a6
+t2 = a5
+t3 = a4
+t4 = a3
+t5 = a2
+t6 = a1
+load 13 a0
+a7 = t0
+a6 = t1
+a5 = t2
+a4 = t3
+a3 = t4
+a2 = t5
+a1 = t6
+call f_putint
+t0 = a7
+t1 = a6
+t2 = a5
+t3 = a4
+t4 = a3
+t5 = a2
+t6 = a1
+load 12 a0
+a7 = t0
+a6 = t1
+a5 = t2
+a4 = t3
+a3 = t4
+a2 = t5
+a1 = t6
+call f_putint
+t0 = a7
+t1 = a6
+t2 = a5
+t3 = a4
+t4 = a3
+t5 = a2
+t6 = a1
+load 11 a0
+a7 = t0
+a6 = t1
+a5 = t2
+a4 = t3
+a3 = t4
+a2 = t5
+a1 = t6
+call f_putint
+t0 = a7
+t1 = a6
+t2 = a5
+t3 = a4
+t4 = a3
+t5 = a2
+t6 = a1
+load 10 a0
+a7 = t0
+a6 = t1
+a5 = t2
+a4 = t3
+a3 = t4
+a2 = t5
+a1 = t6
+call f_putint
+t0 = a7
+t1 = a6
+t2 = a5
+t3 = a4
+t4 = a3
+t5 = a2
+t6 = a1
+load 9 a0
+a7 = t0
+a6 = t1
+a5 = t2
+a4 = t3
+a3 = t4
+a2 = t5
+a1 = t6
+call f_putint
+t0 = a7
+t1 = a6
+t2 = a5
+t3 = a4
+t4 = a3
+t5 = a2
+t6 = a1
+load 8 a0
+a7 = t0
+a6 = t1
+a5 = t2
+a4 = t3
+a3 = t4
+a2 = t5
+a1 = t6
+call f_putint
+t0 = a7
+t1 = a6
+t2 = a5
+t3 = a4
+t4 = a3
+t5 = a2
+t6 = a1
+load 7 a0
+a7 = t0
+a6 = t1
+a5 = t2
+a4 = t3
+a3 = t4
+a2 = t5
+a1 = t6
+call f_putint
+t0 = a7
+t1 = a6
+t2 = a5
+t3 = a4
+t4 = a3
+t5 = a2
+t6 = a1
+load 6 a0
+a7 = t0
+a6 = t1
+a5 = t2
+a4 = t3
+a3 = t4
+a2 = t5
+a1 = t6
+call f_putint
+t0 = a7
+t1 = a6
+t2 = a5
+t3 = a4
+t4 = a3
+t5 = a2
+t6 = a1
+load 5 a0
+a7 = t0
+a6 = t1
+a5 = t2
+a4 = t3
+a3 = t4
+a2 = t5
+a1 = t6
+call f_putint
+t0 = a7
+t1 = a6
+t2 = a5
+t3 = a4
+t4 = a3
+t5 = a2
+t6 = a1
+load 4 a0
+a7 = t0
+a6 = t1
+a5 = t2
+a4 = t3
+a3 = t4
+a2 = t5
+a1 = t6
+call f_putint
+t0 = a7
+t1 = a6
+t2 = a5
+t3 = a4
+t4 = a3
+t5 = a2
+t6 = a1
+load 3 a0
+a7 = t0
+a6 = t1
+a5 = t2
+a4 = t3
+a3 = t4
+a2 = t5
+a1 = t6
+call f_putint
+t0 = a7
+t1 = a6
+t2 = a5
+t3 = a4
+t4 = a3
+t5 = a2
+t6 = a1
+load 2 a0
+a7 = t0
+a6 = t1
+a5 = t2
+a4 = t3
+a3 = t4
+a2 = t5
+a1 = t6
+call f_putint
+t0 = a7
+t1 = a6
+t2 = a5
+t3 = a4
+t4 = a3
+t5 = a2
+t6 = a1
+load 1 a0
+a7 = t0
+a6 = t1
+a5 = t2
+a4 = t3
+a3 = t4
+a2 = t5
+a1 = t6
+call f_putint
+t0 = a7
+t1 = a6
+t2 = a5
+t3 = a4
+t4 = a3
+t5 = a2
+t6 = a1
+load 0 a0
+a7 = t0
+a6 = t1
+a5 = t2
+a4 = t3
+a3 = t4
+a2 = t5
+a1 = t6
+call f_putint
+t0 = a7
+t1 = a6
+t2 = a5
+t3 = a4
+t4 = a3
+t5 = a2
+t6 = a1
+a0 = 10
+a7 = t0
+a6 = t1
+a5 = t2
+a4 = t3
+a3 = t4
+a2 = t5
+a1 = t6
+call f_putchar
+t0 = a7
+t1 = a6
+t2 = a5
+t3 = a4
+t4 = a3
+t5 = a2
+t6 = a1
+load 1 a0
+return
+end f_main

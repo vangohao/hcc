@@ -1,7 +1,14 @@
-f_main [0]
 var T0
+f_getint [0]
 var T1
 var T2
+T1 = 1
+var t0
+t0 = T1 + 2
+T2 = t0
+return T2
+end f_getint
+f_main [0]
 var T3
 var T4
 var T5
@@ -29,208 +36,211 @@ var T26
 var T27
 var T28
 var T29
-var t0
-t0 = call f_getint
-T29 = t0
+var T30
+var T31
+var T32
+var t1
+t1 = call f_getint
+T32 = t1
 l1:
-if T29 == 5 goto l0
+if T32 == 5 goto l0
 goto l2
 l0:
-var t1
-t1 = T29 + 1
-T29 = t1
+var t2
+t2 = T32 + 1
+T32 = t2
 goto l1
 l2:
-T0 = 0
-var t2
-t2 = T0 + 1
-T1 = t2
+T3 = 0
 var t3
-t3 = T1 + 1
-T2 = t3
+t3 = T3 + 1
+T4 = t3
 var t4
-t4 = T2 + 1
-T3 = t4
+t4 = T4 + 1
+T5 = t4
 var t5
-t5 = T3 + 1
-T4 = t5
+t5 = T5 + 1
+T6 = t5
 var t6
-t6 = T4 + 1
-T5 = t6
+t6 = T6 + 1
+T7 = t6
 var t7
-t7 = T5 + 1
-T6 = t7
+t7 = T7 + 1
+T8 = t7
 var t8
-t8 = T6 + 1
-T7 = t8
+t8 = T8 + 1
+T9 = t8
 var t9
-t9 = T7 + 1
-T8 = t9
+t9 = T9 + 1
+T10 = t9
 var t10
-t10 = T8 + 1
-T9 = t10
+t10 = T10 + 1
+T11 = t10
 var t11
-t11 = T9 + 1
-T10 = t11
+t11 = T11 + 1
+T12 = t11
 var t12
-t12 = T10 + 1
-T11 = t12
+t12 = T12 + 1
+T13 = t12
 var t13
-t13 = T11 + 1
-T12 = t13
+t13 = T13 + 1
+T14 = t13
 var t14
-t14 = T12 + 1
-T13 = t14
+t14 = T14 + 1
+T15 = t14
 var t15
-t15 = T13 + 1
-T14 = t15
+t15 = T15 + 1
+T16 = t15
 var t16
-t16 = T14 + 1
-T15 = t16
+t16 = T16 + 1
+T17 = t16
 var t17
-t17 = T15 + 1
-T16 = t17
+t17 = T17 + 1
+T18 = t17
 var t18
-t18 = T16 + 1
-T17 = t18
+t18 = T18 + 1
+T19 = t18
 var t19
-t19 = T17 + 1
-T18 = t19
+t19 = T19 + 1
+T20 = t19
 var t20
-t20 = T18 + 1
-T19 = t20
+t20 = T20 + 1
+T21 = t20
 var t21
-t21 = T19 + 1
-T20 = t21
+t21 = T21 + 1
+T22 = t21
 var t22
-t22 = T20 + 1
-T21 = t22
+t22 = T22 + 1
+T23 = t22
 var t23
-t23 = T21 + 1
-T22 = t23
+t23 = T23 + 1
+T24 = t23
 var t24
-t24 = T22 + 1
-T23 = t24
+t24 = T24 + 1
+T25 = t24
 var t25
-t25 = T23 + 1
-T24 = t25
+t25 = T25 + 1
+T26 = t25
 var t26
-t26 = T24 + 1
-T25 = t26
-var T30
-param T0
+t26 = T26 + 1
+T27 = t26
 var t27
-t27 = call f_putint
-T30 = t27
-param T1
+t27 = T27 + 1
+T28 = t27
+var T33
+param T3
 var t28
 t28 = call f_putint
-T30 = t28
-param T2
+T33 = t28
+param T4
 var t29
 t29 = call f_putint
-T30 = t29
-param T3
+T0 = t29
+param T5
 var t30
 t30 = call f_putint
-T30 = t30
-param T4
+T33 = t30
+param T6
 var t31
 t31 = call f_putint
-T30 = t31
-param T5
+T33 = t31
+param T7
 var t32
 t32 = call f_putint
-T30 = t32
-param T6
+T33 = t32
+param T8
 var t33
 t33 = call f_putint
-T30 = t33
-param T7
+T33 = t33
+param T9
 var t34
 t34 = call f_putint
-T30 = t34
-param T8
+T33 = t34
+param T10
 var t35
 t35 = call f_putint
-T30 = t35
-param T9
+T33 = t35
+param T11
 var t36
 t36 = call f_putint
-T30 = t36
-param T10
+T33 = t36
+param T12
 var t37
 t37 = call f_putint
-T30 = t37
-param T11
+T33 = t37
+param T13
 var t38
 t38 = call f_putint
-T30 = t38
-param T12
+T33 = t38
+param T14
 var t39
 t39 = call f_putint
-T30 = t39
-param T13
+T33 = t39
+param T15
 var t40
 t40 = call f_putint
-T30 = t40
-param T14
+T33 = t40
+param T16
 var t41
 t41 = call f_putint
-T30 = t41
-param T15
+T33 = t41
+param T17
 var t42
 t42 = call f_putint
-T30 = t42
-param T16
+T33 = t42
+param T18
 var t43
 t43 = call f_putint
-T30 = t43
-param T17
+T33 = t43
+param T19
 var t44
 t44 = call f_putint
-T30 = t44
-param T18
+T33 = t44
+param T20
 var t45
 t45 = call f_putint
-T30 = t45
-param T19
+T33 = t45
+param T21
 var t46
 t46 = call f_putint
-T30 = t46
-param T20
+T33 = t46
+param T22
 var t47
 t47 = call f_putint
-T30 = t47
-param T21
+T33 = t47
+param T23
 var t48
 t48 = call f_putint
-T30 = t48
-param T22
+T33 = t48
+param T24
 var t49
 t49 = call f_putint
-T30 = t49
-param T23
+T33 = t49
+param T25
 var t50
 t50 = call f_putint
-T30 = t50
-param T24
+T33 = t50
+param T26
 var t51
 t51 = call f_putint
-T30 = t51
-param T25
+T33 = t51
+param T27
 var t52
 t52 = call f_putint
-T30 = t52
-param T29
+T33 = t52
+param T28
 var t53
 t53 = call f_putint
-T30 = t53
-var T31
-T31 = 10
-param T31
+T33 = t53
+param T32
 var t54
-t54 = call f_putchar
-T30 = t54
-return T25
+t54 = call f_putint
+T33 = t54
+var T34
+T34 = 10
+param T34
+var t55
+t55 = call f_putchar
+T33 = t55
+return T28
 end f_main

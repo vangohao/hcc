@@ -84,6 +84,8 @@ imm(_imm),funtocall(_funtocall),funin(_funin)
 void Analyz::insert(int var,int s,int type)
 {
     // cerr<<globalVariableCount<<endl;
+    if(type == 0)cout<<"v"<<offset.size()<<" = 0"<<endl;
+    else cout<<"v"<<offset.size()<<" = malloc "<<s<<endl;
     offset.push_back(globalSize);
     size.push_back(s);
     globalSize += s;
@@ -956,8 +958,8 @@ void Func::GenCode()
             case Goto: cout<<"goto l"<<e->imm[0]<<endl;break;
             case FrameLoad: cout<<"load "<<e->imm[0]<<" "<<REGNAMEFORVAR(e->left[0])<<endl;break;
             case FrameStore: cout<<"store "<<REGNAMEFORVAR(e->right[0])<<" "<<e->imm[0]<<endl;break;
-            case GlobalLoad: cout<<"load G"<<Analyz::Instance.globalVaribleMap[e->imm[0]]<<" "<<REGNAMEFORVAR(e->left[0])<<endl;break;
-            case GlobalLoadAddr: cout<<"loadaddr G"<<Analyz::Instance.globalVaribleMap[e->imm[0]]<<" "<<REGNAMEFORVAR(e->left[0])<<endl;break;
+            case GlobalLoad: cout<<"load v"<<Analyz::Instance.globalVaribleMap[e->imm[0]]<<" "<<REGNAMEFORVAR(e->left[0])<<endl;break;
+            case GlobalLoadAddr: cout<<"loadaddr v"<<Analyz::Instance.globalVaribleMap[e->imm[0]]<<" "<<REGNAMEFORVAR(e->left[0])<<endl;break;
 
             //参数,函数还未处理
 
