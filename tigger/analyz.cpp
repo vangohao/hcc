@@ -1,4 +1,5 @@
 #include "analyz.h"
+#define REGNAMEFORVAR(x) (Reg::names[color[GetAlias((x))]])
 /* Variable::Variable(int _val,bool _param,int _pid):
     val(_val),param(_param),pid(_pid){} */
 Analyz::Analyz()
@@ -12,10 +13,12 @@ Analyz::Analyz()
 }
 Expression::Expression(ExprType _type,std::initializer_list<int> _left,
         std::initializer_list<int> _right,
-        std::initializer_list<int> _imm,string _funtocall,string _funin)
+        std::initializer_list<int> _imm,string _funtocall,string _funin,
+        bool push)
 :type(_type),left(_left),right(_right),
 imm(_imm),funtocall(_funtocall),funin(_funin)
 {
+    if(push==false) return;
     bool leftGlobal = false;
     bool rightGlobal = false;
     for(int l:left)
@@ -23,7 +26,7 @@ imm(_imm),funtocall(_funtocall),funin(_funin)
         if(Analyz::Instance.globalVaribleMap.find(l) != Analyz::Instance.globalVaribleMap.end())
         {
             leftGlobal = true;
-            cerr<<"LEFTGLOBAL_"<<l<<endl;
+            // cerr<<"LEFTGLOBAL_"<<l<<endl;
         }
     }
     for(auto iter = right.begin();iter!=right.end();iter++)
@@ -31,11 +34,11 @@ imm(_imm),funtocall(_funtocall),funin(_funin)
         if(Analyz::Instance.globalVaribleMap.find(*iter) !=
          Analyz::Instance.globalVaribleMap.end())
         {
-            cerr<<"RIGHTGLOBAL_"<<*iter<<endl;
+            // cerr<<"RIGHTGLOBAL_"<<*iter<<endl;
             //先load一下吧,有些语句可能不用load,以后再说.
             int tmp = Analyz::Instance.currentFunc().GenTempVariable();
+            Expression* e1 = new Expression(GlobalLoad,{tmp},{},{*iter});
             *iter = tmp;
-            Expression* e1 = new Expression(GlobalLoad,{tmp},{*iter},{});
             rightGlobal = true;
         }
     }
@@ -51,7 +54,7 @@ imm(_imm),funtocall(_funtocall),funin(_funin)
         {
             case MoveRI:
             tmp1 = Analyz::Instance.currentFunc().GenTempVariable();
-            e1 = new Expression(GlobalLoadAddr,{tmp1},{left[0]},{});
+            e1 = new Expression(GlobalLoadAddr,{tmp1},{},{left[0]});
             tmp2 = Analyz::Instance.currentFunc().GenTempVariable();
             left[0] = tmp2;
             Analyz::Instance.currentFunc().exprs.push_back(this);
@@ -59,12 +62,15 @@ imm(_imm),funtocall(_funtocall),funin(_funin)
             break;
             case MoveRR:
             tmp1 = Analyz::Instance.currentFunc().GenTempVariable();
-            e1 = new Expression(GlobalLoadAddr,{tmp1},{left[0]},{});
+            e1 = new Expression(GlobalLoadAddr,{tmp1},{},{left[0]});
             e3 = new Expression(ArrayWrite,{},{tmp1,right[0]},{0});
             break;
         }
     }
-    Analyz::Instance.currentFunc().exprs.push_back(this);
+    else
+    {
+        Analyz::Instance.currentFunc().exprs.push_back(this);
+    }
     if(_type == MoveRR)
     {
         this->isMove = true;
@@ -76,7 +82,7 @@ imm(_imm),funtocall(_funtocall),funin(_funin)
 }
 void Analyz::insert(int var,int s,int type)
 {
-    cerr<<globalVariableCount<<endl;
+    // cerr<<globalVariableCount<<endl;
     offset.push_back(globalSize);
     size.push_back(s);
     globalSize += s;
@@ -104,6 +110,25 @@ Func& Analyz::currentFunc()
 {
     return *(funcs.rbegin());
 }
+void Func::InitFunEnv()//此函数处理函数入口和出口出的寄存器管理,不处理call语句和return语句
+{
+    for(int i = 0; i<paramCount; i++)
+    {
+        int r = (int)(a0) + i;
+        auto e= new Expression(MoveRR,{paramTable[i]},{r},{},"","",false);
+        exprs.push_front(e);
+    }
+    if(name!="f_main")
+    //保存被调用者保存的寄存器
+    for(int i = 0; i<= 11; i++)
+    {
+        int r = (int)(s0) + i;
+        int tmp1 = ++Analyz::vcount;
+        auto e =  new Expression(MoveRR,{tmp1},{r},{},"","",false);
+        exprs.push_front(e);
+    }
+
+}
 void Analyz::process()
 {
     for(auto f: funcs)
@@ -113,8 +138,15 @@ void Analyz::process()
 }
 void Func::genFlow()
 {
-    for(auto e:exprs)
+    for(auto iter = exprs.begin();iter!=exprs.end();++iter)
     {
+        Expression* e = *iter;
+        iter++;
+        e->nexts.clear();
+        e->prevs.clear();
+        if(iter != exprs.end())
+        e->nexts.push_back(*iter);
+        iter--;
         e->use = e->right;
         e->def = e->left;
         if(e->type==Goto)
@@ -191,7 +223,7 @@ void Func::livelyAnalyz()
                 e->out.insert(e->out.end(),expr->in.begin(),expr->in.end());
             }
             std::sort(e->out.begin(),e->out.end());
-            e->out.resize(std::unique(e->out.begin(),e->out.end()) - e->out.begin());
+            e->out.erase(std::unique(e->out.begin(),e->out.end()),e->out.end());
             if(e->in != e->in1 || e->out != e->out1)
             {
                 flag = false;
@@ -199,13 +231,38 @@ void Func::livelyAnalyz()
         }
         if(flag) break;
     }while(1);
-    // DebugPrint();
 }
 void Func::DebugPrint()
 {
     cerr<<name<<endl;
     for(auto e: exprs)
     {
+        switch(e->type)
+        {
+    case Invalid:cerr<<"Invalid"<<endl;break;
+    case MoveRI:cerr<<"MoveRI"<<endl;break;
+    case MoveRR:cerr<<"MoveRR"<<endl;break;
+    case ArithRR:cerr<<"ArithRR"<<endl;break;
+    case ArithRRSame:cerr<<"ArithRRSame"<<endl;break;
+    case ArithRI:cerr<<"ArithRI"<<endl;break;
+    case Negative:cerr<<"Negative"<<endl;break;
+    case ArrayWrite:cerr<<"ArrayWrite"<<endl;break;
+    case ArrayRead:cerr<<"ArrayRead"<<endl;break;
+    case IfRR:cerr<<"IfRR"<<endl;break;
+    case IfRI:cerr<<"IfRI"<<endl;break;
+    case IfIR:cerr<<"IfIR"<<endl;break;
+    case Goto:cerr<<"Goto"<<endl;break;
+    case Return:cerr<<"Return"<<endl;break;
+    case Empty:cerr<<"Empty"<<endl;break;
+    case Call:cerr<<"Call"<<endl;break;
+    case Begin:cerr<<"Begin"<<endl;break;
+    case FrameStore:cerr<<"FrameStore"<<endl;break;
+    case FrameLoad:cerr<<"FrameLoad"<<endl;break;
+    case FrameLoadAddr:cerr<<"FrameLoadAddr"<<endl;break;
+    case GlobalLoad:cerr<<"GlobalLoad"<<endl;break;
+    case GlobalLoadAddr:cerr<<"GlobalLoadAddr"<<endl;break;
+    case Label:cerr<<"Label"<<endl;break;
+        }
         cerr<<"def :";DebugPrint(e->def);
         cerr<<"use :";DebugPrint(e->use);
         cerr<<"in :";DebugPrint(e->in);
@@ -234,8 +291,15 @@ void Func::InitializeVectorSpace()
                 maxVariable = v;
             }
         }
+        for(auto v:e->def)
+        {
+            if(v > maxVariable)
+            {
+                maxVariable = v;
+            }
+        }
     }
-    spilledVariableFrameMap = vector<int>(maxVariable + 10);
+    spilledVariableFrameMap = vector<int>(maxVariable + 1);
     initial = list<int>();
     simplifyWorklist = list<int>();
     freezeWorklist = list<int>();
@@ -250,18 +314,25 @@ void Func::InitializeVectorSpace()
     worklistMoves = list<Expression*>();
     activeMoves  = list<Expression*>();
 
-    adjMatrix = vector<vector<int>>(maxVariable + 10);
-    adjList = vector<list<int>>(maxVariable + 10);
-    degrees = vector<int>(maxVariable+10);
-    alias = vector<int>(maxVariable+10);
-    color = vector<int>(maxVariable+10);
-    status = vector<NodeStatus>(maxVariable +10);
-    useList = vector<list<Expression*>>(maxVariable+10);
-    defList = vector<list<Expression*>>(maxVariable+10);
-    moveList = vector<vector<Expression*>>(maxVariable + 10);
+    adjMatrix = vector<vector<int>>(maxVariable + 1);
+    adjList = vector<list<int>>(maxVariable + 1);
+    degrees = vector<int>(maxVariable+1);
+    alias = vector<int>(maxVariable+1);
+    color = vector<int>(maxVariable+1);
+    status = vector<NodeStatus>(maxVariable +1);
+    useList = vector<list<Expression*>>(maxVariable+1);
+    defList = vector<list<Expression*>>(maxVariable+1);
+    moveList = vector<list<Expression*>>(maxVariable + 1);
     for(int i = 0; i<= maxVariable; i++)
     {
-        adjMatrix[i] = vector<int>(maxVariable+10);
+        adjMatrix[i] = vector<int>(maxVariable+1);
+    }
+
+    //为保留节点预着色
+    for(int i= 0; i<27; i++)
+    {
+        status[i] = Precolored;
+        color[i] = i;
     }
 }
 void Func::InitColorAlgorithm()
@@ -282,7 +353,7 @@ void Func::InitColorAlgorithm()
     }
     for(int v = 0; v<= maxVariable; v++)
     {
-        if(tmp[v])
+        if(tmp[v] && status[v] != Precolored)
         {
             initial.push_back(v);
         }
@@ -312,6 +383,7 @@ void Func::InitColorAlgorithm()
                 }
             }
         }
+        else
         for(auto i = e->in.begin();i!=e->in.end(); i++)
         {
             for(auto j = i+1; j!= e->in.end(); j++)
@@ -343,6 +415,7 @@ void Func::InitColorAlgorithm()
 }
 void Func::AddEdge(int x,int y)
 {
+    if(x!=y)
     if(adjMatrix[x][y] == 0)
     {
         adjMatrix[x][y] = 1;
@@ -390,7 +463,7 @@ list<int>& Func::Adjacent(int n)
 void Func::Simplify()
 {
     int n = simplifyWorklist.front();
-    cerr<<"Simplify_"<<n<<endl;
+    // cerr<<"Simplify_"<<n<<endl;
     simplifyWorklist.pop_front();
     selectStack.push_back(n);
     status[n] = Stacked;
@@ -437,7 +510,6 @@ void Func::EnableMoves(int m)
 void Func::Coalesce()
 {
     auto e = worklistMoves.front();
-    cerr<<"Coalesce"<<endl;
     worklistMoves.pop_front();
     int x = e->def[0];
     int y = e->use[0];
@@ -455,6 +527,7 @@ void Func::Coalesce()
         u = x;
         v = y;
     }
+    // cerr<<"Coalesce_"<<u<<"_"<<v<<endl;
     if( u==v)
     {
         coalescedMoves.push_back(e);
@@ -502,13 +575,17 @@ bool Func::TestPrecoloredCombine(int u/*precolored*/,int v)
 bool Func::TestConservative(int u,int v)
 {
     int k = 0;
-    for(auto x: Adjacent(u))
+    auto tmp1 = Adjacent(u);
+    auto tmp2 = Adjacent(u);
+    std::set<int> st;
+    for(auto x: tmp1)
     {
-        if(degrees[x] >= colorNumber) k++;
-    }
-    for(auto x: Adjacent(v))
+        if(degrees[x] >= colorNumber && st.count(x)==0) 
+        {k++;st.insert(x);}
+    }for(auto x: tmp2)
     {
-        if(degrees[x] >= colorNumber) k++;
+        if(degrees[x] >= colorNumber && st.count(x)==0) 
+        {k++;st.insert(x);}
     }
     return k<colorNumber;
 }
@@ -519,7 +596,7 @@ int Func::GetAlias(int x)
 }
 void Func::Combine(int u,int v)
 {
-    cerr<<"Combine_"<<u<<" "<<v<<endl;
+    // cerr<<"Combine_"<<u<<" "<<v<<endl;
     if(status[v] == Freeze)
     {
         freezeWorklist.remove(v);
@@ -532,6 +609,8 @@ void Func::Combine(int u,int v)
     status[v] = Coalesced;
     alias[v] = u;
     moveList[u].insert(moveList[u].end(),moveList[v].begin(),moveList[v].end());
+    moveList[u].sort();
+    moveList[u].erase(std::unique(moveList[u].begin(),moveList[u].end()),moveList[u].end());
     EnableMoves(v);
     for(auto t:Adjacent(v))
     {
@@ -548,7 +627,7 @@ void Func::Combine(int u,int v)
 void Func::FreezeAction()
 {
     int u = freezeWorklist.front();
-    cerr<<"Freeze_"<<u<<endl;
+    // cerr<<"Freeze_"<<u<<endl;
     freezeWorklist.pop_front();
     simplifyWorklist.push_back(u);
     status[u]= Simple;
@@ -581,10 +660,22 @@ void Func::FreezeMoves(int u)
 }
 void Func::SelectSpill()
 {
-    //选择一个启发式算法找出下一个溢出的节点,此处暂时选择队头的节点
-    int m = spillWorklist.front();
-    cerr<<"Spill_"<<m<<endl;
-    spillWorklist.pop_front();
+    //选择一个启发式算法找出下一个溢出的节点,此处暂时选择编号最小的节点
+    /*int m = spillWorklist.back();
+    spillWorklist.pop_back();*/
+    /* int minde = (1<<31) -1;int m = 0;
+    for(auto x:spillWorklist)
+    {
+        if(degrees[x]< minde)
+        {
+            minde = degrees[x];
+            m = x;
+        }
+    } */
+    spillWorklist.sort();
+    int  m =spillWorklist.front();
+    spillWorklist.remove(m);
+    // cerr<<"Spill_"<<m<<endl;
     simplifyWorklist.push_back(m);
     status[m]  = Simple;
     FreezeMoves(m);
@@ -626,6 +717,7 @@ void Func::RewriteProgram()
 {
     for(auto v:spilledNodes)
     {
+        //cerr<<"SPILL_"<<v<<endl;
         //暂时默认指针类型也是4字节..
         //向栈帧中添加
         int tmp = insert();
@@ -646,41 +738,46 @@ void Func::InsertExprForRead(Expression* e,int v)
 {
     int tempVar = GenTempVariable();
     int position = offset[spilledVariableFrameMap[v]] / 4;
-    Expression * readExpr = new Expression(FrameLoad,{tempVar},{},{position});
-    for(auto iter = e->use.begin(); iter!=e->use.end(); iter++)
+    Expression * readExpr = new Expression(FrameLoad,{tempVar},{},{position},"","",false);
+    auto it = find(exprs.begin(),exprs.end(),e);
+    exprs.insert(it,readExpr);
+    for(auto iter = e->right.begin(); iter!=e->right.end(); iter++)
     {
         if(*iter == v) 
         {
             *iter = tempVar;
         }
     }
-    for(auto p: e->prevs)
+    /* for(auto p: e->prevs)
     {
         p->nexts.remove(p);
         p->nexts.push_back(readExpr);
     }
     readExpr->prevs = e->prevs;
-    readExpr->nexts.push_back(e);
+    readExpr->nexts.push_back(e); */
 }
 void Func::InsertExprForWrite(Expression* e, int v)
 {
     int tempVar = GenTempVariable();
     int position = offset[spilledVariableFrameMap[v]] / 4;
-    Expression * writeExpr = new Expression(FrameLoad,{},{tempVar},{position});
-    for(auto iter = e->def.begin(); iter!=e->def.end(); iter++)
+    Expression * writeExpr = new Expression(FrameStore,{},{tempVar},{position},"","",false);
+    auto it = find(exprs.begin(),exprs.end(),e);
+    exprs.insert(++it,writeExpr);
+
+    for(auto iter = e->left.begin(); iter!=e->left.end(); iter++)
     {
         if(*iter == v) 
         {
             *iter = tempVar;
         }
     }
-    for(auto p: e->nexts)
+    /* for(auto p: e->nexts)
     {
         p->prevs.remove(p);
         p->prevs.push_back(writeExpr);
     }
     writeExpr->nexts = e->nexts;
-    writeExpr->prevs.push_back(e);
+    writeExpr->prevs.push_back(e); */
 }
 int Func::GenTempVariable()
 {
@@ -689,8 +786,9 @@ int Func::GenTempVariable()
 }
 void Func::ColorAlgorithmMain()
 {
+    genFlow();
     livelyAnalyz();
-    DebugPrint();
+    //DebugPrint();
     InitializeVectorSpace();
     InitColorAlgorithm();
     while(1)
@@ -705,10 +803,11 @@ void Func::ColorAlgorithmMain()
     if(!spilledNodes.empty()) 
     {
         RewriteProgram();
+        //GenCode();//Debug
         ColorAlgorithmMain(); //尾递归
     }
 }
-void Func::AssignPhysicsRegs()
+/* void Func::AssignPhysicsRegs()
 {
     PriorityRegs = {s0,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10,s11,t0,t1,t2,t3,t4,t5,t6,a0,a1,a2,a3,a4,a5,a6,a7};
     PhysicsColor = vector<int>(colorNumber,-1);
@@ -733,19 +832,113 @@ void Func::AssignPhysicsRegs()
 int Func::paramReg(int i)
 {
     return i+19;
-}
-void GenCode()
+} */
+string Func::opstring(int op)
 {
-    
+    char s[2];
+    if(op=='e') return "==";
+    else if(op=='n') return "!=";
+    else 
+    {
+        s[0] = op;
+        s[1] = 0;
+        return s;
+    }
+}
+void Func::GenCode()
+{
+    cout<<name<<" ["<<paramCount<<"] ["<<frameSize<<"]"<<endl;
+    for(auto e:exprs)
+    {
+        switch(e->type)
+        {
+            case ArithRR:cout<<REGNAMEFORVAR(e->left[0])<<" = "<<REGNAMEFORVAR(e->right[0])<<" "<<opstring(e->imm[0])
+                            <<" "<<REGNAMEFORVAR(e->right[1])<<endl;break;
+            case ArithRRSame:cout<<REGNAMEFORVAR(e->left[0])<<" = "<<REGNAMEFORVAR(e->right[0])<<" "<<opstring(e->imm[0])
+                            <<" "<<REGNAMEFORVAR(e->right[0])<<endl;break;
+            case ArithRI:cout<<REGNAMEFORVAR(e->left[0])<<" = "<<REGNAMEFORVAR(e->right[0])<<" "<<opstring(e->imm[1])
+                            <<" "<<e->imm[0]<<endl;break;
+            case Negative:cout<<REGNAMEFORVAR(e->left[0])<<" = - "<<REGNAMEFORVAR(e->right[0]);break;
+            case MoveRI: cout<<REGNAMEFORVAR(e->left[0])<<" = "<<e->imm[0]<<endl;break;
+            case MoveRR: if(REGNAMEFORVAR(e->left[0])!=REGNAMEFORVAR(e->right[0]))
+            {
+                cout<<REGNAMEFORVAR(e->left[0])<<" = "<<REGNAMEFORVAR(e->right[0])<<endl;
+            }
+            break;
+            case ArrayWrite: cout<<REGNAMEFORVAR(e->right[0])<<" ["<<e->imm[0]<<"] = "<<REGNAMEFORVAR(e->right[1])<<endl;break;
+            case ArrayRead:  cout<<REGNAMEFORVAR(e->left[0])<<" = "<<REGNAMEFORVAR(e->right[0])<<" ["<<e->imm[0]<<"]"<<endl;break;
+            case IfRR: cout<<"if "<<REGNAMEFORVAR(e->right[0])<<" "<<opstring(e->imm[0])<<" "<<REGNAMEFORVAR(e->right[1])
+                    <<" goto l"<<e->imm[1]<<endl;break;
+            case IfRI: cout<<"if "<<REGNAMEFORVAR(e->right[0])<<" "<<opstring(e->imm[0])<<" "<<e->imm[2]
+                    <<" goto l"<<e->imm[1]<<endl;break;
+            case IfIR: cout<<"if "<<e->imm[2]<<" "<<opstring(e->imm[0])<<" "<<REGNAMEFORVAR(e->right[0])
+                    <<" goto l"<<e->imm[1]<<endl;break;
+            case Goto: cout<<"goto l"<<e->imm[0]<<endl;break;
+            case FrameLoad: cout<<"load "<<e->imm[0]<<" "<<REGNAMEFORVAR(e->left[0])<<endl;break;
+            case FrameStore: cout<<"store "<<REGNAMEFORVAR(e->right[0])<<" "<<e->imm[0]<<endl;break;
+            case GlobalLoad: cout<<"load G"<<Analyz::Instance.globalVaribleMap[e->imm[0]]<<" "<<REGNAMEFORVAR(e->left[0])<<endl;break;
+            case GlobalLoadAddr: cout<<"loadaddr G"<<Analyz::Instance.globalVaribleMap[e->imm[0]]<<" "<<REGNAMEFORVAR(e->left[0])<<endl;break;
+
+            //参数,函数还未处理
+            case Call: cout<<"call "<<e->funtocall<<endl;break;
+            case Return: cout<<"return"<<endl;
+
+            case Empty:break;
+            case Label:cout<<"l"<<e->imm[0]<<":"<<endl;break;
+            default: break;
+        }
+    }
+    cout<<"end "<<name<<endl;
 }
 void Func::Processor()
 {
-    genFlow();
+    InitFunEnv();
     ColorAlgorithmMain();
-    DebugPrintColorResult();
-    AssignPhysicsRegs();
-    DebugPrintPhysicsResult();
+    //DebugPrintColorResult();
+    //AssignPhysicsRegs();
+    //DebugPrintPhysicsResult();
+    GenCode();
 }
+
+void Func::CallFunc(string f,int v)
+{
+    int i = 0;
+    while(!paramsBeforeCall.empty())
+    {
+        ParamValue p = paramsBeforeCall.front();
+        paramsBeforeCall.pop_front();
+        if(p.type==1)
+        {
+            new Expression(MoveRR,{(int)(a0)+i},{p.val},{});
+        }
+        else
+        {
+            new Expression(MoveRI,{(int)(a0)+i},{},{p.val});
+        }
+    }
+    new Expression(Call,{},{},{},f);
+    new Expression(MoveRR,{v},{(int)(a0)},{});
+}
+void Func::ReturnFunc(int v,int _t)
+{
+    
+    if(name!="f_main")
+    //恢复被调用者保存的寄存器
+    for(int i = 0; i<= 11; i++)
+    {
+        int r = (int)(s0) + i;
+        int tmp1 = ++Analyz::vcount;
+        auto e =  new Expression(MoveRR,{r},{tmp1},{},"","",false);
+        exprs.push_back(e);
+    }
+
+    if(_t==1)
+        new Expression(MoveRR,{(int)(a0)},{v},{});
+    else 
+        new Expression(MoveRI,{(int)(a0)},{},{v});
+    new Expression(Return,{},{},{});
+}
+
 void Func::DebugPrintColorResult()
 {
     for(int i = 0; i<= maxVariable;i++)    {
@@ -755,7 +948,7 @@ void Func::DebugPrintColorResult()
 void Func::DebugPrintPhysicsResult()
 {
     for(int i = 0; i<= maxVariable;i++)    {
-        cerr<<i<<":"<<Reg::names[(int)PriorityRegs[ColorPhysics[color[i]]]]<<endl;
+        cerr<<i<<":"<<Reg::names[color[i]]<<endl;
     }
     //顺便输出参数表
     for(int i = 0; i< paramTable.size(); i++)
@@ -765,4 +958,5 @@ void Func::DebugPrintPhysicsResult()
 }
 int Func::colorNumber = 27;
 vector<string> Reg::names = {"a0","a1","a2","a3","a4","a5","a6","a7",
-    "s0","s1","s2","s3","s4","s5","s6","s7","s8","s9","s10","s11","t0","t1","t2","t3","t4","t5","t6"};
+    "s0","s1","s2","s3","s4","s5","s6","s7","s8","s9","s10","s11",
+    "t0","t1","t2","t3","t4","t5","t6"};

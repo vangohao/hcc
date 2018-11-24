@@ -1,0 +1,14 @@
+f_fun[2]
+var T0
+var T1
+var t0
+t0 = p0 + 1
+var t1
+t1 = p1 + 2
+p0 = t0
+p1 = t1
+var t2
+t2 = t0 + t1
+T1 = t2
+return T1
+end f_fun

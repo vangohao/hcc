@@ -13,14 +13,17 @@
 #include <algorithm>
 #include <stack>
 #include <list>
+#include <sstream>
 
 using std::string;
+using std::stringstream;
 using std::vector;
 using std::unordered_map;
 using std::cerr;
 using std::endl;
 using std::stack;
 using std::list;
+using std::cout;
 int yylex();
 int yyerror(string s);
 int calcarith(int a,int op,int b);

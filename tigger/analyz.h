@@ -16,10 +16,7 @@ enum ExprType
     IfRI,
     IfIR,
     Goto,
-    ReturnR,
-    ReturnI,
-    ParamR,
-    ParamI,
+    Return,
     Empty,
     Call,
     Begin,
@@ -28,6 +25,7 @@ enum ExprType
     FrameLoadAddr,
     GlobalLoad,
     GlobalLoadAddr,
+    Label,
 };
 enum NodeStatus
 {
@@ -65,12 +63,18 @@ public:
     string funtocall;
     string funin;
     Expression(ExprType _type,std::initializer_list<int> _left,
-    std::initializer_list<int> _right,std::initializer_list<int> _imm,string _funtocall="",string _funin="");
+    std::initializer_list<int> _right,std::initializer_list<int> _imm,
+    string _funtocall="",string _funin="",bool push=true);
 };
 class Reg
 {
     public:
     static vector<string> names;
+};
+struct ParamValue
+{
+    int type; // 0 :imm ,1:var
+    int val; 
 };
 class Func
 {
@@ -82,13 +86,18 @@ public:
     vector<int> size;
     vector<int> paramTable;
     unordered_map<int,int> paramTableReverse;
-    vector<Expression*> exprs;
+    list<Expression*> exprs;
     vector<int> spilledVariableFrameMap; //由变量id映射到上面的offset和size数组的下标
+
+    list<ParamValue> paramsBeforeCall;
+    void CallFunc(string f,int v);
+    void ReturnFunc(int v,int _t);
+    //进入函数环境处理
+    void InitFunEnv();
 
     //Color Algorithm
     static int colorNumber;
     int maxVariable;
-    list<int> precolored;
     list<int> initial;
     list<int> simplifyWorklist;
     list<int> freezeWorklist;
@@ -110,7 +119,7 @@ public:
     vector<NodeStatus> status;
     vector<list<Expression*>> useList;
     vector<list<Expression*>> defList;
-    vector<vector<Expression*>> moveList;
+    vector<list<Expression*>> moveList;
 
 
     void ColorAlgorithmMain();
@@ -144,14 +153,15 @@ public:
     void InitializeVectorSpace();
     void Processor();
     
-    //AssignPhysicsRegs
+    /* //AssignPhysicsRegs
     vector<int> PhysicsColor;    //由寄存器索引颜色
     vector<int> ColorPhysics;   //由颜色索引寄存器
     vector<PhysicsRegs> PriorityRegs;
     void AssignPhysicsRegs();
-    int paramReg(int i);
+    int paramReg(int i); */
 
     //GenCode
+    string opstring(int op);
     void GenCode();
 
     //Debug
@@ -164,12 +174,13 @@ private:
 class Analyz
 {
 public:
-    static int vcount;
+    static int vcount;//eeyore中的变量编号从28开始,0-27为物理寄存器预留
     static Analyz Instance;
     int globalSize;
     int globalVariableCount;
     vector<int> offset;
     vector<int> size;
+    //固定0~26为预着色节点,在Analyz对象创建时建立
     unordered_map<string,Func*> FuncMap;
     unordered_map<int,Expression*> labelTable; 
     unordered_map<int,int> globalVaribleMap;

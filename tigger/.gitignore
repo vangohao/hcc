@@ -16,3 +16,4 @@ y.tab.o
 *.out
 *.gch
 *.tmp.pre
+temp

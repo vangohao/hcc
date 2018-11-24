@@ -13,7 +13,7 @@
 %token  VAR END IF RETURN GOTO CALL PARAM
 %token<name> FUNCTION
 %token<val> INTEGER AOP LOP VARIABLE LABEL PARAMVARIABLE
-%type<expr> Expression ExpressionWithLabel Statements
+%type<expr> Expression Statements
 %type<val> Symbol
 %%
 Program: 
@@ -38,9 +38,10 @@ FUNCTION '[' INTEGER ']' '\n'                  {Analyz::Instance.funcs.push_back
                                                 Analyz::Instance.FuncMap[$1] = &(Analyz::Instance.currentFunc());
                                                 }
 Statements                                     {}                        
+END FUNCTION                                  { new Expression(Empty,{},{},{});}
 ;
 Statements:
-Statements ExpressionWithLabel '\n'            {if($1->type != Goto) $1->nexts.push_back($2); 
+Statements Expression '\n'            {
                                                 $$=$2;} 
 /*
 |Statements LABEL ':' '\n'                     {$$=new Expression(Label,{},{},{$2});
@@ -50,17 +51,13 @@ Statements ExpressionWithLabel '\n'            {if($1->type != Goto) $1->nexts.p
 |Statements Declaration '\n'                       {$$ = $1;}    
 |%empty                                        {$$=new Expression(Begin,{},{},{});}
 ;
-ExpressionWithLabel:
-LABEL ':' '\n' ExpressionWithLabel             {$$=$4; Analyz::Instance.labelTable[$1] = $4;}
-|Expression                                    {$$=$1;}
-;
 Expression:
 Symbol '=' Symbol AOP Symbol             {  if($3!=$5)
-                                                $$=new Expression(ArithRR,{$1},{$3,$5},{});
+                                                $$=new Expression(ArithRR,{$1},{$3,$5},{$4});
                                             else
-                                                $$=new Expression(ArithRRSame,{$1},{$3},{});
+                                                $$=new Expression(ArithRRSame,{$1},{$3},{$4});
                                                 }
-| Symbol '=' Symbol AOP INTEGER            {$$=new Expression(ArithRI,{$1},{$3},{$5});} 
+| Symbol '=' Symbol AOP INTEGER            {$$=new Expression(ArithRI,{$1},{$3},{$5,$4});} 
 //AOP allow + * only
 /*
 | Symbol '=' INTEGER AOP Symbol           {
@@ -92,12 +89,17 @@ Symbol '=' Symbol AOP Symbol             {  if($3!=$5)
 | IF INTEGER LOP Symbol GOTO LABEL            {$$=new Expression(IfIR,{},{$4},{$3,$6,$2});}
 | IF INTEGER LOP INTEGER GOTO LABEL             {if(calclogic($2,$3,$4)) $$=new Expression(Goto,{},{},{$6});}
 | GOTO LABEL                                    {$$=new Expression(Goto,{},{},{$2});}
-| PARAM Symbol                                {$$=new Expression(ParamR,{},{$2},{});}
-| PARAM INTEGER                                 {$$=new Expression(ParamI,{},{},{$2});}
-| Symbol '=' CALL FUNCTION                    {$$=new Expression(Call,{$1},{},{},$4);}
-| RETURN Symbol                               {$$=new Expression(ReturnR,{},{$2},{});}
-| RETURN INTEGER                                {$$=new Expression(ReturnI,{},{},{$2});}
-| END FUNCTION                                  {$$=new Expression(Empty,{},{},{});}
+| PARAM Symbol                                 {ParamValue p = {1,$2};
+                                                Analyz::Instance.currentFunc().paramsBeforeCall.push_back(p); 
+}
+| PARAM INTEGER                                 {ParamValue p = {0,$2};
+                                                Analyz::Instance.currentFunc().paramsBeforeCall.push_back(p);}
+| Symbol '=' CALL FUNCTION                    {Analyz::Instance.currentFunc().CallFunc($4,$1);}
+| RETURN Symbol                               {Analyz::Instance.currentFunc().ReturnFunc($2,1);}
+| RETURN INTEGER                              {Analyz::Instance.currentFunc().ReturnFunc($2,0);}
+| LABEL ':'                                     {$$=new Expression(Label,{},{},{$1});
+                                                Analyz::Instance.labelTable[$1] = $$;
+}
 ;
 Symbol:
 VARIABLE                                        {$$ = $1;}
