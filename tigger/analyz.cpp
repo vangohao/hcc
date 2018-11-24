@@ -210,10 +210,11 @@ void Func::CallParam(int v,int t)
 void Func::CallFunc(int v,string f)
 {
     vector<int> paramvec;
-    for(int i = 0; i<paramCount;i ++)
+    for(int i = 0; i<paramToCallWithCount;i ++)
     {
         paramvec.push_back((int)(a0) + i);
     }
+    paramToCallWithCount = 0;
     vector<int> tmpvec;
     //需要保存调用者保存的寄存器
     for(int i = 0; i<=6;i ++)
