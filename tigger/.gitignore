@@ -6,6 +6,8 @@ hcc
 lex.yy.o
 lex.yy.c
 main.o
+*.c
+!getint_putint.c
 *.old
 y.output
 y.tab.h
@@ -14,6 +16,9 @@ y.tab.o
 *.tar
 *.o
 *.out
+*.ee
+*.tg
+*.tg1
 *.gch
 *.tmp.pre
 temp

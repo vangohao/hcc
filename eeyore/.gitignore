@@ -7,6 +7,11 @@ lex.yy.o
 lex.yy.c
 main.o
 *.old
+*.ee
+*.tg
+*.c
+!getint_putint.c
+*.oi
 y.output
 y.tab.h
 y.tab.c
