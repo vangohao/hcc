@@ -16,3 +16,5 @@ main.o: main.cpp tigger.h
 	g++ -g -Wall -std=c++14 -c main.cpp
 clean:
 	rm tigger lex.yy.o y.tab.o lex.yy.c y.tab.c y.tab.h analyz.o tigger.o main.o
+tarfile:
+	tar -cv *.cpp *.h *.l *.y eeyore tigger makefile -f 1700010686.tar 

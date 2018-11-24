@@ -45,7 +45,10 @@ imm(_imm),funtocall(_funtocall),funin(_funin)
             // cerr<<"RIGHTGLOBAL_"<<*iter<<endl;
             //先load一下吧,有些语句可能不用load,以后再说.
             int tmp = Analyz::Instance.currentFunc().GenTempVariable();
+            if(Analyz::Instance.globalVaribleType[*iter] == 0)
             Expression* e1 = new Expression(GlobalLoad,{tmp},{},{*iter});
+            else
+            Expression* e2 = new Expression(GlobalLoadAddr,{tmp},{},{*iter});
             *iter = tmp;
             rightGlobal = true;
         }
@@ -192,8 +195,8 @@ void Func::ReturnFunc(int v,int t)
     {
         auto e = new Expression(MoveRI,{(int)(a0)},{},{v});
     }
-    //s开头的寄存器需要设为出口活跃以免冲突
-    auto e = new Expression(Return,{},{(int)(s0),(int)(s0)+1,(int)(s0)+2,(int)(s0)+3,
+    //s开头的寄存器需要设为出口活跃以免冲突,a0也需要
+    auto e = new Expression(Return,{},{(int)(a0),(int)(s0),(int)(s0)+1,(int)(s0)+2,(int)(s0)+3,
                                             (int)(s0)+4,(int)(s0)+5,(int)(s0)+6,(int)(s0)+7,(int)(s0)+8,(int)(s0)+9,
                                             (int)(s0)+10,(int)(s0)+11},{});
 }

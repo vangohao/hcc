@@ -3,7 +3,7 @@
 #include"analyz.h"
 int Tcount = -1;
 int tcount = -1;
-int Analyz::vcount = -1;
+int Analyz::vcount = 28;
 vector<int> Tmap;
 vector<int> tmap;
 %}

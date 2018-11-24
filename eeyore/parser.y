@@ -299,9 +299,16 @@ Statement: '{'    {save.push(top);top = new SymbolTable(top);}
                                             }
 }
 | Identifier '[' Expression ']' '='  {
+                                        if($3->sym->type == Immediate)
+                                        {
+                                            $3->sym->immediate *= 4;
+                                        }
+                                        else
+                                        {
                                         Node * tmpnode = new Node(NULL,NULL,Symbol1,0,yylineno);
                                         tmpnode -> sym = new Symbol(SymbolType::Immediate,4);
                                         $3->sym = Symbol::ProcessDualOp(tmpnode,$3,"*");
+                                        }
 
 }
  Expression ';'  {$$ =new Node($1,$3,NodeType::ArrayAssign,'=',yylineno);
@@ -467,6 +474,15 @@ M Expression               {$$ = new Node($1,$5,NodeType::ExprLogic,LOR,yylineno
                                                 }
                                                 else
                                                 {
+                                                    if($3->sym->type == Immediate)
+                                                    {
+                                                    Symbol* tmpsym = new Symbol(SymbolType::Int);
+                                                    Output::gen("var ");tmpsym->print();Output::gen("\n");
+                                                    tmpsym->print();Output::gen(" = ");$1->sym->print();
+                                                    $3->sym->immediate *= 4;
+                                                    Output::gen(" [");$3->sym->print();Output::gen("]\n");
+                                                    $$->sym = tmpsym;
+                                                    }
                                                     Node * tmpnode = new Node(NULL,NULL,Symbol1,0,yylineno);
                                                     tmpnode -> sym = new Symbol(SymbolType::Immediate,4);
                                                     Symbol * tmpans = Symbol::ProcessDualOp(tmpnode,$3,"*");
