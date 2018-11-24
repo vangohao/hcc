@@ -913,7 +913,7 @@ string Func::opstring(int op)
 }
 void Func::GenCode()
 {
-    cout<<name<<" ["<<paramCount<<"] ["<<frameSize<<"]"<<endl;
+    cout<<name<<" ["<<paramCount<<"] ["<<frameSize/4<<"]"<<endl;
     for(auto e:exprs)
     {
         switch(e->type)

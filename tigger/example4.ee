@@ -1,13 +1,6 @@
-f_getint [0]
 var T0
 var T1
 var T2
-T1 = 1
-var t0
-t0 = T1 + 2
-T2 = t0
-return T2
-end f_getint
 f_main [0]
 var T3
 var T4
