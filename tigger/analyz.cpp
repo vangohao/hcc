@@ -556,16 +556,19 @@ void Func::DecrementDegree(int m)
         {
             EnableMoves(v);
         }
-        spillWorklist.remove(m);
-        if(MoveRelated(m))
+        if(status[m]==Hard)
         {
-            freezeWorklist.push_back(m);
-            status[m] = Freeze;
-        }
-        else
-        {
-            simplifyWorklist.push_back(m);
-            status[m] = Simple;
+            spillWorklist.remove(m);
+            if(MoveRelated(m))
+            {
+                freezeWorklist.push_back(m);
+                status[m] = Freeze;
+            }
+            else
+            {
+                simplifyWorklist.push_back(m);
+                status[m] = Simple;
+            }
         }
     }
 }
@@ -590,6 +593,11 @@ void Func::Coalesce()
     y = GetAlias(y);
     int u;
     int v;
+    if(status[x] == Precolored && status[y] == Precolored)
+    {
+        frozenMoves.push_back(e);
+        return;
+    }
     if(status[y] == Precolored)
     {
         u = y;
@@ -723,7 +731,7 @@ void Func::FreezeMoves(int u)
         }
         activeMoves.remove(e);
         frozenMoves.push_back(e);
-        if(NodeMoves(v).size()==0 && degrees[v] < colorNumber)
+        if(NodeMoves(v).size()==0 && degrees[v] < colorNumber && status[v] == Freeze) /*--*/
         {
             freezeWorklist.remove(v);
             simplifyWorklist.push_back(v);
@@ -972,6 +980,7 @@ void Func::Processor()
     //DebugPrintColorResult();
     //AssignPhysicsRegs();
     //DebugPrintPhysicsResult();
+    //DebugPrint();
     GenCode();
 }
 void Func::DebugPrintColorResult()

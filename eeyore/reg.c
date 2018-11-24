@@ -1,5 +1,4 @@
 //sample:input n number, sort them and print them;
-   int n;
    int getint()
    {
 	   int c0;
