@@ -887,7 +887,7 @@ void Func::RewriteProgram()
         //向栈帧中添加
         int tmp = insert();
         spilledVariableFrameMap[v] = tmp;
-        //生成新的命令和新的临时变量, 暂时不处理跳转指令
+        //生成新的命令和新的临时变量,
         //注:如果变量同时被读写,则添加两个临时变量,在图染色的时候他们会自动合并
         for(auto e:useList[v])
         {
@@ -974,32 +974,6 @@ void Func::ColorAlgorithmMain()
         ColorAlgorithmMain(); //尾递归
     }
 }
-/* void Func::AssignPhysicsRegs()
-{
-    PriorityRegs = {s0,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10,s11,t0,t1,t2,t3,t4,t5,t6,a0,a1,a2,a3,a4,a5,a6,a7};
-    PhysicsColor = vector<int>(colorNumber,-1);
-    ColorPhysics = vector<int>(colorNumber,-1);
-    for(int i = 0 ; i< paramTable.size(); i++)
-    {
-        if(status[paramTable[i]] == Colored && ColorPhysics[paramReg(i)] == -1)
-        {
-            ColorPhysics[color[paramTable[i]]] = paramReg(i) ;
-            PhysicsColor[paramReg(i)] = color[paramTable[i]];
-        }
-    }
-    int j = 0;
-    for(int i = 0; i<colorNumber; i++) 
-    if(ColorPhysics[i] == -1)
-    {
-        while(PhysicsColor[j] != -1) j++;
-        PhysicsColor[j] = i;
-        ColorPhysics[i] = j;
-    }
-}
-int Func::paramReg(int i)
-{
-    return i+19;
-} */
 string Func::opstring(int op)
 {
     char s[2];
@@ -1046,8 +1020,7 @@ void Func::GenCode()
             case GlobalLoad: cout<<"load v"<<Analyz::Instance.globalVaribleMap[e->imm[0]]<<" "<<REGNAMEFORVAR(e->left[0])<<endl;break;
             case GlobalLoadAddr: cout<<"loadaddr v"<<Analyz::Instance.globalVaribleMap[e->imm[0]]<<" "<<REGNAMEFORVAR(e->left[0])<<endl;break;
 
-            //参数,函数还未处理
-
+            //参数,函数
 
             case Empty:break;
             case Call: cout<<"call "<<e->funtocall<<endl;break;
