@@ -290,7 +290,7 @@ void Func::livelyAnalyz()
             vector<int> tmp;
             auto p1 = e->out.begin();
             auto p2 = e->def.begin();
-            while(p1!=e->out.end() && p2!=e->def.end())
+            while(p1!=e->out.end() && p2!=e->def.end())   //计算out-def
             {
                 while(p2!=e->def.end() && *p2 < *p1) p2++;
                 if(p2!=e->def.end() && *p2 > *p1)
@@ -308,7 +308,7 @@ void Func::livelyAnalyz()
                 tmp.insert(tmp.end(),p1,e->out.end());
             }
             e->in.clear();
-            p1 = e->use.begin();
+            p1 = e->use.begin();                    //计算in = use+(out-def)
             p2 = tmp.begin();
             while(p1!=e->use.end() && p2 != tmp.end())
             {
@@ -322,7 +322,7 @@ void Func::livelyAnalyz()
             }
             else{e->in.insert(e->in.end(),p2,tmp.end());}
             e->out.clear();
-            for(Expression* expr: e->nexts)
+            for(Expression* expr: e->nexts)        //计算out=nexts的in的并集
             {
                 e->out.insert(e->out.end(),expr->in.begin(),expr->in.end());
             }
@@ -338,9 +338,11 @@ void Func::livelyAnalyz()
 }
 void Func::DebugPrint()
 {
+    int DebugCounter =  0;
     cerr<<name<<endl;
     for(auto e: exprs)
     {
+        cerr<<DebugCounter++<<"_";
         switch(e->type)
         {
     case Invalid:cerr<<"Invalid"<<endl;break;
@@ -777,17 +779,20 @@ void Func::SelectSpill()
     //选择一个启发式算法找出下一个溢出的节点,此处暂时选择编号最小的节点
     /*int m = spillWorklist.back();
     spillWorklist.pop_back();*/
-    /* int minde = (1<<31) -1;int m = 0;
+
+    /* int maxde = 0;int m = 0;
     for(auto x:spillWorklist)
     {
-        if(degrees[x]< minde)
+        if(degrees[x]> maxde)
         {
-            minde = degrees[x];
+            maxde = degrees[x];
             m = x;
         }
     } */
+
     spillWorklist.sort();
-    int  m =spillWorklist.front();
+    int  m =spillWorklist.front(); 
+    
     spillWorklist.remove(m);
     // cerr<<"Spill_"<<m<<endl;
     simplifyWorklist.push_back(m);
@@ -899,9 +904,11 @@ int Func::GenTempVariable()
 }
 void Func::ColorAlgorithmMain()
 {
+    DebugPrint();
     genFlow();
+    cerr<<"GenFlowFinish"<<endl;
     livelyAnalyz();
-    //DebugPrint();
+    cerr<<"LivelyAnalyzFinish"<<endl;
     InitializeVectorSpace();
     InitColorAlgorithm();
     while(1)

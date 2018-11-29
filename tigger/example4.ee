@@ -1,5 +1,5 @@
 var T0
-f_main [0]
+f_mian [0]
 var T1
 var T2
 var T3
@@ -31,7 +31,7 @@ var T28
 var T29
 var T30
 var t0
-t0 = call f_getint
+t0 = call f_getin
 T30 = t0
 l1:
 if T30 == 5 goto l0
@@ -121,117 +121,117 @@ T26 = t26
 var T31
 param T1
 var t27
-t27 = call f_putint
+t27 = call f_putin
 T31 = t27
 param T2
 var t28
-t28 = call f_putint
+t28 = call f_putin
 T31 = t28
 param T3
 var t29
-t29 = call f_putint
+t29 = call f_putin
 T31 = t29
 param T4
 var t30
-t30 = call f_putint
+t30 = call f_putin
 T31 = t30
 param T5
 var t31
-t31 = call f_putint
+t31 = call f_putin
 T31 = t31
 param T6
 var t32
-t32 = call f_putint
+t32 = call f_putin
 T31 = t32
 param T7
 var t33
-t33 = call f_putint
+t33 = call f_putin
 T31 = t33
 param T8
 var t34
-t34 = call f_putint
+t34 = call f_putin
 T31 = t34
 param T9
 var t35
-t35 = call f_putint
+t35 = call f_putin
 T31 = t35
 param T10
 var t36
-t36 = call f_putint
+t36 = call f_putin
 T31 = t36
 param T11
 var t37
-t37 = call f_putint
+t37 = call f_putin
 T31 = t37
 param T12
 var t38
-t38 = call f_putint
+t38 = call f_putin
 T31 = t38
 param T13
 var t39
-t39 = call f_putint
+t39 = call f_putin
 T31 = t39
 param T14
 var t40
-t40 = call f_putint
+t40 = call f_putin
 T31 = t40
 param T15
 var t41
-t41 = call f_putint
+t41 = call f_putin
 T31 = t41
 param T16
 var t42
-t42 = call f_putint
+t42 = call f_putin
 T31 = t42
 param T17
 var t43
-t43 = call f_putint
+t43 = call f_putin
 T31 = t43
 param T18
 var t44
-t44 = call f_putint
+t44 = call f_putin
 T31 = t44
 param T19
 var t45
-t45 = call f_putint
+t45 = call f_putin
 T31 = t45
 param T20
 var t46
-t46 = call f_putint
+t46 = call f_putin
 T31 = t46
 param T21
 var t47
-t47 = call f_putint
+t47 = call f_putin
 T31 = t47
 param T22
 var t48
-t48 = call f_putint
+t48 = call f_putin
 T31 = t48
 param T23
 var t49
-t49 = call f_putint
+t49 = call f_putin
 T31 = t49
 param T24
 var t50
-t50 = call f_putint
+t50 = call f_putin
 T31 = t50
 param T25
 var t51
-t51 = call f_putint
+t51 = call f_putin
 T31 = t51
 param T26
 var t52
-t52 = call f_putint
+t52 = call f_putin
 T31 = t52
 param T30
 var t53
-t53 = call f_putint
+t53 = call f_putin
 T31 = t53
 var T32
 T32 = 10
 param T32
 var t54
-t54 = call f_putchar
+t54 = call f_putcha
 T31 = t54
 return T26
 end f_main
