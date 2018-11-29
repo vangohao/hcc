@@ -1,15 +1,10 @@
 #include "analyz.h"
 #define REGNAMEFORVAR(x) (Reg::names[color[GetAlias((x))]])
-/* Variable::Variable(int _val,bool _param,int _pid):
-    val(_val),param(_param),pid(_pid){} */
+
+
 Analyz::Analyz()
 {
     globalSize = 0; globalVariableCount = 0;
-    // offset = vector<int>();size=vector<int>();
-    // FuncMap = map<string,Func*>();
-    // labelTable = map<int,Expression*>();
-    // globalVaribleMap = map<int,int>();
-    // globalVaribleType = map<int,int>();
 }
 Expression::Expression(ExprType _type,vector<int> _left,
         vector<int> _right,
@@ -61,7 +56,7 @@ imm(_imm),funtocall(_funtocall),funin(_funin)
     {
         int tmp1,tmp2;
         Expression* e1,* e2,* e3;
-        switch(type)   //考虑到miniC转Eeyore时原生变量做左值只有赋值语句.
+        switch(type)   //考虑到miniC转Eeyore时全局变量做左值只有赋值语句.
         {
             case MoveRI:
             tmp1 = Analyz::Instance.currentFunc().GenTempVariable();
@@ -333,7 +328,7 @@ void Func::livelyAnalyz()
             std::sort(e->out.begin(),e->out.end());
             e->out.erase(std::unique(e->out.begin(),e->out.end()),e->out.end());//这句话可能是n方的
             
-            //重写
+            //重写,避免使用unique,不过好像没什么区别,还是很慢呢
             /* vector<int> merge_counter;
             vector<bool> merge_finish;
             vector<int> merge_total;
@@ -435,24 +430,6 @@ void Func::DebugPrint(vector<int> & v)
 void Func::InitializeVectorSpace()
 {
      //initialize Vectors
-    /* Analyz::vcount = 0;
-    for(auto e:exprs)
-    {
-        for(auto v:e->use)
-        {
-            if(v > Analyz::vcount)
-            {
-                Analyz::vcount = v;
-            }
-        }
-        for(auto v:e->def)
-        {
-            if(v > Analyz::vcount)
-            {
-                Analyz::vcount = v;
-            }
-        }
-    } */
     spilledVariableFrameMap = vector<int>(Analyz::vcount + 1);
     initial = list<int>();
     simplifyWorklist = list<int>();
@@ -822,7 +799,7 @@ void Func::FreezeMoves(int u)
 }
 void Func::SelectSpill()
 {
-    //选择一个启发式算法找出下一个溢出的节点,此处暂时选择编号最小的节点
+    //选择一个启发式算法找出下一个溢出的节点,此处暂时选择队头的节点
     /*int m = spillWorklist.back();
     spillWorklist.pop_back();*/
 
