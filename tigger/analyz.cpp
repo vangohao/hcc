@@ -799,7 +799,7 @@ void Func::FreezeMoves(int u)
 }
 void Func::SelectSpill()
 {
-    //选择一个启发式算法找出下一个溢出的节点,此处暂时选择队头的节点
+    //选择一个启发式算法找出下一个溢出的节点,此处暂时选择度数最大的顶点
     /*int m = spillWorklist.back();
     spillWorklist.pop_back();*/
 
