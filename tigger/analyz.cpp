@@ -558,7 +558,7 @@ void Func::InitColorAlgorithm()
         else if(MoveRelated(v))
         {
             freezeWorklist.push_back(v);
-            status[v] = Freeze;
+            status[v] = Related;
         }
         else 
         {
@@ -643,7 +643,7 @@ void Func::DecrementDegree(int m)
             if(MoveRelated(m))
             {
                 freezeWorklist.push_back(m);
-                status[m] = Freeze;
+                status[m] = Related;
             }
             else
             {
@@ -759,7 +759,7 @@ int Func::GetAlias(int x)
 void Func::Combine(int u,int v)
 {
     // cerr<<"Combine_"<<u<<" "<<v<<endl;
-    if(status[v] == Freeze)
+    if(status[v] == Related)
     {
         freezeWorklist.remove(v);
     }
@@ -779,7 +779,7 @@ void Func::Combine(int u,int v)
         AddEdge(t,u);
         DecrementDegree(t);
     }
-    if(degrees[u] >= colorNumber && status[u] ==Freeze)
+    if(degrees[u] >= colorNumber && status[u] ==Related)
     {
         freezeWorklist.remove(u);
         spillWorklist.push_back(u);
@@ -812,7 +812,7 @@ void Func::FreezeMoves(int u)
         }
         activeMoves.remove(e);
         frozenMoves.push_back(e);
-        if(NodeMoves(v).size()==0 && degrees[v] < colorNumber && status[v] == Freeze) /*--*/
+        if(NodeMoves(v).size()==0 && degrees[v] < colorNumber && status[v] == Related) /*--*/
         {
             freezeWorklist.remove(v);
             simplifyWorklist.push_back(v);
@@ -955,7 +955,7 @@ void Func::ColorAlgorithmMain()
     // cerr<<"GenFlowFinish"<<endl;
     livelyAnalyz();
     // cerr<<"LivelyAnalyzFinish"<<endl;
-    DebugPrint();
+    // DebugPrint();
     InitializeVectorSpace();
     InitColorAlgorithm();
     while(1)

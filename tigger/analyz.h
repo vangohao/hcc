@@ -34,7 +34,7 @@ enum NodeStatus
     Simple,
     Hard,
     Spilled,
-    Freeze,
+    Related,
     Colored,
     Stacked,
     Coalesced,
