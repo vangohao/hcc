@@ -803,7 +803,7 @@ void Func::SelectSpill()
     /*int m = spillWorklist.back();
     spillWorklist.pop_back();*/
 
-    /* int maxde = 0;int m = 0;
+     int maxde = 0;int m = 0;
     for(auto x:spillWorklist)
     {
         if(degrees[x]> maxde)
@@ -811,11 +811,11 @@ void Func::SelectSpill()
             maxde = degrees[x];
             m = x;
         }
-    } */
+    } 
 
-    spillWorklist.sort();
+    /* spillWorklist.sort();
     int  m =spillWorklist.front(); 
-    
+     */
     spillWorklist.remove(m);
     // cerr<<"Spill_"<<m<<endl;
     simplifyWorklist.push_back(m);
