@@ -247,6 +247,7 @@ void Func::CallFunc(int v,string f)
         tmpvec.push_back(tmp1);
         auto e = new Expression(MoveRR,{tmp1},{r},{});
     } 
+    //t0-t6调用者保存的寄存器会被def
     auto e = new Expression(Call,{(int)(a0),(int)(a1),(int)(a2),(int)(a3),(int)(a4),(int)(a5),(int)(a6),(int)(a7),
     (int)(t0),(int)(t1),(int)(t2),(int)(t3),(int)(t4),(int)(t5),(int)(t6)}
     ,paramvec,{},f);
@@ -321,17 +322,62 @@ void Func::livelyAnalyz()
                 e->in.insert(e->in.end(),p1,e->use.end());
             }
             else{e->in.insert(e->in.end(),p2,tmp.end());}
+            //由于in是归并得到的,所以已经排好序
             e->out.clear();
+
+            
             for(Expression* expr: e->nexts)        //计算out=nexts的in的并集
             {
                 e->out.insert(e->out.end(),expr->in.begin(),expr->in.end());
             }
             std::sort(e->out.begin(),e->out.end());
-            e->out.erase(std::unique(e->out.begin(),e->out.end()),e->out.end());
+            e->out.erase(std::unique(e->out.begin(),e->out.end()),e->out.end());//这句话可能是n方的
+            
+            //重写
+            /* vector<int> merge_counter;
+            vector<bool> merge_finish;
+            vector<int> merge_total;
+            for(Expression* expr: e->nexts) 
+            {
+                merge_counter.push_back(0);
+                if(expr->in.size()==0)
+                    merge_finish.push_back(true);
+                else  merge_finish.push_back(false);
+                merge_total.push_back(expr->in.size());
+            }
+            while(1)
+            {
+                int min = (1<<30)-1;
+                list<int> minarg;
+                int i = 0;
+                auto iter = e->nexts.begin();
+                for(;i<merge_counter.size(); i++,iter++)
+                if(merge_finish[i]==false)
+                {
+                    if((*iter)->in[merge_counter[i]] < min)
+                    {
+                        min = (*iter)->in[merge_counter[i]];
+                        minarg.clear();
+                        minarg.push_back(i);
+                    }
+                    else if((*iter)->in[merge_counter[i]] == min)
+                    {
+                        minarg.push_back(i);
+                    }
+                }
+                if(minarg.size()==0) break;
+                e->out.push_back(min);
+                for(auto x:minarg)
+                {
+                    merge_counter[x]++;
+                    if(merge_counter[x] == merge_total[x]) merge_finish[x] = true;
+                }
+            }
+            */
             if(e->in != e->in1 || e->out != e->out1)
             {
                 flag = false;
-            }
+            } 
         }
         if(flag) break;
     }while(1);
@@ -904,11 +950,12 @@ int Func::GenTempVariable()
 }
 void Func::ColorAlgorithmMain()
 {
-    DebugPrint();
+    // DebugPrint();
     genFlow();
-    cerr<<"GenFlowFinish"<<endl;
+    // cerr<<"GenFlowFinish"<<endl;
     livelyAnalyz();
-    cerr<<"LivelyAnalyzFinish"<<endl;
+    // cerr<<"LivelyAnalyzFinish"<<endl;
+    DebugPrint();
     InitializeVectorSpace();
     InitColorAlgorithm();
     while(1)

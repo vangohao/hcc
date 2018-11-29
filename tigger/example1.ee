@@ -38,7 +38,6 @@ goto l6
 l8:
 return T2
 end f_func
-
 var T3
 f_main [0]
 var T4
@@ -68,4 +67,3 @@ t6 = call f_putint
 T6 = t6
 return 0
 end f_main
-

@@ -6,4 +6,3 @@ t0 = T0 + 1
 T0 = t0 +T0
 t0 = t0 + T0
 end f_main
-
