@@ -84,8 +84,8 @@ public:
     vector<int> offset;
     vector<int> size;
     vector<int> paramTable;
-    unordered_map<int,int> paramTableReverse;
     // unordered_map<int,int> frameArrayTable;
+    unordered_map<int,int> paramTableReverse;
     list<Expression*> exprs;
     vector<int> spilledVariableFrameMap; //由变量id映射到上面的offset和size数组的下标
 

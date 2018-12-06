@@ -1,6 +1,7 @@
 #include "analyz.h"
 #define REGNAMEFORVAR(x) (Reg::names[color[GetAlias((x))]])
 
+extern unordered_map<int,int> frameArrayTable;
 Analyz::Analyz()
 {
     globalSize = 0; globalVariableCount = 0;
@@ -45,6 +46,13 @@ imm(_imm),funtocall(_funtocall),funin(_funin)
             Expression* e2 = new Expression(GlobalLoadAddr,{tmp},{},{*iter});
             *iter = tmp;
             rightGlobal = true;
+        }
+        else if(frameArrayTable.count(*iter))
+        {
+            int tmp = Analyz::Instance.currentFunc().GenTempVariable();
+            Expression * e1 = new Expression(FrameLoadAddr,{tmp},{},
+                {Analyz::Instance.currentFunc().offset[frameArrayTable[*iter]]});
+            *iter = tmp;
         }
     }
     if(rightGlobal)
@@ -96,7 +104,7 @@ int Func::insert(int s,int v)
     offset.push_back(frameSize);
     size.push_back(s);
     frameSize += s;
-    // frameArrayTable[v] = tmp;
+    frameArrayTable[v] = tmp;
     return tmp;
 }
 int Func::insert()
@@ -1004,7 +1012,7 @@ void Func::GenCode()
             case FrameStore: cout<<"store "<<REGNAMEFORVAR(e->right[0])<<" "<<e->imm[0]<<endl;break;
             case GlobalLoad: cout<<"load v"<<Analyz::Instance.globalVaribleMap[e->imm[0]]<<" "<<REGNAMEFORVAR(e->left[0])<<endl;break;
             case GlobalLoadAddr: cout<<"loadaddr v"<<Analyz::Instance.globalVaribleMap[e->imm[0]]<<" "<<REGNAMEFORVAR(e->left[0])<<endl;break;
-
+            case FrameLoadAddr: cout<<"loadaddr "<<e->imm[0]<<" "<<REGNAMEFORVAR(e->left[0])<<endl;break;
             //参数,函数
 
             case Empty:break;
