@@ -85,6 +85,7 @@ public:
     vector<int> size;
     vector<int> paramTable;
     unordered_map<int,int> paramTableReverse;
+    // unordered_map<int,int> frameArrayTable;
     list<Expression*> exprs;
     vector<int> spilledVariableFrameMap; //由变量id映射到上面的offset和size数组的下标
 
@@ -143,7 +144,8 @@ public:
     void InsertExprForRead(Expression* e,int v);
     int GenTempVariable();
 
-    int insert(int s = 4);
+    int insert(int s,int v);
+    int insert();
     Func(int _paramCount,string _name);
     void genFlow();
     void InitializeVectorSpace();

@@ -1,7 +1,6 @@
 #include "analyz.h"
 #define REGNAMEFORVAR(x) (Reg::names[color[GetAlias((x))]])
 
-
 Analyz::Analyz()
 {
     globalSize = 0; globalVariableCount = 0;
@@ -91,12 +90,21 @@ void Analyz::insert(int var,int s,int type)
     globalVaribleType.insert(std::make_pair(var,type));
     globalVariableCount++;
 }
-int Func::insert(int s)
+int Func::insert(int s,int v)
 {
     int tmp = offset.size();
     offset.push_back(frameSize);
     size.push_back(s);
     frameSize += s;
+    // frameArrayTable[v] = tmp;
+    return tmp;
+}
+int Func::insert()
+{
+    int tmp = offset.size();
+    offset.push_back(frameSize);
+    size.push_back(4);
+    frameSize += 4;
     return tmp;
 }
 Func::Func(int _paramCount,string _name):paramCount(_paramCount),name(_name),paramToCallWithCount(0),frameSize(0)
