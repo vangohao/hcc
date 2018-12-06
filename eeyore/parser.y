@@ -307,7 +307,7 @@ Statement: '{'    {save.push(top);top = new SymbolTable(top);}
                                         {
                                         Node * tmpnode = new Node(NULL,NULL,Symbol1,0,yylineno);
                                         tmpnode -> sym = new Symbol(SymbolType::Immediate,4);
-                                        $3->sym = Symbol::ProcessDualOp(tmpnode,$3,"*");
+                                        $3->sym = Symbol::ProcessDualOp($3,tmpnode,"*");
                                         }
 
 }
@@ -485,7 +485,7 @@ M Expression               {$$ = new Node($1,$5,NodeType::ExprLogic,LOR,yylineno
                                                     }
                                                     Node * tmpnode = new Node(NULL,NULL,Symbol1,0,yylineno);
                                                     tmpnode -> sym = new Symbol(SymbolType::Immediate,4);
-                                                    Symbol * tmpans = Symbol::ProcessDualOp(tmpnode,$3,"*");
+                                                    Symbol * tmpans = Symbol::ProcessDualOp($3,tmpnode,"*");
                                                     Symbol* tmpsym = new Symbol(SymbolType::Int);
                                                     Output::gen("var ");tmpsym->print();Output::gen("\n");
                                                     tmpsym->print();Output::gen(" = ");$1->sym->print();
