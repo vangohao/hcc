@@ -1,554 +1,568 @@
 v0 = 0
-f_main [0] [26]
-a7 = t0
-a6 = t1
-a5 = t2
-a4 = t3
-a3 = t4
-a2 = t5
-a1 = t6
-call f_getint
-t0 = a7
-t1 = a6
-t2 = a5
-t3 = a4
-t4 = a3
-t5 = a2
-t6 = a1
-store a0 0
+f_mian [0] [33]
+store s11 32
+store s10 31
+store s9 30
+store s8 29
+store s7 28
+store s6 27
+store s5 26
+store s4 25
+store s3 24
+store s2 23
+store s1 22
+store s0 20
+s6 = t0
+s5 = t1
+s4 = t2
+s3 = t3
+s2 = t4
+s1 = t5
+s0 = t6
+call f_getin
+t0 = s6
+t1 = s5
+t2 = s4
+t3 = s3
+t4 = s2
+t5 = s1
+t6 = s0
+store a0 21
 l1:
-a1 = 5
-load 0 a0
-if a0 == a1 goto l0
+s0 = 5
+load 21 a0
+if a0 == s0 goto l0
 goto l2
 l0:
-load 0 a0
+load 21 a0
 a0 = a0 + 1
-store a0 0
+store a0 21
 goto l1
 l2:
 a0 = 0
-a1 = a0 + 1
-store a1 25
-load 25 a1
-a1 = a1 + 1
-store a1 24
-load 24 a1
-a1 = a1 + 1
-store a1 23
-load 23 a1
-a1 = a1 + 1
-store a1 22
-load 22 a1
-a1 = a1 + 1
-store a1 21
-load 21 a1
-a1 = a1 + 1
-store a1 20
-load 20 a1
-a1 = a1 + 1
-store a1 19
-load 19 a1
-a1 = a1 + 1
-store a1 18
-load 18 a1
-a1 = a1 + 1
-store a1 17
-load 17 a1
-a1 = a1 + 1
-store a1 16
-load 16 a1
-a1 = a1 + 1
-store a1 15
-load 15 a1
-a1 = a1 + 1
-store a1 14
-load 14 a1
-a1 = a1 + 1
-store a1 13
-load 13 a1
-a1 = a1 + 1
-store a1 12
-load 12 a1
-a1 = a1 + 1
-store a1 11
-load 11 a1
-a1 = a1 + 1
-store a1 10
-load 10 a1
-a1 = a1 + 1
-store a1 9
-load 9 a1
-a1 = a1 + 1
-store a1 8
-load 8 a1
-a1 = a1 + 1
-store a1 7
-load 7 a1
-a1 = a1 + 1
-store a1 6
-load 6 a1
-a1 = a1 + 1
-store a1 5
-load 5 a1
-a1 = a1 + 1
-store a1 4
-load 4 a1
-a1 = a1 + 1
-store a1 3
-load 3 a1
-a1 = a1 + 1
-store a1 2
-load 2 a1
-a1 = a1 + 1
-store a1 1
-a7 = t0
-a6 = t1
-a5 = t2
-a4 = t3
-a3 = t4
-a2 = t5
-a1 = t6
-call f_putint
-t0 = a7
-t1 = a6
-t2 = a5
-t3 = a4
-t4 = a3
-t5 = a2
-t6 = a1
-load 25 a0
-a7 = t0
-a6 = t1
-a5 = t2
-a4 = t3
-a3 = t4
-a2 = t5
-a1 = t6
-call f_putint
-t0 = a7
-t1 = a6
-t2 = a5
-t3 = a4
-t4 = a3
-t5 = a2
-t6 = a1
-load 24 a0
-a7 = t0
-a6 = t1
-a5 = t2
-a4 = t3
-a3 = t4
-a2 = t5
-a1 = t6
-call f_putint
-t0 = a7
-t1 = a6
-t2 = a5
-t3 = a4
-t4 = a3
-t5 = a2
-t6 = a1
-load 23 a0
-a7 = t0
-a6 = t1
-a5 = t2
-a4 = t3
-a3 = t4
-a2 = t5
-a1 = t6
-call f_putint
-t0 = a7
-t1 = a6
-t2 = a5
-t3 = a4
-t4 = a3
-t5 = a2
-t6 = a1
-load 22 a0
-a7 = t0
-a6 = t1
-a5 = t2
-a4 = t3
-a3 = t4
-a2 = t5
-a1 = t6
-call f_putint
-t0 = a7
-t1 = a6
-t2 = a5
-t3 = a4
-t4 = a3
-t5 = a2
-t6 = a1
-load 21 a0
-a7 = t0
-a6 = t1
-a5 = t2
-a4 = t3
-a3 = t4
-a2 = t5
-a1 = t6
-call f_putint
-t0 = a7
-t1 = a6
-t2 = a5
-t3 = a4
-t4 = a3
-t5 = a2
-t6 = a1
-load 20 a0
-a7 = t0
-a6 = t1
-a5 = t2
-a4 = t3
-a3 = t4
-a2 = t5
-a1 = t6
-call f_putint
-t0 = a7
-t1 = a6
-t2 = a5
-t3 = a4
-t4 = a3
-t5 = a2
-t6 = a1
-load 19 a0
-a7 = t0
-a6 = t1
-a5 = t2
-a4 = t3
-a3 = t4
-a2 = t5
-a1 = t6
-call f_putint
-t0 = a7
-t1 = a6
-t2 = a5
-t3 = a4
-t4 = a3
-t5 = a2
-t6 = a1
-load 18 a0
-a7 = t0
-a6 = t1
-a5 = t2
-a4 = t3
-a3 = t4
-a2 = t5
-a1 = t6
-call f_putint
-t0 = a7
-t1 = a6
-t2 = a5
-t3 = a4
-t4 = a3
-t5 = a2
-t6 = a1
-load 17 a0
-a7 = t0
-a6 = t1
-a5 = t2
-a4 = t3
-a3 = t4
-a2 = t5
-a1 = t6
-call f_putint
-t0 = a7
-t1 = a6
-t2 = a5
-t3 = a4
-t4 = a3
-t5 = a2
-t6 = a1
-load 16 a0
-a7 = t0
-a6 = t1
-a5 = t2
-a4 = t3
-a3 = t4
-a2 = t5
-a1 = t6
-call f_putint
-t0 = a7
-t1 = a6
-t2 = a5
-t3 = a4
-t4 = a3
-t5 = a2
-t6 = a1
-load 15 a0
-a7 = t0
-a6 = t1
-a5 = t2
-a4 = t3
-a3 = t4
-a2 = t5
-a1 = t6
-call f_putint
-t0 = a7
-t1 = a6
-t2 = a5
-t3 = a4
-t4 = a3
-t5 = a2
-t6 = a1
-load 14 a0
-a7 = t0
-a6 = t1
-a5 = t2
-a4 = t3
-a3 = t4
-a2 = t5
-a1 = t6
-call f_putint
-t0 = a7
-t1 = a6
-t2 = a5
-t3 = a4
-t4 = a3
-t5 = a2
-t6 = a1
-load 13 a0
-a7 = t0
-a6 = t1
-a5 = t2
-a4 = t3
-a3 = t4
-a2 = t5
-a1 = t6
-call f_putint
-t0 = a7
-t1 = a6
-t2 = a5
-t3 = a4
-t4 = a3
-t5 = a2
-t6 = a1
-load 12 a0
-a7 = t0
-a6 = t1
-a5 = t2
-a4 = t3
-a3 = t4
-a2 = t5
-a1 = t6
-call f_putint
-t0 = a7
-t1 = a6
-t2 = a5
-t3 = a4
-t4 = a3
-t5 = a2
-t6 = a1
-load 11 a0
-a7 = t0
-a6 = t1
-a5 = t2
-a4 = t3
-a3 = t4
-a2 = t5
-a1 = t6
-call f_putint
-t0 = a7
-t1 = a6
-t2 = a5
-t3 = a4
-t4 = a3
-t5 = a2
-t6 = a1
-load 10 a0
-a7 = t0
-a6 = t1
-a5 = t2
-a4 = t3
-a3 = t4
-a2 = t5
-a1 = t6
-call f_putint
-t0 = a7
-t1 = a6
-t2 = a5
-t3 = a4
-t4 = a3
-t5 = a2
-t6 = a1
-load 9 a0
-a7 = t0
-a6 = t1
-a5 = t2
-a4 = t3
-a3 = t4
-a2 = t5
-a1 = t6
-call f_putint
-t0 = a7
-t1 = a6
-t2 = a5
-t3 = a4
-t4 = a3
-t5 = a2
-t6 = a1
-load 8 a0
-a7 = t0
-a6 = t1
-a5 = t2
-a4 = t3
-a3 = t4
-a2 = t5
-a1 = t6
-call f_putint
-t0 = a7
-t1 = a6
-t2 = a5
-t3 = a4
-t4 = a3
-t5 = a2
-t6 = a1
-load 7 a0
-a7 = t0
-a6 = t1
-a5 = t2
-a4 = t3
-a3 = t4
-a2 = t5
-a1 = t6
-call f_putint
-t0 = a7
-t1 = a6
-t2 = a5
-t3 = a4
-t4 = a3
-t5 = a2
-t6 = a1
-load 6 a0
-a7 = t0
-a6 = t1
-a5 = t2
-a4 = t3
-a3 = t4
-a2 = t5
-a1 = t6
-call f_putint
-t0 = a7
-t1 = a6
-t2 = a5
-t3 = a4
-t4 = a3
-t5 = a2
-t6 = a1
-load 5 a0
-a7 = t0
-a6 = t1
-a5 = t2
-a4 = t3
-a3 = t4
-a2 = t5
-a1 = t6
-call f_putint
-t0 = a7
-t1 = a6
-t2 = a5
-t3 = a4
-t4 = a3
-t5 = a2
-t6 = a1
-load 4 a0
-a7 = t0
-a6 = t1
-a5 = t2
-a4 = t3
-a3 = t4
-a2 = t5
-a1 = t6
-call f_putint
-t0 = a7
-t1 = a6
-t2 = a5
-t3 = a4
-t4 = a3
-t5 = a2
-t6 = a1
-load 3 a0
-a7 = t0
-a6 = t1
-a5 = t2
-a4 = t3
-a3 = t4
-a2 = t5
-a1 = t6
-call f_putint
-t0 = a7
-t1 = a6
-t2 = a5
-t3 = a4
-t4 = a3
-t5 = a2
-t6 = a1
-load 2 a0
-a7 = t0
-a6 = t1
-a5 = t2
-a4 = t3
-a3 = t4
-a2 = t5
-a1 = t6
-call f_putint
-t0 = a7
-t1 = a6
-t2 = a5
-t3 = a4
-t4 = a3
-t5 = a2
-t6 = a1
-load 1 a0
-a7 = t0
-a6 = t1
-a5 = t2
-a4 = t3
-a3 = t4
-a2 = t5
-a1 = t6
-call f_putint
-t0 = a7
-t1 = a6
-t2 = a5
-t3 = a4
-t4 = a3
-t5 = a2
-t6 = a1
+s0 = a0 + 1
+store s0 0
+load 0 s0
+s0 = s0 + 1
+store s0 1
+load 1 s0
+s0 = s0 + 1
+store s0 2
+load 2 s0
+s0 = s0 + 1
+store s0 3
+load 3 s0
+s0 = s0 + 1
+store s0 4
+load 4 s0
+s0 = s0 + 1
+store s0 5
+load 5 s0
+s0 = s0 + 1
+store s0 6
+load 6 s0
+s0 = s0 + 1
+store s0 7
+load 7 s0
+s0 = s0 + 1
+store s0 8
+load 8 s0
+s0 = s0 + 1
+store s0 9
+load 9 s0
+s0 = s0 + 1
+store s0 10
+load 10 s0
+s0 = s0 + 1
+store s0 11
+load 11 s0
+s0 = s0 + 1
+store s0 12
+load 12 s0
+s0 = s0 + 1
+store s0 13
+load 13 s0
+s0 = s0 + 1
+store s0 14
+load 14 s0
+s0 = s0 + 1
+store s0 15
+load 15 s0
+s0 = s0 + 1
+store s0 16
+load 16 s0
+s0 = s0 + 1
+store s0 17
+load 17 s0
+s0 = s0 + 1
+store s0 18
+load 18 s0
+s4 = s0 + 1
+s3 = s4 + 1
+s2 = s3 + 1
+s1 = s2 + 1
+s0 = s1 + 1
+s5 = s0 + 1
+store s5 19
+s11 = t0
+s10 = t1
+s9 = t2
+s8 = t3
+s7 = t4
+s6 = t5
+s5 = t6
+call f_putin
+t0 = s11
+t1 = s10
+t2 = s9
+t3 = s8
+t4 = s7
+t5 = s6
+t6 = s5
 load 0 a0
-a7 = t0
-a6 = t1
-a5 = t2
-a4 = t3
-a3 = t4
-a2 = t5
-a1 = t6
-call f_putint
-t0 = a7
-t1 = a6
-t2 = a5
-t3 = a4
-t4 = a3
-t5 = a2
-t6 = a1
-a0 = 10
-a7 = t0
-a6 = t1
-a5 = t2
-a4 = t3
-a3 = t4
-a2 = t5
-a1 = t6
-call f_putchar
-t0 = a7
-t1 = a6
-t2 = a5
-t3 = a4
-t4 = a3
-t5 = a2
-t6 = a1
+s11 = t0
+s10 = t1
+s9 = t2
+s8 = t3
+s7 = t4
+s6 = t5
+s5 = t6
+call f_putin
+t0 = s11
+t1 = s10
+t2 = s9
+t3 = s8
+t4 = s7
+t5 = s6
+t6 = s5
 load 1 a0
+s11 = t0
+s10 = t1
+s9 = t2
+s8 = t3
+s7 = t4
+s6 = t5
+s5 = t6
+call f_putin
+t0 = s11
+t1 = s10
+t2 = s9
+t3 = s8
+t4 = s7
+t5 = s6
+t6 = s5
+load 2 a0
+s11 = t0
+s10 = t1
+s9 = t2
+s8 = t3
+s7 = t4
+s6 = t5
+s5 = t6
+call f_putin
+t0 = s11
+t1 = s10
+t2 = s9
+t3 = s8
+t4 = s7
+t5 = s6
+t6 = s5
+load 3 a0
+s11 = t0
+s10 = t1
+s9 = t2
+s8 = t3
+s7 = t4
+s6 = t5
+s5 = t6
+call f_putin
+t0 = s11
+t1 = s10
+t2 = s9
+t3 = s8
+t4 = s7
+t5 = s6
+t6 = s5
+load 4 a0
+s11 = t0
+s10 = t1
+s9 = t2
+s8 = t3
+s7 = t4
+s6 = t5
+s5 = t6
+call f_putin
+t0 = s11
+t1 = s10
+t2 = s9
+t3 = s8
+t4 = s7
+t5 = s6
+t6 = s5
+load 5 a0
+s11 = t0
+s10 = t1
+s9 = t2
+s8 = t3
+s7 = t4
+s6 = t5
+s5 = t6
+call f_putin
+t0 = s11
+t1 = s10
+t2 = s9
+t3 = s8
+t4 = s7
+t5 = s6
+t6 = s5
+load 6 a0
+s11 = t0
+s10 = t1
+s9 = t2
+s8 = t3
+s7 = t4
+s6 = t5
+s5 = t6
+call f_putin
+t0 = s11
+t1 = s10
+t2 = s9
+t3 = s8
+t4 = s7
+t5 = s6
+t6 = s5
+load 7 a0
+s11 = t0
+s10 = t1
+s9 = t2
+s8 = t3
+s7 = t4
+s6 = t5
+s5 = t6
+call f_putin
+t0 = s11
+t1 = s10
+t2 = s9
+t3 = s8
+t4 = s7
+t5 = s6
+t6 = s5
+load 8 a0
+s11 = t0
+s10 = t1
+s9 = t2
+s8 = t3
+s7 = t4
+s6 = t5
+s5 = t6
+call f_putin
+t0 = s11
+t1 = s10
+t2 = s9
+t3 = s8
+t4 = s7
+t5 = s6
+t6 = s5
+load 9 a0
+s11 = t0
+s10 = t1
+s9 = t2
+s8 = t3
+s7 = t4
+s6 = t5
+s5 = t6
+call f_putin
+t0 = s11
+t1 = s10
+t2 = s9
+t3 = s8
+t4 = s7
+t5 = s6
+t6 = s5
+load 10 a0
+s11 = t0
+s10 = t1
+s9 = t2
+s8 = t3
+s7 = t4
+s6 = t5
+s5 = t6
+call f_putin
+t0 = s11
+t1 = s10
+t2 = s9
+t3 = s8
+t4 = s7
+t5 = s6
+t6 = s5
+load 11 a0
+s11 = t0
+s10 = t1
+s9 = t2
+s8 = t3
+s7 = t4
+s6 = t5
+s5 = t6
+call f_putin
+t0 = s11
+t1 = s10
+t2 = s9
+t3 = s8
+t4 = s7
+t5 = s6
+t6 = s5
+load 12 a0
+s11 = t0
+s10 = t1
+s9 = t2
+s8 = t3
+s7 = t4
+s6 = t5
+s5 = t6
+call f_putin
+t0 = s11
+t1 = s10
+t2 = s9
+t3 = s8
+t4 = s7
+t5 = s6
+t6 = s5
+load 13 a0
+s11 = t0
+s10 = t1
+s9 = t2
+s8 = t3
+s7 = t4
+s6 = t5
+s5 = t6
+call f_putin
+t0 = s11
+t1 = s10
+t2 = s9
+t3 = s8
+t4 = s7
+t5 = s6
+t6 = s5
+load 14 a0
+s11 = t0
+s10 = t1
+s9 = t2
+s8 = t3
+s7 = t4
+s6 = t5
+s5 = t6
+call f_putin
+t0 = s11
+t1 = s10
+t2 = s9
+t3 = s8
+t4 = s7
+t5 = s6
+t6 = s5
+load 15 a0
+s11 = t0
+s10 = t1
+s9 = t2
+s8 = t3
+s7 = t4
+s6 = t5
+s5 = t6
+call f_putin
+t0 = s11
+t1 = s10
+t2 = s9
+t3 = s8
+t4 = s7
+t5 = s6
+t6 = s5
+load 16 a0
+s11 = t0
+s10 = t1
+s9 = t2
+s8 = t3
+s7 = t4
+s6 = t5
+s5 = t6
+call f_putin
+t0 = s11
+t1 = s10
+t2 = s9
+t3 = s8
+t4 = s7
+t5 = s6
+t6 = s5
+load 17 a0
+s11 = t0
+s10 = t1
+s9 = t2
+s8 = t3
+s7 = t4
+s6 = t5
+s5 = t6
+call f_putin
+t0 = s11
+t1 = s10
+t2 = s9
+t3 = s8
+t4 = s7
+t5 = s6
+t6 = s5
+load 18 a0
+s11 = t0
+s10 = t1
+s9 = t2
+s8 = t3
+s7 = t4
+s6 = t5
+s5 = t6
+call f_putin
+t0 = s11
+t1 = s10
+t2 = s9
+t3 = s8
+t4 = s7
+t5 = s6
+t6 = s5
+a0 = s4
+s10 = t0
+s9 = t1
+s8 = t2
+s7 = t3
+s6 = t4
+s5 = t5
+s4 = t6
+call f_putin
+t0 = s10
+t1 = s9
+t2 = s8
+t3 = s7
+t4 = s6
+t5 = s5
+t6 = s4
+a0 = s3
+s9 = t0
+s8 = t1
+s7 = t2
+s6 = t3
+s5 = t4
+s4 = t5
+s3 = t6
+call f_putin
+t0 = s9
+t1 = s8
+t2 = s7
+t3 = s6
+t4 = s5
+t5 = s4
+t6 = s3
+a0 = s2
+s8 = t0
+s7 = t1
+s6 = t2
+s5 = t3
+s4 = t4
+s3 = t5
+s2 = t6
+call f_putin
+t0 = s8
+t1 = s7
+t2 = s6
+t3 = s5
+t4 = s4
+t5 = s3
+t6 = s2
+a0 = s1
+s7 = t0
+s6 = t1
+s5 = t2
+s4 = t3
+s3 = t4
+s2 = t5
+s1 = t6
+call f_putin
+t0 = s7
+t1 = s6
+t2 = s5
+t3 = s4
+t4 = s3
+t5 = s2
+t6 = s1
+a0 = s0
+s6 = t0
+s5 = t1
+s4 = t2
+s3 = t3
+s2 = t4
+s1 = t5
+s0 = t6
+call f_putin
+t0 = s6
+t1 = s5
+t2 = s4
+t3 = s3
+t4 = s2
+t5 = s1
+t6 = s0
+load 19 a0
+s6 = t0
+s5 = t1
+s4 = t2
+s3 = t3
+s2 = t4
+s1 = t5
+s0 = t6
+call f_putin
+t0 = s6
+t1 = s5
+t2 = s4
+t3 = s3
+t4 = s2
+t5 = s1
+t6 = s0
+load 21 a0
+s6 = t0
+s5 = t1
+s4 = t2
+s3 = t3
+s2 = t4
+s1 = t5
+s0 = t6
+call f_putin
+t0 = s6
+t1 = s5
+t2 = s4
+t3 = s3
+t4 = s2
+t5 = s1
+t6 = s0
+a0 = 10
+s6 = t0
+s5 = t1
+s4 = t2
+s3 = t3
+s2 = t4
+s1 = t5
+s0 = t6
+call f_putcha
+t0 = s6
+t1 = s5
+t2 = s4
+t3 = s3
+t4 = s2
+t5 = s1
+t6 = s0
+load 20 s0
+load 22 s1
+load 23 s2
+load 24 s3
+load 25 s4
+load 26 s5
+load 27 s6
+load 28 s7
+load 29 s8
+load 30 s9
+load 31 s10
+load 32 s11
+load 19 a0
 return
-end f_main
+end f_mian

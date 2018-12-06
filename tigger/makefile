@@ -1,19 +1,20 @@
+CCARGS = -O1 -g -std=c++14
 tigger: lex.yy.o analyz.o y.tab.o tigger.o main.o
-	g++ -O2 -g -Wall -std=c++14 -o tigger lex.yy.o analyz.o y.tab.o tigger.o main.o
+	g++ $(CCARGS) -o tigger lex.yy.o analyz.o y.tab.o tigger.o main.o
 lex.yy.o: lex.yy.c y.tab.h tigger.h analyz.h
-	g++ -O2 -g -Wall -std=c++14 -c lex.yy.c
+	g++ $(CCARGS) -c lex.yy.c
 y.tab.o: y.tab.c y.tab.h tigger.h analyz.h
-	g++ -O2 -g -Wall -std=c++14 -c y.tab.c
+	g++ $(CCARGS) -c y.tab.c
 lex.yy.c: lexer.l
 	flex -l lexer.l
 y.tab.c y.tab.h: tigger.y tigger.h analyz.h
 	bison -y -d tigger.y
 analyz.o: analyz.cpp analyz.h tigger.h
-	g++ -O2 -g -Wall -std=c++14 -c analyz.cpp
+	g++ $(CCARGS) -c analyz.cpp
 tigger.o: tigger.cpp tigger.h
-	g++ -O2 -g -Wall -std=c++14 -c tigger.cpp
+	g++ $(CCARGS) -c tigger.cpp
 main.o: main.cpp tigger.h
-	g++ -O2 -g -Wall -std=c++14 -c main.cpp
+	g++ $(CCARGS) -c main.cpp
 clean:
 	rm tigger lex.yy.o y.tab.o lex.yy.c y.tab.c y.tab.h analyz.o tigger.o main.o
 tarfile:
