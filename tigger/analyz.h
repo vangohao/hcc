@@ -84,7 +84,6 @@ public:
     vector<int> offset;
     vector<int> size;
     vector<int> paramTable;
-    // unordered_map<int,int> frameArrayTable;
     unordered_map<int,int> paramTableReverse;
     list<Expression*> exprs;
     vector<int> spilledVariableFrameMap; //由变量id映射到上面的offset和size数组的下标
@@ -150,13 +149,6 @@ public:
     void genFlow();
     void InitializeVectorSpace();
     void Processor();
-    
-    /* //AssignPhysicsRegs
-    vector<int> PhysicsColor;    //由寄存器索引颜色
-    vector<int> ColorPhysics;   //由颜色索引寄存器
-    vector<PhysicsRegs> PriorityRegs;
-    void AssignPhysicsRegs();
-    int paramReg(int i); */
 
     //GenCode
     string opstring(int op);
