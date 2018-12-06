@@ -27,11 +27,11 @@ FunctionDecl
 ;
 GlobalDeclaration: 
 VAR Symbol                                   {Analyz::Instance.insert($2,4,0);}
-| VAR INTEGER Symbol                         {Analyz::Instance.insert($3,4*($2),1);}
+| VAR INTEGER Symbol                         {Analyz::Instance.insert($3,$2,1);}
 ;
 Declaration: 
 VAR Symbol                                   {}
-| VAR INTEGER Symbol                         {Analyz::Instance.currentFunc().insert(4*($2));}
+| VAR INTEGER Symbol                         {Analyz::Instance.currentFunc().insert($2);}
 ;
 FunctionDecl:
 FUNCTION '[' INTEGER ']' '\n'                  {Analyz::Instance.funcs.push_back(Func($3,$1));
