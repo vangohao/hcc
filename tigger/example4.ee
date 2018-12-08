@@ -31,7 +31,7 @@ var T28
 var T29
 var T30
 var t0
-t0 = call f_getint
+t0 = call f_getin
 T30 = t0
 l1:
 if T30 == 5 goto l0
@@ -149,7 +149,7 @@ t33 = call f_putint
 T31 = t33
 param T8
 var t34
-t34 = call f_putint
+t34 = call f_putin
 T31 = t34
 param T9
 var t35

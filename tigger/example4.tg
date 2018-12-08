@@ -1,55 +1,83 @@
 v0 = 0
-f_main [0] [0]
-call f_getint
-a2 = a0
+f_main [0] [14]
+s6 = t0
+s5 = t1
+s4 = t2
+s3 = t3
+s2 = t4
+s1 = t5
+s0 = t6
+call f_getin
+t0 = s6
+t1 = s5
+t2 = s4
+t3 = s3
+t4 = s2
+t5 = s1
+t6 = s0
+s0 = a0
 l1:
 a0 = 5
-if a2 == a0 goto l0
+if s0 == a0 goto l0
 goto l2
 l0:
-a2 = a2 + 1
+s0 = s0 + 1
 goto l1
 l2:
 a0 = 0
-t6 = a0 + 1
-t5 = t6 + 1
-t4 = t5 + 1
-t3 = t4 + 1
-t2 = t3 + 1
-t1 = t2 + 1
-t0 = t1 + 1
-s11 = t0 + 1
+s11 = a0 + 1
 s10 = s11 + 1
 s9 = s10 + 1
 s8 = s9 + 1
 s7 = s8 + 1
 s6 = s7 + 1
 s5 = s6 + 1
-s4 = s5 + 1
+s1 = s5 + 1
+store s1 13
+load 13 s1
+s1 = s1 + 1
+store s1 12
+load 12 s1
+s1 = s1 + 1
+store s1 11
+load 11 s1
+s1 = s1 + 1
+store s1 10
+load 10 s1
+s1 = s1 + 1
+store s1 9
+load 9 s1
+s1 = s1 + 1
+store s1 8
+load 8 s1
+s1 = s1 + 1
+store s1 7
+load 7 s1
+s1 = s1 + 1
+store s1 6
+load 6 s1
+s1 = s1 + 1
+store s1 5
+load 5 s1
+s1 = s1 + 1
+store s1 4
+load 4 s1
+s1 = s1 + 1
+store s1 3
+load 3 s1
+s1 = s1 + 1
+store s1 2
+load 2 s1
+s1 = s1 + 1
+store s1 1
+load 1 s1
+s1 = s1 + 1
+store s1 0
+load 0 s1
+s4 = s1 + 1
 s3 = s4 + 1
 s2 = s3 + 1
 s1 = s2 + 1
-s0 = s1 + 1
-a7 = s0 + 1
-a6 = a7 + 1
-a5 = a6 + 1
-a4 = a5 + 1
-a3 = a4 + 1
-a1 = a3 + 1
-call f_putint
-a0 = t6
-call f_putint
-a0 = t5
-call f_putint
-a0 = t4
-call f_putint
-a0 = t3
-call f_putint
-a0 = t2
-call f_putint
-a0 = t1
-call f_putint
-a0 = t0
 call f_putint
 a0 = s11
 call f_putint
@@ -64,6 +92,48 @@ call f_putint
 a0 = s6
 call f_putint
 a0 = s5
+s11 = t0
+s10 = t1
+s9 = t2
+s8 = t3
+s7 = t4
+s6 = t5
+s5 = t6
+call f_putin
+t0 = s11
+t1 = s10
+t2 = s9
+t3 = s8
+t4 = s7
+t5 = s6
+t6 = s5
+load 13 a0
+call f_putint
+load 12 a0
+call f_putint
+load 11 a0
+call f_putint
+load 10 a0
+call f_putint
+load 9 a0
+call f_putint
+load 8 a0
+call f_putint
+load 7 a0
+call f_putint
+load 6 a0
+call f_putint
+load 5 a0
+call f_putint
+load 4 a0
+call f_putint
+load 3 a0
+call f_putint
+load 2 a0
+call f_putint
+load 1 a0
+call f_putint
+load 0 a0
 call f_putint
 a0 = s4
 call f_putint
@@ -75,22 +145,8 @@ a0 = s1
 call f_putint
 a0 = s0
 call f_putint
-a0 = a7
-call f_putint
-a0 = a6
-call f_putint
-a0 = a5
-call f_putint
-a0 = a4
-call f_putint
-a0 = a3
-call f_putint
-a0 = a1
-call f_putint
-a0 = a2
-call f_putint
 a0 = 10
 call f_putchar
-a0 = a1
+a0 = s1
 return
 end f_main
