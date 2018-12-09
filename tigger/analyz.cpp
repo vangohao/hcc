@@ -119,6 +119,7 @@ void Analyz::GenGlobal()
             cout<<".word\t"<<0<<endl;
         }
     }
+    //cout<<".LC0:\n\t.string\t\"%d\""<<endl;
 }
 int Func::insert(int s,int v)
 {
@@ -176,7 +177,12 @@ void Analyz::process()
         f.Processor();
     }
     GenGlobal();
-}
+}/*
+void Analyz::GenPutGet()
+{
+    //cout<<"\t.align\t1\n\t.globl\tf_putint\n\t.type\tf_putint, @function\nf_putint:\n\tmv\ta1,a0\n\tlui\ta0,%hi(.LC0)\n\taddi\ta0,a0,%lo(.LC0)\n\ttail\tprintf\n\t.size\tf_putint, .-f_putint\n\t.align\t1\n\t.globl\tf_getint\n\t.type\tf_getint, @function\nf_getint:\n\taddi\tsp,sp,-32\n\tlui\ta0,%hi(.LC0)\n\taddi\ta1,sp,12\n\taddi\ta0,a0,%lo(.LC0)\n\tsd\tra,24(sp)\n\tcall\t__isoc99_scanf\n\tld\tra,24(sp)\n\tlw\ta0,12(sp)\n\taddi\tsp,sp,32\n\tjr\tra\n\t.size\tf_getint, .-f_getint\n";
+cout<<"\t.align\t1\n\t.globl\tf_putint\n\t.type\tf_putint, @function\nf_putint:\n\taddi\tsp,sp,-32\n\tsd\tra,24(sp)\n\tsd\ts0,16(sp)\n\taddi\ts0,sp,32\n\tmv\ta5,a0\n\tsw\ta5,-20(s0)\n\tlw\ta5,-20(s0)\n\tmv\ta1,a5\n\tlui\ta5,%hi(.LC0)\n\taddi\ta0,a5,%lo(.LC0)\n\tcall\tprintf\n\tmv\ta5,a0\n\tmv\ta0,a5\n\tld\tra,24(sp)\n\tld\ts0,16(sp)\n\taddi\tsp,sp,32\n\tjr\tra\n\t.size\tf_putint, .-f_putint\n\t.align\t1\n\t.globl\tf_getint\n\t.type\tf_getint, @function\nf_getint:\n\taddi\tsp,sp,-32\n\tsd\tra,24(sp)\n\tsd\ts0,16(sp)\n\taddi\ts0,sp,32\n\taddi\ta5,s0,-20\n\tmv\ta1,a5\n\tlui\ta5,%hi(.LC0)\n\taddi\ta0,a5,%lo(.LC0)\n\tcall\t__isoc99_scanf\n\tlw\ta5,-20(s0)\n\tmv\ta0,a5\n\tld\tra,24(sp)\n\tld\ts0,16(sp)\n\taddi\tsp,sp,32\n\tjr\tra\n\t.size\tf_getint, .-f_getint"<<endl;
+}*/
 void Func::genFlow()
 {
     for(auto iter = exprs.begin();iter!=exprs.end();++iter)
@@ -1107,7 +1113,7 @@ void Func::GenRiscv64()
             case MoveRI: cout<<"addiw\t"<<REGNAMEFORVAR(e->left[0])<<",zero,"<<e->imm[0]<<endl;break;
             case MoveRR: if(REGNAMEFORVAR(e->left[0])!=REGNAMEFORVAR(e->right[0]))
             {
-                cout<<"mv\t"<<REGNAMEFORVAR(e->left[0])<<","<<REGNAMEFORVAR(e->right[0]);
+                cout<<"mv\t"<<REGNAMEFORVAR(e->left[0])<<","<<REGNAMEFORVAR(e->right[0])<<endl;
             }
             break;
             case ArrayWrite: cout<<"sw\t"<<REGNAMEFORVAR(e->right[1])<<","<<e->imm[0]<<"("<<REGNAMEFORVAR(e->right[0])<<")"<<endl;break;
@@ -1126,7 +1132,10 @@ void Func::GenRiscv64()
                         break;
             case FrameLoadAddr: cout<<"addi\t"<<REGNAMEFORVAR(e->left[0])<<",sp,"<<4*e->imm[0]<<endl;break;
             case Empty: break;
-            case Call: cout<<"call\t"<<e->funtocall<<endl;break;
+            case Call: //if(e->funtocall=="f_putchar")cout<<"call\tputchar"<<endl;
+                    //else 
+                    cout<<"call\t"<<e->funtocall<<endl;
+                break;
             case Return: cout<<"ld\tra,"<<stk-8<<"(sp)"<<endl;
                     cout<<"addi\tsp,sp,"<<stk<<endl;
                     cout<<"jr\tra"<<endl;

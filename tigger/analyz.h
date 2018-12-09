@@ -188,6 +188,7 @@ public:
     vector<Func> funcs;
     Func& currentFunc();
     void process();
+    //void GenPutGet();
     void GenGlobal();
     Analyz();
 };
