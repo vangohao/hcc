@@ -1,5 +1,0 @@
-*.o
-*.s
-riscv64
-.vscode
-*.out
