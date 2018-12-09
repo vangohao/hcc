@@ -4,12 +4,12 @@ var T1
 T1 = 1
 var T2
 T2 = 0
-p0 = 0
+p0 [4] = 0
 l6:
 if T2 < 25 goto l7
 goto l8
-var t0
 l7:
+var t0
 t0 = T2 + T1
 T2 = t0
 if T1 == 5 goto l0
@@ -25,45 +25,53 @@ goto l1
 l1:
 if T1 > 8 goto l3
 goto l4
-var t1
 l3:
-t1 = T1 * T2
-p0 = t1
-goto l6
+var t1
+t1 = T1 * 4
 var t2
+t2 = T1 * T2
+p0 [t1] = t2
+goto l6
 l4:
-t2 = p0 + 1
-T1 = t2
+var t3
+t3 = T1 * 4
+var t4
+t4 = p0 [t3]
+var t5
+t5 = t4 + 1
+T1 = t5
 goto l6
 l8:
 return T2
 end f_func
 var T3
 f_main [0]
-var T4
+var 20 T4
 var T5
 var T6
 T6 = 0
 l10:
 if T6 < 5 goto l9
 goto l11
-var t3
 l9:
-t3 = call f_getint
-T4 = t3
-var t4
-t4 = T6 + 1
-T6 = t4
+var t6
+t6 = T6 * 4
+var t7
+t7 = call f_getint
+T4 [t6] = t7
+var t8
+t8 = T6 + 1
+T6 = t8
 goto l10
 l11:
 param T4
 param T5
-var t5
-t5 = call f_func
-T5 = t5
+var t9
+t9 = call f_func
+T5 = t9
 param T5
-var t6
-t6 = call f_putint
-T6 = t6
+var t10
+t10 = call f_putint
+T6 = t10
 return 0
 end f_main

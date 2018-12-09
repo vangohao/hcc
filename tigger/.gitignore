@@ -7,6 +7,7 @@ lex.yy.o
 lex.yy.c
 main.o
 *.c
+*.s
 !getint_putint.c
 *.old
 y.output
