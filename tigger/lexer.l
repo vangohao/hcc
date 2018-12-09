@@ -31,7 +31,7 @@ param  {return PARAM;}
 "["    {return '[';}
 "]"    {return ']';}
 [0-9]+ {yylval.val = atoi(yytext); return INTEGER;}
-"f_"[A-Za-z_][A-Za-z_0-9]*   {yylval.name = yytext; return FUNCTION;}
+"f_"[A-Za-z_][A-Za-z_0-9]*   {yylval.name = yytext+2; return FUNCTION;}
 T[0-9]+                   {int temp = atoi(yytext+1); 
                             if(temp>Tcount){Tcount++;Analyz::vcount++;Tmap.push_back(Analyz::vcount);}
                              yylval.val = Tmap[temp];

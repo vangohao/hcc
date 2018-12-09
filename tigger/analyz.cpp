@@ -121,6 +121,20 @@ void Analyz::GenGlobal()
     }
     //cout<<".LC0:\n\t.string\t\"%d\""<<endl;
 }
+void Analyz::GenGlobalTigger()
+{
+    for(int i = 0; i<globalVariableCount; i++)
+    {
+        if(globalType[i])
+        {
+            cout<<"v"<<i<<"= malloc "<<size[i]<<endl;
+        }
+        else
+        {
+            cout<<"v"<<i<<"= 0"<<endl;
+        }
+    }
+}
 int Func::insert(int s,int v)
 {
     int tmp = offset.size();
@@ -172,11 +186,12 @@ void Func::InitFunEnv()//此函数处理函数入口和出口出的寄存器管�
 }
 void Analyz::process()
 {
+    if(target == 0) GenGlobalTigger();
     for(auto f: funcs)
     {
         f.Processor();
     }
-    GenGlobal();
+    if(target==1) GenGlobal();
 }/*
 void Analyz::GenPutGet()
 {
@@ -1086,7 +1101,7 @@ void Func::GenCode()
 void Func::GenRiscv64()
 {
     if(name=="f_main") name = "main";
-    int stk = (frameSize/16 +1) *16;
+    int stk = (frameSize+8+15)/16 * 16;
     cout<<"\t.align\t1"<<endl;
     cout<<"\t.global\t"<<name<<endl;
     cout<<"\t.type\t"<<name<<", @function"<<endl;
@@ -1122,8 +1137,8 @@ void Func::GenRiscv64()
             case IfRI: cout<<opinstruct(e->imm[0])<<"\t"<<REGNAMEFORVAR(e->right[0])<<","<<"zero"<<",.L"<<e->imm[1]<<endl;break;
             case IfIR: cout<<opinstruct(e->imm[0])<<"\t"<<"zero"<<","<<REGNAMEFORVAR(e->right[0])<<",.L"<<e->imm[1]<<endl;break;
             case Goto: cout<<"j\t"<<".L"<<e->imm[0]<<endl;break;
-            case FrameLoad: cout<<"sw\t"<<REGNAMEFORVAR(e->left[0])<<","<<4*e->imm[0]<<"(sp)"<<endl;break;
-            case FrameStore: cout<<"lw\t"<<REGNAMEFORVAR(e->right[0])<<","<<4*e->imm[0]<<"(sp)"<<endl;break;
+            case FrameLoad: cout<<"lw\t"<<REGNAMEFORVAR(e->left[0])<<","<<4*e->imm[0]<<"(sp)"<<endl;break;
+            case FrameStore: cout<<"sw\t"<<REGNAMEFORVAR(e->right[0])<<","<<4*e->imm[0]<<"(sp)"<<endl;break;
             case GlobalLoad: cout<<"lui\t"<<REGNAMEFORVAR(e->left[0])<<",%hi(v"<<Analyz::Instance.globalVaribleMap[e->imm[0]]<<")"<<endl;
                         cout<<"lw\t"<<REGNAMEFORVAR(e->left[0])<<",%lo(v"<<Analyz::Instance.globalVaribleMap[e->imm[0]]<<")("<<REGNAMEFORVAR(e->left[0])<<")"<<endl;
                         break;
@@ -1156,8 +1171,8 @@ void Func::Processor()
     //AssignPhysicsRegs();
     //DebugPrintPhysicsResult();
     //DebugPrint();
-    //GenCode();
-    GenRiscv64();
+    if(target==0) GenCode();
+    else if(target == 1) GenRiscv64();
 }
 void Func::DebugPrintColorResult()
 {

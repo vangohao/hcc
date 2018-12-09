@@ -187,10 +187,11 @@ public:
                 //type0表示int,1表示数组
     vector<Func> funcs;
     Func& currentFunc();
-    void process();
+    void process();//0for tigger,1for rcv64
     //void GenPutGet();
+    void GenGlobalTigger();
     void GenGlobal();
     Analyz();
 };
-
+extern int target;
 #endif
