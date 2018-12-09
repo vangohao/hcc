@@ -979,6 +979,34 @@ string Func::opstring(int op)
         return s;
     }
 }
+string Func::opinstruct(int op)
+{
+    switch(op)
+    {
+        case '+': return "addw";
+        case '-': return "subw";
+        case '*': return "mulw";
+        case '/': return "divw";
+        case '%': return "remw";
+        case '<': return "blt";
+        case '>': return "bgt";
+        case 'n': return "bne";
+        case 'e': return "beq";
+        default: return "OP_ERROR";
+    }
+}
+void Func::OutputArithRIMul(int reg1,int reg2,int imm)
+{
+    //暂时只处理imm ==4 
+    if(imm == 4)
+    {
+        cout<<"slli\t"<<REGNAMEFORVAR(reg1)<<","<<REGNAMEFORVAR(reg2)<<","<<2<<endl;
+    }
+    else
+    {
+        cout<<"ArithRIERROR!"<<endl;
+    }
+}
 void Func::GenCode()
 {
     cout<<name<<" ["<<paramCount<<"] ["<<frameSize/4<<"]"<<endl;
@@ -1026,6 +1054,66 @@ void Func::GenCode()
     }
     cout<<"end "<<name<<endl;
 }
+void Func::GenRiscv64()
+{
+    if(name=="f_main") name = "main";
+    int stk = (frameSize/4 +1) *16;
+    cout<<"\t.align\t1"<<endl;
+    cout<<"\t.global\t"<<name<<endl;
+    cout<<"\t.type\t"<<name<<", @function"<<endl;
+    cout<<name<<":"<<endl;
+    cout<<"\tadd\tsp,sp,"<<-stk<<endl;
+    cout<<"\tsw\tra,"<<stk-8<<"(sp)"<<endl;
+    for(auto e:exprs)
+    {
+        switch(e->type)
+        {
+            case ArithRR:cout<<opinstruct(e->imm[0])<<"\t"<<REGNAMEFORVAR(e->left[0])<<","<<REGNAMEFORVAR(e->right[0])<<","
+            <<REGNAMEFORVAR(e->right[1])<<endl;break;
+            case ArithRRSame:cout<<opinstruct(e->imm[0])<<"\t"<<REGNAMEFORVAR(e->left[0])<<","<<REGNAMEFORVAR(e->right[0])<<","
+            <<REGNAMEFORVAR(e->right[0])<<endl;break;
+            case ArithRI:if(e->imm[1]=='+')
+            {
+                cout<<"addiw\t"<<REGNAMEFORVAR(e->left[0])<<","<<REGNAMEFORVAR(e->right[0])<<","<<e->imm[0]<<endl;
+            }
+            else OutputArithRIMul(e->left[0],e->right[0],e->imm[0]);//parser需要修改
+            break;
+            case Negative:cout<<"subw\t"<<REGNAMEFORVAR(e->left[0])<<",zero,"<<REGNAMEFORVAR(e->right[0])<<endl;break;
+            case MoveRI: cout<<"addiw\t"<<REGNAMEFORVAR(e->left[0])<<",zero,"<<e->imm[0]<<endl;break;
+            case MoveRR: if(REGNAMEFORVAR(e->left[0])!=REGNAMEFORVAR(e->right[0]))
+            {
+                cout<<"mv\t"<<REGNAMEFORVAR(e->left[0])<<","<<REGNAMEFORVAR(e->right[0]);
+            }
+            break;
+            case ArrayWrite: cout<<"sw\t"<<REGNAMEFORVAR(e->right[1])<<","<<e->imm[0]<<"("<<REGNAMEFORVAR(e->right[0])<<")"<<endl;break;
+            case ArrayRead: cout<<"lw\t"<<REGNAMEFORVAR(e->left[0])<<","<<e->imm[0]<<"("<<REGNAMEFORVAR(e->right[0])<<")"<<endl;break;
+            case IfRR: cout<<opinstruct(e->imm[0])<<"\t"<<REGNAMEFORVAR(e->right[0])<<","<<REGNAMEFORVAR(e->right[1])<<",.L"<<e->imm[1]<<endl;break;
+            case IfRI: cout<<opinstruct(e->imm[0])<<"\t"<<REGNAMEFORVAR(e->right[0])<<","<<"zero"<<",.L"<<e->imm[1]<<endl;break;
+            case IfIR: cout<<opinstruct(e->imm[0])<<"\t"<<"zero"<<","<<REGNAMEFORVAR(e->right[0])<<",.L"<<e->imm[1]<<endl;break;
+            case Goto: cout<<"j\t"<<".L"<<e->imm[0]<<endl;break;
+            case FrameLoad: cout<<"sw\t"<<REGNAMEFORVAR(e->left[0])<<","<<4*e->imm[0]<<"(sp)"<<endl;break;
+            case FrameStore: cout<<"lw\t"<<REGNAMEFORVAR(e->right[0])<<","<<4*e->imm[0]<<"(sp)"<<endl;break;
+            case GlobalLoad: cout<<"lui\t"<<REGNAMEFORVAR(e->left[0])<<",%hi(v"<<Analyz::Instance.globalVaribleMap[e->imm[0]]<<")"<<endl;
+                        cout<<"lw\t"<<REGNAMEFORVAR(e->left[0])<<",%lo(v"<<Analyz::Instance.globalVaribleMap[e->imm[0]]<<")("<<REGNAMEFORVAR(e->left[0])<<")"<<endl;
+                        break;
+            case GlobalLoadAddr: cout<<"lui\t"<<REGNAMEFORVAR(e->left[0])<<",%hi(v"<<Analyz::Instance.globalVaribleMap[e->imm[0]]<<")"<<endl;
+                        cout<<"addi\t"<<REGNAMEFORVAR(e->left[0])<<","<<REGNAMEFORVAR(e->left[0])<<",%lo(v"<<Analyz::Instance.globalVaribleMap[e->imm[0]]<<")"<<endl;
+                        break;
+            case FrameLoadAddr: cout<<"addi\t"<<REGNAMEFORVAR(e->left[0])<<",sp,"<<4*e->imm[0]<<endl;break;
+            case Empty: break;
+            case Call: cout<<"call\t"<<e->funtocall<<endl;break;
+            case Return: cout<<"lw\tra,"<<stk-8<<"(sp)"<<endl;
+                    cout<<"addi\tsp,sp,"<<stk<<endl;
+                    cout<<"jr\tra"<<endl;
+                    break;
+            case Label:cout<<".L"<<e->imm[0]<<":"<<endl;break;
+            case Invalid:cout<<"INVALIDINSTRUCT"<<endl;break;
+            case Begin:break;
+            default: cerr<<"TYPE_ERROR"<<endl;
+        }
+    }
+    cout<<"\t.size\t"<<name<<", .-"<<name<<endl;
+}
 void Func::Processor()
 {
     InitFunEnv();
@@ -1034,7 +1122,8 @@ void Func::Processor()
     //AssignPhysicsRegs();
     //DebugPrintPhysicsResult();
     //DebugPrint();
-    GenCode();
+    //GenCode();
+    GenRiscv64();
 }
 void Func::DebugPrintColorResult()
 {
