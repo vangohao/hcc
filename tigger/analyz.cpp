@@ -1100,7 +1100,6 @@ void Func::GenCode()
 }
 void Func::GenRiscv64()
 {
-    if(name=="f_main") name = "main";
     int stk = (frameSize+8+15)/16 * 16;
     cout<<"\t.align\t1"<<endl;
     cout<<"\t.global\t"<<name<<endl;
