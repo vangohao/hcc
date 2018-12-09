@@ -1,8 +1,0 @@
-f_main[0]
-var T0
-var t0
-T0 = 123
-t0 = T0 + 1
-T0 = t0 +T0
-t0 = t0 + T0
-end f_main
