@@ -86,17 +86,39 @@ imm(_imm),funtocall(_funtocall),funin(_funin)
     }
     
 }
+vector<int> globalType;
 void Analyz::insert(int var,int s,int type)
 {
     // cerr<<globalVariableCount<<endl;
-    if(type == 0)cout<<"v"<<offset.size()<<" = 0"<<endl;
-    else cout<<"v"<<offset.size()<<" = malloc "<<s<<endl;
+    //if(type == 0)cout<<"v"<<offset.size()<<" = 0"<<endl;
+    //else cout<<"v"<<offset.size()<<" = malloc "<<s<<endl;
     offset.push_back(globalSize);
     size.push_back(s);
     globalSize += s;
     globalVaribleMap.insert(std::make_pair(var,globalVariableCount));
     globalVaribleType.insert(std::make_pair(var,type));
+    globalType.push_back(type);
     globalVariableCount++;
+}
+void Analyz::GenGlobal()
+{
+    for(int i = 0; i<globalVariableCount; i++)
+    {
+        if(globalType[i])
+        {
+            cout<<".comm\tv"<<i<<","<<size[i]<<","<<8<<endl;
+        }
+        else
+        {
+            cout<<".global\tv"<<i<<endl;
+            cout<<".section\t.sdata"<<endl;
+            cout<<".align\t2"<<endl;
+            cout<<".type\tv"<<i<<",@object"<<endl;
+            cout<<".size\tv"<<i<<", 4"<<endl;
+            cout<<"v"<<i<<":"<<endl;
+            cout<<".word\t"<<0<<endl;
+        }
+    }
 }
 int Func::insert(int s,int v)
 {
@@ -153,6 +175,7 @@ void Analyz::process()
     {
         f.Processor();
     }
+    GenGlobal();
 }
 void Func::genFlow()
 {
@@ -1057,18 +1080,20 @@ void Func::GenCode()
 void Func::GenRiscv64()
 {
     if(name=="f_main") name = "main";
-    int stk = (frameSize/4 +1) *16;
+    int stk = (frameSize/16 +1) *16;
     cout<<"\t.align\t1"<<endl;
     cout<<"\t.global\t"<<name<<endl;
     cout<<"\t.type\t"<<name<<", @function"<<endl;
     cout<<name<<":"<<endl;
     cout<<"\tadd\tsp,sp,"<<-stk<<endl;
-    cout<<"\tsw\tra,"<<stk-8<<"(sp)"<<endl;
+    cout<<"\tsd\tra,"<<stk-8<<"(sp)"<<endl;
     for(auto e:exprs)
     {
         switch(e->type)
         {
             case ArithRR:cout<<opinstruct(e->imm[0])<<"\t"<<REGNAMEFORVAR(e->left[0])<<","<<REGNAMEFORVAR(e->right[0])<<","
+            <<REGNAMEFORVAR(e->right[1])<<endl;break;
+            case ArithRRD:cout<<"add\t"<<REGNAMEFORVAR(e->left[0])<<","<<REGNAMEFORVAR(e->right[0])<<","
             <<REGNAMEFORVAR(e->right[1])<<endl;break;
             case ArithRRSame:cout<<opinstruct(e->imm[0])<<"\t"<<REGNAMEFORVAR(e->left[0])<<","<<REGNAMEFORVAR(e->right[0])<<","
             <<REGNAMEFORVAR(e->right[0])<<endl;break;
@@ -1102,7 +1127,7 @@ void Func::GenRiscv64()
             case FrameLoadAddr: cout<<"addi\t"<<REGNAMEFORVAR(e->left[0])<<",sp,"<<4*e->imm[0]<<endl;break;
             case Empty: break;
             case Call: cout<<"call\t"<<e->funtocall<<endl;break;
-            case Return: cout<<"lw\tra,"<<stk-8<<"(sp)"<<endl;
+            case Return: cout<<"ld\tra,"<<stk-8<<"(sp)"<<endl;
                     cout<<"addi\tsp,sp,"<<stk<<endl;
                     cout<<"jr\tra"<<endl;
                     break;

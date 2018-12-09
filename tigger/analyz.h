@@ -7,6 +7,7 @@ enum ExprType
     MoveRI,
     MoveRR,
     ArithRR,
+    ArithRRD,
     ArithRRSame,
     ArithRI,  //Allow + Only
     Negative,
@@ -176,6 +177,7 @@ public:
     int globalVariableCount;
     vector<int> offset;
     vector<int> size;
+    //vector<int> globalType;
     //固定0~26为预着色节点,在Analyz对象创建时建立
     unordered_map<string,Func*> FuncMap;
     unordered_map<int,Expression*> labelTable; 
@@ -186,6 +188,7 @@ public:
     vector<Func> funcs;
     Func& currentFunc();
     void process();
+    void GenGlobal();
     Analyz();
 };
 
