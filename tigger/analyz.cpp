@@ -52,10 +52,6 @@ imm(_imm),funtocall(_funtocall),funin(_funin)
             *iter = tmp;
         }
     }
-    if(rightGlobal)
-    {
-        
-    }
     if(leftGlobal)
     {
         int tmp1,tmp2;
