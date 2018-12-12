@@ -8,6 +8,8 @@
         Expression* expr;
     };
     typedef foryystype YYSTYPE;
+    extern Analyz AnalyzInstance;
+    
 }
 
 %token  VAR END IF RETURN GOTO CALL PARAM
@@ -26,16 +28,16 @@ FunctionDecl
 |GlobalDeclaration 
 ;
 GlobalDeclaration: 
-VAR Symbol                                   {Analyz::Instance.insert($2,4,0);}
-| VAR INTEGER Symbol                         {Analyz::Instance.insert($3,$2,1);}
+VAR Symbol                                   {AnalyzInstance.insert($2,4,0);}
+| VAR INTEGER Symbol                         {AnalyzInstance.insert($3,$2,1);}
 ;
 Declaration: 
 VAR Symbol                                   {}
-| VAR INTEGER Symbol                         {Analyz::Instance.currentFunc().insert($2,$3);}
+| VAR INTEGER Symbol                         {AnalyzInstance.currentFunc().insert($2,$3);}
 ;
 FunctionDecl:
-FUNCTION '[' INTEGER ']' '\n'                  {Analyz::Instance.funcs.push_back(Func($3,$1));
-                                                Analyz::Instance.FuncMap[$1] = &(Analyz::Instance.currentFunc());
+FUNCTION '[' INTEGER ']' '\n'                  {AnalyzInstance.funcs.push_back(Func($3,$1));
+                                                AnalyzInstance.FuncMap[$1] = &(AnalyzInstance.currentFunc());
                                                 }
 Statements                                     {}                        
 END FUNCTION                                  { new Expression(Empty,{},{},{});}
@@ -46,7 +48,7 @@ Statements Expression '\n'            {
 /*
 |Statements LABEL ':' '\n'                     {$$=new Expression(Label,{},{},{$2});
                                                 $1->nexts.push_back($$);
-                                                Analyz::Instance.labelTable[$2] = $$;}
+                                                AnalyzInstance.labelTable[$2] = $$;}
 */
 |Statements Declaration '\n'                       {$$ = $1;}    
 |%empty                                        {$$=new Expression(Begin,{},{},{});}
@@ -125,17 +127,17 @@ Symbol '=' Symbol AOP Symbol             {  if($3!=$5)
 }
 | IF INTEGER LOP INTEGER GOTO LABEL             {if(calclogic($2,$3,$4)) $$=new Expression(Goto,{},{},{$6});}
 | GOTO LABEL                                    {$$=new Expression(Goto,{},{},{$2});}
-| PARAM Symbol                                {Analyz::Instance.currentFunc().CallParam($2,1);}
-| PARAM INTEGER                                 {Analyz::Instance.currentFunc().CallParam($2,0);}
-| Symbol '=' CALL FUNCTION                    {Analyz::Instance.currentFunc().CallFunc($1,$4);}
-| RETURN Symbol                               {Analyz::Instance.currentFunc().ReturnFunc($2,1);}
-| RETURN INTEGER                              {Analyz::Instance.currentFunc().ReturnFunc($2,0);}
+| PARAM Symbol                                {AnalyzInstance.currentFunc().CallParam($2,1);}
+| PARAM INTEGER                                 {AnalyzInstance.currentFunc().CallParam($2,0);}
+| Symbol '=' CALL FUNCTION                    {AnalyzInstance.currentFunc().CallFunc($1,$4);}
+| RETURN Symbol                               {AnalyzInstance.currentFunc().ReturnFunc($2,1);}
+| RETURN INTEGER                              {AnalyzInstance.currentFunc().ReturnFunc($2,0);}
 | LABEL ':'                                     {$$=new Expression(Label,{},{},{$1});
-                                                Analyz::Instance.labelTable[$1] = $$;
+                                                AnalyzInstance.labelTable[$1] = $$;
 }
 ;
 Symbol:
 VARIABLE                                        {$$ = $1;}
-|PARAMVARIABLE                                  {$$ = Analyz::Instance.currentFunc().paramTable[$1];}
+|PARAMVARIABLE                                  {$$ = AnalyzInstance.currentFunc().paramTable[$1];}
 
 %%

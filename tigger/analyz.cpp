@@ -1,7 +1,7 @@
 #include "analyz.h"
 #define REGNAMEFORVAR(x) (Reg::names[color[GetAlias((x))]])
 
-extern unordered_map<int,int> frameArrayTable;
+
 Analyz::Analyz()
 {
     globalSize = 0; globalVariableCount = 0;
@@ -26,7 +26,7 @@ imm(_imm),funtocall(_funtocall),funin(_funin)
     bool rightGlobal = false;
     for(int l:left)
     {
-        if(Analyz::Instance.globalVaribleMap.find(l) != Analyz::Instance.globalVaribleMap.end())
+        if(AnalyzInstance.globalVaribleMap.find(l) != AnalyzInstance.globalVaribleMap.end())
         {
             leftGlobal = true;
             // cerr<<"LEFTGLOBAL_"<<l<<endl;
@@ -34,13 +34,13 @@ imm(_imm),funtocall(_funtocall),funin(_funin)
     }
     for(auto iter = right.begin();iter!=right.end();iter++)
     {
-        if(Analyz::Instance.globalVaribleMap.find(*iter) !=
-         Analyz::Instance.globalVaribleMap.end())
+        if(AnalyzInstance.globalVaribleMap.find(*iter) !=
+         AnalyzInstance.globalVaribleMap.end())
         {
             // cerr<<"RIGHTGLOBAL_"<<*iter<<endl;
             //先load一下吧,有些语句可能不用load,以后再说.
-            int tmp = Analyz::Instance.currentFunc().GenTempVariable();
-            if(Analyz::Instance.globalVaribleType[*iter] == 0)
+            int tmp = AnalyzInstance.currentFunc().GenTempVariable();
+            if(AnalyzInstance.globalVaribleType[*iter] == 0)
             Expression* e1 = new Expression(GlobalLoad,{tmp},{},{*iter});
             else
             Expression* e2 = new Expression(GlobalLoadAddr,{tmp},{},{*iter});
@@ -49,9 +49,9 @@ imm(_imm),funtocall(_funtocall),funin(_funin)
         }
         else if(frameArrayTable.count(*iter))
         {
-            int tmp = Analyz::Instance.currentFunc().GenTempVariable();
+            int tmp = AnalyzInstance.currentFunc().GenTempVariable();
             Expression * e1 = new Expression(FrameLoadAddr,{tmp},{},
-                {Analyz::Instance.currentFunc().offset[frameArrayTable[*iter]]});
+                {AnalyzInstance.currentFunc().offset[frameArrayTable[*iter]]});
             *iter = tmp;
         }
     }
@@ -66,15 +66,15 @@ imm(_imm),funtocall(_funtocall),funin(_funin)
         switch(type)   //考虑到miniC转Eeyore时全局变量做左值只有赋值语句.
         {
             case MoveRI:
-            tmp1 = Analyz::Instance.currentFunc().GenTempVariable();
+            tmp1 = AnalyzInstance.currentFunc().GenTempVariable();
             e1 = new Expression(GlobalLoadAddr,{tmp1},{},{left[0]});
-            tmp2 = Analyz::Instance.currentFunc().GenTempVariable();
+            tmp2 = AnalyzInstance.currentFunc().GenTempVariable();
             left[0] = tmp2;
-            Analyz::Instance.currentFunc().exprs.push_back(this);
+            AnalyzInstance.currentFunc().exprs.push_back(this);
             e3 = new Expression(ArrayWrite,{},{tmp1,tmp2},{0});
             break;
             case MoveRR:
-            tmp1 = Analyz::Instance.currentFunc().GenTempVariable();
+            tmp1 = AnalyzInstance.currentFunc().GenTempVariable();
             e1 = new Expression(GlobalLoadAddr,{tmp1},{},{left[0]});
             e3 = new Expression(ArrayWrite,{},{tmp1,right[0]},{0});
             break;
@@ -82,7 +82,7 @@ imm(_imm),funtocall(_funtocall),funin(_funin)
     }
     else
     {
-        Analyz::Instance.currentFunc().exprs.push_back(this);
+        AnalyzInstance.currentFunc().exprs.push_back(this);
     }
     
 }
@@ -213,11 +213,11 @@ void Func::genFlow()
         e->def = e->left;
         if(e->type==Goto)
         {
-            e->nexts.push_back(Analyz::Instance.labelTable[e->imm[0]]);
+            e->nexts.push_back(AnalyzInstance.labelTable[e->imm[0]]);
         }
         else if(e->type==IfRR || e->type==IfRI || e->type==IfIR)
         {
-            e->nexts.push_back(Analyz::Instance.labelTable[e->imm[1]]);
+            e->nexts.push_back(AnalyzInstance.labelTable[e->imm[1]]);
         }
     }
     for(auto e:exprs)
@@ -1082,8 +1082,8 @@ void Func::GenCode()
             case Goto: cout<<"goto l"<<e->imm[0]<<endl;break;
             case FrameLoad: cout<<"load "<<e->imm[0]<<" "<<REGNAMEFORVAR(e->left[0])<<endl;break;
             case FrameStore: cout<<"store "<<REGNAMEFORVAR(e->right[0])<<" "<<e->imm[0]<<endl;break;
-            case GlobalLoad: cout<<"load v"<<Analyz::Instance.globalVaribleMap[e->imm[0]]<<" "<<REGNAMEFORVAR(e->left[0])<<endl;break;
-            case GlobalLoadAddr: cout<<"loadaddr v"<<Analyz::Instance.globalVaribleMap[e->imm[0]]<<" "<<REGNAMEFORVAR(e->left[0])<<endl;break;
+            case GlobalLoad: cout<<"load v"<<AnalyzInstance.globalVaribleMap[e->imm[0]]<<" "<<REGNAMEFORVAR(e->left[0])<<endl;break;
+            case GlobalLoadAddr: cout<<"loadaddr v"<<AnalyzInstance.globalVaribleMap[e->imm[0]]<<" "<<REGNAMEFORVAR(e->left[0])<<endl;break;
             case FrameLoadAddr: cout<<"loadaddr "<<e->imm[0]<<" "<<REGNAMEFORVAR(e->left[0])<<endl;break;
             //参数,函数
 
@@ -1112,51 +1112,51 @@ void Func::GenRiscv64()
     {
         switch(e->type)
         {
-            case ArithRR:cout<<opinstruct(e->imm[0])<<"\t"<<REGNAMEFORVAR(e->left[0])<<","<<REGNAMEFORVAR(e->right[0])<<","
+            case ArithRR:cout<<"\t"<<opinstruct(e->imm[0])<<"\t"<<REGNAMEFORVAR(e->left[0])<<","<<REGNAMEFORVAR(e->right[0])<<","
             <<REGNAMEFORVAR(e->right[1])<<endl;break;
-            case ArithRRD:cout<<"add\t"<<REGNAMEFORVAR(e->left[0])<<","<<REGNAMEFORVAR(e->right[0])<<","
+            case ArithRRD:cout<<"\t"<<"add\t"<<REGNAMEFORVAR(e->left[0])<<","<<REGNAMEFORVAR(e->right[0])<<","
             <<REGNAMEFORVAR(e->right[1])<<endl;break;
-            case ArithRRSame:cout<<opinstruct(e->imm[0])<<"\t"<<REGNAMEFORVAR(e->left[0])<<","<<REGNAMEFORVAR(e->right[0])<<","
+            case ArithRRSame:cout<<"\t"<<opinstruct(e->imm[0])<<"\t"<<REGNAMEFORVAR(e->left[0])<<","<<REGNAMEFORVAR(e->right[0])<<","
             <<REGNAMEFORVAR(e->right[0])<<endl;break;
             case ArithRI:if(e->imm[1]=='+')
             {
-                cout<<"addiw\t"<<REGNAMEFORVAR(e->left[0])<<","<<REGNAMEFORVAR(e->right[0])<<","<<e->imm[0]<<endl;
+                cout<<"\t"<<"addiw\t"<<REGNAMEFORVAR(e->left[0])<<","<<REGNAMEFORVAR(e->right[0])<<","<<e->imm[0]<<endl;
             }
             else OutputArithRIMul(e->left[0],e->right[0],e->imm[0]);//parser需要修改
             break;
-            case Negative:cout<<"subw\t"<<REGNAMEFORVAR(e->left[0])<<",zero,"<<REGNAMEFORVAR(e->right[0])<<endl;break;
-            case MoveRI: cout<<"addiw\t"<<REGNAMEFORVAR(e->left[0])<<",zero,"<<e->imm[0]<<endl;break;
+            case Negative:cout<<"\t"<<"subw\t"<<REGNAMEFORVAR(e->left[0])<<",zero,"<<REGNAMEFORVAR(e->right[0])<<endl;break;
+            case MoveRI: cout<<"\t"<<"addiw\t"<<REGNAMEFORVAR(e->left[0])<<",zero,"<<e->imm[0]<<endl;break;
             case MoveRR: if(REGNAMEFORVAR(e->left[0])!=REGNAMEFORVAR(e->right[0]))
             {
-                cout<<"mv\t"<<REGNAMEFORVAR(e->left[0])<<","<<REGNAMEFORVAR(e->right[0])<<endl;
+                cout<<"\t"<<"mv\t"<<REGNAMEFORVAR(e->left[0])<<","<<REGNAMEFORVAR(e->right[0])<<endl;
             }
             break;
-            case ArrayWrite: cout<<"sw\t"<<REGNAMEFORVAR(e->right[1])<<","<<e->imm[0]<<"("<<REGNAMEFORVAR(e->right[0])<<")"<<endl;break;
-            case ArrayRead: cout<<"lw\t"<<REGNAMEFORVAR(e->left[0])<<","<<e->imm[0]<<"("<<REGNAMEFORVAR(e->right[0])<<")"<<endl;break;
-            case IfRR: cout<<opinstruct(e->imm[0])<<"\t"<<REGNAMEFORVAR(e->right[0])<<","<<REGNAMEFORVAR(e->right[1])<<",.L"<<e->imm[1]<<endl;break;
-            case IfRI: cout<<opinstruct(e->imm[0])<<"\t"<<REGNAMEFORVAR(e->right[0])<<","<<"zero"<<",.L"<<e->imm[1]<<endl;break;
-            case IfIR: cout<<opinstruct(e->imm[0])<<"\t"<<"zero"<<","<<REGNAMEFORVAR(e->right[0])<<",.L"<<e->imm[1]<<endl;break;
-            case Goto: cout<<"j\t"<<".L"<<e->imm[0]<<endl;break;
-            case FrameLoad: cout<<"lw\t"<<REGNAMEFORVAR(e->left[0])<<","<<4*e->imm[0]<<"(sp)"<<endl;break;
-            case FrameStore: cout<<"sw\t"<<REGNAMEFORVAR(e->right[0])<<","<<4*e->imm[0]<<"(sp)"<<endl;break;
-            case GlobalLoad: cout<<"lui\t"<<REGNAMEFORVAR(e->left[0])<<",%hi(v"<<Analyz::Instance.globalVaribleMap[e->imm[0]]<<")"<<endl;
-                        cout<<"lw\t"<<REGNAMEFORVAR(e->left[0])<<",%lo(v"<<Analyz::Instance.globalVaribleMap[e->imm[0]]<<")("<<REGNAMEFORVAR(e->left[0])<<")"<<endl;
+            case ArrayWrite: cout<<"\t"<<"sw\t"<<REGNAMEFORVAR(e->right[1])<<","<<e->imm[0]<<"("<<REGNAMEFORVAR(e->right[0])<<")"<<endl;break;
+            case ArrayRead: cout<<"\t"<<"lw\t"<<REGNAMEFORVAR(e->left[0])<<","<<e->imm[0]<<"("<<REGNAMEFORVAR(e->right[0])<<")"<<endl;break;
+            case IfRR: cout<<"\t"<<opinstruct(e->imm[0])<<"\t"<<REGNAMEFORVAR(e->right[0])<<","<<REGNAMEFORVAR(e->right[1])<<",.L"<<e->imm[1]<<endl;break;
+            case IfRI: cout<<"\t"<<opinstruct(e->imm[0])<<"\t"<<REGNAMEFORVAR(e->right[0])<<","<<"zero"<<",.L"<<e->imm[1]<<endl;break;
+            case IfIR: cout<<"\t"<<opinstruct(e->imm[0])<<"\t"<<"zero"<<","<<REGNAMEFORVAR(e->right[0])<<",.L"<<e->imm[1]<<endl;break;
+            case Goto: cout<<"\t"<<"j\t"<<".L"<<e->imm[0]<<endl;break;
+            case FrameLoad: cout<<"\t"<<"lw\t"<<REGNAMEFORVAR(e->left[0])<<","<<4*e->imm[0]<<"(sp)"<<endl;break;
+            case FrameStore: cout<<"\t"<<"sw\t"<<REGNAMEFORVAR(e->right[0])<<","<<4*e->imm[0]<<"(sp)"<<endl;break;
+            case GlobalLoad: cout<<"\t"<<"lui\t"<<REGNAMEFORVAR(e->left[0])<<",%hi(v"<<AnalyzInstance.globalVaribleMap[e->imm[0]]<<")"<<endl;
+                        cout<<"\t"<<"lw\t"<<REGNAMEFORVAR(e->left[0])<<",%lo(v"<<AnalyzInstance.globalVaribleMap[e->imm[0]]<<")("<<REGNAMEFORVAR(e->left[0])<<")"<<endl;
                         break;
-            case GlobalLoadAddr: cout<<"lui\t"<<REGNAMEFORVAR(e->left[0])<<",%hi(v"<<Analyz::Instance.globalVaribleMap[e->imm[0]]<<")"<<endl;
-                        cout<<"addi\t"<<REGNAMEFORVAR(e->left[0])<<","<<REGNAMEFORVAR(e->left[0])<<",%lo(v"<<Analyz::Instance.globalVaribleMap[e->imm[0]]<<")"<<endl;
+            case GlobalLoadAddr: cout<<"\t"<<"lui\t"<<REGNAMEFORVAR(e->left[0])<<",%hi(v"<<AnalyzInstance.globalVaribleMap[e->imm[0]]<<")"<<endl;
+                        cout<<"\t"<<"addi\t"<<REGNAMEFORVAR(e->left[0])<<","<<REGNAMEFORVAR(e->left[0])<<",%lo(v"<<AnalyzInstance.globalVaribleMap[e->imm[0]]<<")"<<endl;
                         break;
-            case FrameLoadAddr: cout<<"addi\t"<<REGNAMEFORVAR(e->left[0])<<",sp,"<<4*e->imm[0]<<endl;break;
+            case FrameLoadAddr: cout<<"\t"<<"addi\t"<<REGNAMEFORVAR(e->left[0])<<",sp,"<<4*e->imm[0]<<endl;break;
             case Empty: break;
-            case Call: //if(e->funtocall=="f_putchar")cout<<"call\tputchar"<<endl;
+            case Call: //if(e->funtocall=="f_putchar")cout<<"\t"<<"call\tputchar"<<endl;
                     //else 
-                    cout<<"call\t"<<e->funtocall<<endl;
+                    cout<<"\t"<<"call\t"<<e->funtocall<<endl;
                 break;
-            case Return: cout<<"ld\tra,"<<stk-8<<"(sp)"<<endl;
-                    cout<<"addi\tsp,sp,"<<stk<<endl;
-                    cout<<"jr\tra"<<endl;
+            case Return: cout<<"\t"<<"ld\tra,"<<stk-8<<"(sp)"<<endl;
+                    cout<<"\t"<<"addi\tsp,sp,"<<stk<<endl;
+                    cout<<"\t"<<"jr\tra"<<endl;
                     break;
-            case Label:cout<<".L"<<e->imm[0]<<":"<<endl;break;
-            case Invalid:cout<<"INVALIDINSTRUCT"<<endl;break;
+            case Label:cout<<"\t"<<".L"<<e->imm[0]<<":"<<endl;break;
+            case Invalid:cout<<"\t"<<"INVALIDINSTRUCT"<<endl;break;
             case Begin:break;
             default: cerr<<"TYPE_ERROR"<<endl;
         }

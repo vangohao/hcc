@@ -24,6 +24,7 @@ using std::endl;
 using std::stack;
 using std::list;
 using std::cout;
+
 int yylex();
 int yyerror(string s);
 int calcarith(int a,int op,int b);

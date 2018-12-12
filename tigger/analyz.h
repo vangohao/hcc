@@ -172,7 +172,7 @@ class Analyz
 {
 public:
     static int vcount;//eeyore中的变量编号从28开始,0-27为物理寄存器预留
-    static Analyz Instance;
+    //static Analyz Instance;
     int globalSize;
     int globalVariableCount;
     vector<int> offset;
@@ -194,4 +194,6 @@ public:
     Analyz();
 };
 extern int target;
+extern unordered_map<int,int> frameArrayTable;
+extern Analyz AnalyzInstance;
 #endif
