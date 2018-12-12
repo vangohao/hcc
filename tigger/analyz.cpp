@@ -41,17 +41,17 @@ imm(_imm),funtocall(_funtocall),funin(_funin)
             //先load一下吧,有些语句可能不用load,以后再说.
             int tmp = AnalyzInstance.currentFunc().GenTempVariable();
             if(AnalyzInstance.globalVaribleType[*iter] == 0)
-            Expression* e1 = new Expression(GlobalLoad,{tmp},{},{*iter});
+            new Expression(GlobalLoad,{tmp},{},{*iter});
             else
-            Expression* e2 = new Expression(GlobalLoadAddr,{tmp},{},{*iter});
+            new Expression(GlobalLoadAddr,{tmp},{},{*iter});
             *iter = tmp;
             rightGlobal = true;
         }
-        else if(frameArrayTable.count(*iter))
+        else if(AnalyzInstance.currentFunc().frameArrayTable.count(*iter))
         {
             int tmp = AnalyzInstance.currentFunc().GenTempVariable();
-            Expression * e1 = new Expression(FrameLoadAddr,{tmp},{},
-                {AnalyzInstance.currentFunc().offset[frameArrayTable[*iter]]});
+            new Expression(FrameLoadAddr,{tmp},{},
+                {AnalyzInstance.currentFunc().offset[AnalyzInstance.currentFunc().frameArrayTable[*iter]]});
             *iter = tmp;
         }
     }
@@ -62,21 +62,23 @@ imm(_imm),funtocall(_funtocall),funin(_funin)
     if(leftGlobal)
     {
         int tmp1,tmp2;
-        Expression* e1,* e2,* e3;
         switch(type)   //考虑到miniC转Eeyore时全局变量做左值只有赋值语句.
         {
             case MoveRI:
             tmp1 = AnalyzInstance.currentFunc().GenTempVariable();
-            e1 = new Expression(GlobalLoadAddr,{tmp1},{},{left[0]});
+            new Expression(GlobalLoadAddr,{tmp1},{},{left[0]});
             tmp2 = AnalyzInstance.currentFunc().GenTempVariable();
             left[0] = tmp2;
             AnalyzInstance.currentFunc().exprs.push_back(this);
-            e3 = new Expression(ArrayWrite,{},{tmp1,tmp2},{0});
+            new Expression(ArrayWrite,{},{tmp1,tmp2},{0});
             break;
             case MoveRR:
             tmp1 = AnalyzInstance.currentFunc().GenTempVariable();
-            e1 = new Expression(GlobalLoadAddr,{tmp1},{},{left[0]});
-            e3 = new Expression(ArrayWrite,{},{tmp1,right[0]},{0});
+            new Expression(GlobalLoadAddr,{tmp1},{},{left[0]});
+            new Expression(ArrayWrite,{},{tmp1,right[0]},{0});
+            break;
+            default:
+            cerr<<"LEFT_GLOBAL_TYPE_ERROR"<<endl; 
             break;
         }
     }
@@ -152,7 +154,7 @@ int Func::insert()
     frameSize += 4;
     return tmp;
 }
-Func::Func(int _paramCount,string _name):paramCount(_paramCount),name(_name),paramToCallWithCount(0),frameSize(0)
+Func::Func(int _paramCount,string _name):paramCount(_paramCount),paramToCallWithCount(0),frameSize(0),name(_name)
 {
     for(int i = 0;i<_paramCount;i++)
     {
@@ -246,29 +248,29 @@ void Func::ReturnFunc(int v,int t)
     //传送返回值到a0
     if(t == 1)
     {
-        auto e = new Expression(MoveRR,{(int)(a0)},{v},{});
+        new Expression(MoveRR,{(int)(a0)},{v},{});
     }
     else
     {
-        auto e = new Expression(MoveRI,{(int)(a0)},{},{v});
+        new Expression(MoveRI,{(int)(a0)},{},{v});
     }
     if(name != "f_main")
     //s开头的寄存器需要设为出口活跃以免冲突,a0也需要
-    auto e = new Expression(Return,{},{(int)(a0),(int)(s0),(int)(s0)+1,(int)(s0)+2,(int)(s0)+3,
+    new Expression(Return,{},{(int)(a0),(int)(s0),(int)(s0)+1,(int)(s0)+2,(int)(s0)+3,
                                             (int)(s0)+4,(int)(s0)+5,(int)(s0)+6,(int)(s0)+7,(int)(s0)+8,(int)(s0)+9,
                                             (int)(s0)+10,(int)(s0)+11},{});
     else
-    auto e = new Expression(Return,{},{(int)(a0)},{});
+    new Expression(Return,{},{(int)(a0)},{});
 }
 void Func::CallParam(int v,int t)
 {
     if(t == 1)
     {
-    auto e = new Expression(MoveRR,{(int)(a0)+paramToCallWithCount},{v},{});
+    new Expression(MoveRR,{(int)(a0)+paramToCallWithCount},{v},{});
     }
     else
     {
-    auto e = new Expression(MoveRI,{(int)(a0)+paramToCallWithCount},{},{v});
+    new Expression(MoveRI,{(int)(a0)+paramToCallWithCount},{},{v});
     }
     paramToCallWithCount++;
 }
@@ -292,7 +294,7 @@ void Func::CallFunc(int v,string f)
         int r = (int)(t0) + i;
         int tmp1 = ++ Analyz::vcount;
         tmpvec.push_back(tmp1);
-        auto e = new Expression(MoveRR,{tmp1},{r},{});
+        new Expression(MoveRR,{tmp1},{r},{});
     }
     paramToCallWithCount = paramToCallWithCount > 0 ? paramToCallWithCount : 1;
     for(int i = paramToCallWithCount;i <= 7; i++)
@@ -300,29 +302,29 @@ void Func::CallFunc(int v,string f)
         int r =(int)(a0) + i;
         int tmp1 = ++Analyz::vcount;
         tmpvec.push_back(tmp1);
-        auto e = new Expression(MoveRR,{tmp1},{r},{});
+        new Expression(MoveRR,{tmp1},{r},{});
     } 
     //t0-t6调用者保存的寄存器会被def
-    auto e = new Expression(Call,{(int)(a0),(int)(a1),(int)(a2),(int)(a3),(int)(a4),(int)(a5),(int)(a6),(int)(a7),
+    new Expression(Call,{(int)(a0),(int)(a1),(int)(a2),(int)(a3),(int)(a4),(int)(a5),(int)(a6),(int)(a7),
     (int)(t0),(int)(t1),(int)(t2),(int)(t3),(int)(t4),(int)(t5),(int)(t6)}
     ,paramvec,{},f);
-    auto e1 = new Expression(MoveRR,{v},{(int)(a0)},{});
+    new Expression(MoveRR,{v},{(int)(a0)},{});
     for(int i = 0; i<=6; i++)
     {
         int r = (int)(t0) + i;
-        auto e = new Expression(MoveRR,{r},{tmpvec[i]},{});
+        new Expression(MoveRR,{r},{tmpvec[i]},{});
     } 
     for(int i = paramToCallWithCount;i <= 7; i++)
     {
         int r =(int)(a0) + i;
-        auto e = new Expression(MoveRR,{r},{tmpvec[7 - paramToCallWithCount + i]},{});
+        new Expression(MoveRR,{r},{tmpvec[7 - paramToCallWithCount + i]},{});
     } 
     paramToCallWithCount = 0;
     }
     else
     {
-        auto e = new Expression(Call,{(int)(a0)},{(int)(a0)},{},f);
-        auto e1 = new Expression(MoveRR,{v},{(int)(a0)},{});
+        new Expression(Call,{(int)(a0)},{(int)(a0)},{},f);
+        new Expression(MoveRR,{v},{(int)(a0)},{});
         paramToCallWithCount = 0;
     }
 }
@@ -471,6 +473,7 @@ void Func::DebugPrint()
     case GlobalLoad:cerr<<"GlobalLoad"<<endl;break;
     case GlobalLoadAddr:cerr<<"GlobalLoadAddr"<<endl;break;
     case Label:cerr<<"Label"<<endl;break;
+    default: cerr<<"DEBUG_PRINT_TYPEERROR"<<endl;
         }
         cerr<<"def :";DebugPrint(e->def);
         cerr<<"use :";DebugPrint(e->use);
@@ -862,8 +865,8 @@ void Func::SelectSpill()
     //选择一个启发式算法找出下一个溢出的节点,此处暂时选择度数最大的顶点
     /*int m = spillWorklist.back();
     spillWorklist.pop_back();*/
-
-     int maxde = 0;int m = 0;
+    //优先溢出保存保留节点的节点。
+    int maxde = 0;int m = 0;
     for(auto x:spillWorklist)
     {
         if(degrees[x]> maxde)
@@ -1044,7 +1047,7 @@ void Func::OutputArithRIMul(int reg1,int reg2,int imm)
     //暂时只处理imm ==4 
     if(imm == 4)
     {
-        cout<<"slli\t"<<REGNAMEFORVAR(reg1)<<","<<REGNAMEFORVAR(reg2)<<","<<2<<endl;
+        cout<<"\tslli\t"<<REGNAMEFORVAR(reg1)<<","<<REGNAMEFORVAR(reg2)<<","<<2<<endl;
     }
     else
     {
@@ -1058,7 +1061,9 @@ void Func::GenCode()
     {
         switch(e->type)
         {
-            case ArithRR:cout<<REGNAMEFORVAR(e->left[0])<<" = "<<REGNAMEFORVAR(e->right[0])<<" "<<opstring(e->imm[0])
+            case ArithRR:
+            case ArithRRD:
+                cout<<REGNAMEFORVAR(e->left[0])<<" = "<<REGNAMEFORVAR(e->right[0])<<" "<<opstring(e->imm[0])
                             <<" "<<REGNAMEFORVAR(e->right[1])<<endl;break;
             case ArithRRSame:cout<<REGNAMEFORVAR(e->left[0])<<" = "<<REGNAMEFORVAR(e->right[0])<<" "<<opstring(e->imm[0])
                             <<" "<<REGNAMEFORVAR(e->right[0])<<endl;break;
@@ -1115,7 +1120,7 @@ void Func::GenRiscv64()
             case ArithRR:cout<<"\t"<<opinstruct(e->imm[0])<<"\t"<<REGNAMEFORVAR(e->left[0])<<","<<REGNAMEFORVAR(e->right[0])<<","
             <<REGNAMEFORVAR(e->right[1])<<endl;break;
             case ArithRRD:cout<<"\t"<<"add\t"<<REGNAMEFORVAR(e->left[0])<<","<<REGNAMEFORVAR(e->right[0])<<","
-            <<REGNAMEFORVAR(e->right[1])<<endl;break;
+            <<REGNAMEFORVAR(e->right[1])<<endl;break;   //ArithRRD只用于计算地址
             case ArithRRSame:cout<<"\t"<<opinstruct(e->imm[0])<<"\t"<<REGNAMEFORVAR(e->left[0])<<","<<REGNAMEFORVAR(e->right[0])<<","
             <<REGNAMEFORVAR(e->right[0])<<endl;break;
             case ArithRI:if(e->imm[1]=='+')
@@ -1186,7 +1191,7 @@ void Func::DebugPrintPhysicsResult()
         cerr<<i<<":"<<Reg::names[color[i]]<<endl;
     }
     //顺便输出参数表
-    for(int i = 0; i< paramTable.size(); i++)
+    for(size_t i = 0; i< paramTable.size(); i++)
     {
         cerr<<"PARAM_"<<i<<":Variable_"<<paramTable[i]<<endl;
     }

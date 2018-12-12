@@ -65,7 +65,7 @@ Symbol '=' Symbol AOP Symbol             {  if($3!=$5)
                                             {
                                                 int tmp1 = ++Analyz::vcount;
                                                 $$ = new Expression(MoveRI,{tmp1},{},{$5});
-                                                auto e = new Expression(ArithRR,{$1},{$3,tmp1},{$4});
+                                                new Expression(ArithRR,{$1},{$3,tmp1},{$4});
                                             }
 } 
 //AOP allow + * only
@@ -74,7 +74,7 @@ Symbol '=' Symbol AOP Symbol             {  if($3!=$5)
                                     
                                                 int tmp1 = ++Analyz::vcount;
                                                 $$ = new Expression(MoveRI,{tmp1},{},{$3});
-                                                auto e = new Expression(ArithRR,{$1},{tmp1,$5},{$4});
+                                                new Expression(ArithRR,{$1},{tmp1,$5},{$4});
                                         }
 
 | Symbol '=' INTEGER AOP INTEGER            {$$=new Expression(MoveRI,{$1},{},{calcarith($3,$4,$5)});}
@@ -89,7 +89,7 @@ Symbol '=' Symbol AOP Symbol             {  if($3!=$5)
 | Symbol '=' INTEGER                        {$$=new Expression(MoveRI,{$1},{},{$3});}
 | Symbol '[' Symbol ']' '=' Symbol          {
                                             int tmp1 = ++Analyz::vcount;
-                                            auto e = new Expression(ArithRRD,{tmp1},{$1,$3},{'+'});
+                                            new Expression(ArithRRD,{tmp1},{$1,$3},{'+'});
                                             $$ = new Expression(ArrayWrite,{},{tmp1,$6},{0});
 }
 /*
@@ -97,12 +97,12 @@ Symbol '=' Symbol AOP Symbol             {  if($3!=$5)
 */
 | Symbol '[' INTEGER ']' '=' Symbol         {$$=new Expression(ArrayWrite,{},{$1,$6},{$3});}
 | Symbol '[' INTEGER ']' '=' INTEGER        {int tmp1 = ++Analyz::vcount;
-                                            auto e = new Expression(MoveRI,{tmp1},{},{$6});
+                                            new Expression(MoveRI,{tmp1},{},{$6});
                                             $$=new Expression(ArrayWrite,{},{$1,tmp1},{$3});}
 | Symbol '=' Symbol '[' INTEGER ']'         {$$=new Expression(ArrayRead,{$1},{$3},{$5});}
 | Symbol '=' Symbol '[' Symbol ']'          {
                                             int tmp1 = ++Analyz::vcount;
-                                            auto e = new Expression(ArithRRD,{tmp1},{$3,$5},{'+'});
+                                            new Expression(ArithRRD,{tmp1},{$3,$5},{'+'});
                                             $$ = new Expression(ArrayRead,{$1},{tmp1},{0});
 }
 | IF Symbol LOP Symbol GOTO LABEL           {$$=new Expression(IfRR,{},{$2,$4},{$3,$6});}
@@ -111,7 +111,7 @@ Symbol '=' Symbol AOP Symbol             {  if($3!=$5)
                                                 else
                                                 {
                                                     int tmp1 = ++Analyz::vcount;
-                                                    auto e = new Expression(MoveRI,{tmp1},{},{$4});
+                                                    new Expression(MoveRI,{tmp1},{},{$4});
                                                     $$ = new Expression(IfRR,{},{$2,tmp1},{$3,$6});
                                                 }
 
@@ -121,7 +121,7 @@ Symbol '=' Symbol AOP Symbol             {  if($3!=$5)
                                                 else
                                                 {
                                                     int tmp1 = ++Analyz::vcount;
-                                                    auto e = new Expression(MoveRI,{tmp1},{},{$2});
+                                                    new Expression(MoveRI,{tmp1},{},{$2});
                                                     $$ = new Expression(IfRR,{},{tmp1,$4},{$3,$6});
                                                 }
 }

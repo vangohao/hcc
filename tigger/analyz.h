@@ -77,11 +77,12 @@ class Reg
 class Func
 {
 public:
-    string name;
-    vector<int> calledStoredRegs;
     int paramCount;
     int paramToCallWithCount;
+    vector<int> calledStoredRegs;
     int frameSize;
+    unordered_map<int,int> frameArrayTable;
+    string name;
     vector<int> offset;
     vector<int> size;
     vector<int> paramTable;
@@ -194,6 +195,6 @@ public:
     Analyz();
 };
 extern int target;
-extern unordered_map<int,int> frameArrayTable;
+// extern unordered_map<int,int> frameArrayTable;
 extern Analyz AnalyzInstance;
 #endif

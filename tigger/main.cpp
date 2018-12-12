@@ -2,7 +2,7 @@
 #include "y.tab.h"
 #include "analyz.h"
 Analyz AnalyzInstance;
-unordered_map<int,int> frameArrayTable;
+// unordered_map<int,int> frameArrayTable;
 int target;
 int main(int argc , char** argv)
 {
