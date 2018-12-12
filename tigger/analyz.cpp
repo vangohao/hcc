@@ -1,7 +1,6 @@
 #include "analyz.h"
 #define REGNAMEFORVAR(x) (Reg::names[color[GetAlias((x))]])
 
-
 Analyz::Analyz()
 {
     globalSize = 0; globalVariableCount = 0;
@@ -29,7 +28,6 @@ imm(_imm),funtocall(_funtocall),funin(_funin)
         if(AnalyzInstance.globalVaribleMap.find(l) != AnalyzInstance.globalVaribleMap.end())
         {
             leftGlobal = true;
-            // cerr<<"LEFTGLOBAL_"<<l<<endl;
         }
     }
     for(auto iter = right.begin();iter!=right.end();iter++)
@@ -37,7 +35,6 @@ imm(_imm),funtocall(_funtocall),funin(_funin)
         if(AnalyzInstance.globalVaribleMap.find(*iter) !=
          AnalyzInstance.globalVaribleMap.end())
         {
-            // cerr<<"RIGHTGLOBAL_"<<*iter<<endl;
             //先load一下吧,有些语句可能不用load,以后再说.
             int tmp = AnalyzInstance.currentFunc().GenTempVariable();
             if(AnalyzInstance.globalVaribleType[*iter] == 0)
@@ -91,9 +88,6 @@ imm(_imm),funtocall(_funtocall),funin(_funin)
 vector<int> globalType;
 void Analyz::insert(int var,int s,int type)
 {
-    // cerr<<globalVariableCount<<endl;
-    //if(type == 0)cout<<"v"<<offset.size()<<" = 0"<<endl;
-    //else cout<<"v"<<offset.size()<<" = malloc "<<s<<endl;
     offset.push_back(globalSize);
     size.push_back(s);
     globalSize += s;
@@ -121,7 +115,6 @@ void Analyz::GenGlobal()
             cout<<".word\t"<<0<<endl;
         }
     }
-    //cout<<".LC0:\n\t.string\t\"%d\""<<endl;
 }
 void Analyz::GenGlobalTigger()
 {
@@ -166,7 +159,7 @@ Func& Analyz::currentFunc()
 {
     return *(funcs.rbegin());
 }
-void Func::InitFunEnv()//此函数处理函数入口和出口出的寄存器管理,不处理call语句和return语句
+void Func::InitFunEnv()//此函数处理函数入口处的参数转移
 {
     if(!calledStoredRegs.empty()) return ;
     for(int i = 0; i<paramCount; i++)
@@ -175,17 +168,6 @@ void Func::InitFunEnv()//此函数处理函数入口和出口出的寄存器管�
         auto e= new Expression(MoveRR,{paramTable[i]},{r},{},"","",false);
         exprs.push_front(e);
     }
-    /* //取消预着色
-    if(name != "f_main")
-    //保存被调用者保存的寄存器
-    for(int i = 0; i<= 11; i++)
-    {
-        int r = (int)(s0) + i;
-        int tmp1 = ++Analyz::vcount;
-        calledStoredRegs.push_back(tmp1);
-        auto e =  new Expression(MoveRR,{tmp1},{r},{},"","",false);
-        exprs.push_front(e);
-    } */
 }
 void Analyz::process()
 {
@@ -195,12 +177,7 @@ void Analyz::process()
         f.Processor();
     }
     if(target==1) GenGlobal();
-}/*
-void Analyz::GenPutGet()
-{
-    //cout<<"\t.align\t1\n\t.globl\tf_putint\n\t.type\tf_putint, @function\nf_putint:\n\tmv\ta1,a0\n\tlui\ta0,%hi(.LC0)\n\taddi\ta0,a0,%lo(.LC0)\n\ttail\tprintf\n\t.size\tf_putint, .-f_putint\n\t.align\t1\n\t.globl\tf_getint\n\t.type\tf_getint, @function\nf_getint:\n\taddi\tsp,sp,-32\n\tlui\ta0,%hi(.LC0)\n\taddi\ta1,sp,12\n\taddi\ta0,a0,%lo(.LC0)\n\tsd\tra,24(sp)\n\tcall\t__isoc99_scanf\n\tld\tra,24(sp)\n\tlw\ta0,12(sp)\n\taddi\tsp,sp,32\n\tjr\tra\n\t.size\tf_getint, .-f_getint\n";
-cout<<"\t.align\t1\n\t.globl\tf_putint\n\t.type\tf_putint, @function\nf_putint:\n\taddi\tsp,sp,-32\n\tsd\tra,24(sp)\n\tsd\ts0,16(sp)\n\taddi\ts0,sp,32\n\tmv\ta5,a0\n\tsw\ta5,-20(s0)\n\tlw\ta5,-20(s0)\n\tmv\ta1,a5\n\tlui\ta5,%hi(.LC0)\n\taddi\ta0,a5,%lo(.LC0)\n\tcall\tprintf\n\tmv\ta5,a0\n\tmv\ta0,a5\n\tld\tra,24(sp)\n\tld\ts0,16(sp)\n\taddi\tsp,sp,32\n\tjr\tra\n\t.size\tf_putint, .-f_putint\n\t.align\t1\n\t.globl\tf_getint\n\t.type\tf_getint, @function\nf_getint:\n\taddi\tsp,sp,-32\n\tsd\tra,24(sp)\n\tsd\ts0,16(sp)\n\taddi\ts0,sp,32\n\taddi\ta5,s0,-20\n\tmv\ta1,a5\n\tlui\ta5,%hi(.LC0)\n\taddi\ta0,a5,%lo(.LC0)\n\tcall\t__isoc99_scanf\n\tlw\ta5,-20(s0)\n\tmv\ta0,a5\n\tld\tra,24(sp)\n\tld\ts0,16(sp)\n\taddi\tsp,sp,32\n\tjr\tra\n\t.size\tf_getint, .-f_getint"<<endl;
-}*/
+}
 void Func::genFlow()
 {
     for(auto iter = exprs.begin();iter!=exprs.end();++iter)
@@ -237,16 +214,6 @@ void Func::ReturnFunc(int v,int t)
     {
         InitFunEnv();
     }
-    /* //取消预着色
-    if(name != "f_main")
-    //恢复被调用者保存的寄存器
-    for(int i = 0; i<= 11; i++)
-    {
-        int r = (int)(s0) + i;
-        int tmp1 = calledStoredRegs[i];
-        auto e =  new Expression(MoveRR,{r},{tmp1},{},"","",false);
-        exprs.push_back(e);
-    } */
     //传送返回值到a0
     if(t == 1)
     {
@@ -256,13 +223,6 @@ void Func::ReturnFunc(int v,int t)
     {
         new Expression(MoveRI,{(int)(a0)},{},{v});
     }
-    //取消预着色
-    /* if(name != "f_main")
-    //s开头的寄存器需要设为出口活跃以免冲突,a0也需要
-    new Expression(Return,{},{(int)(a0),(int)(s0),(int)(s0)+1,(int)(s0)+2,(int)(s0)+3,
-                                            (int)(s0)+4,(int)(s0)+5,(int)(s0)+6,(int)(s0)+7,(int)(s0)+8,(int)(s0)+9,
-                                            (int)(s0)+10,(int)(s0)+11},{});
-    else */
     new Expression(Return,{},{(int)(a0)},{});
 }
 void Func::CallParam(int v,int t)
@@ -279,63 +239,15 @@ void Func::CallParam(int v,int t)
 }
 void Func::CallFunc(int v,string f)
 {
-    /* if(f!="f_getint" && f!="f_putint" && f!="f_putchar")
-    {
     vector<int> paramvec;
-    for(int i = 0; i<paramToCallWithCount;i ++)
+    paramvec.push_back(int(a0));
+    for(int i = 1; i<paramToCallWithCount;i ++)
     {
         paramvec.push_back((int)(a0) + i);
     }
-    for(int i = 0; i<=6;i ++)
-    {
-        paramvec.push_back((int)(t0) + i);
-    }
-    vector<int> tmpvec;
-    //需要保存调用者保存的寄存器 包括a1-a9中不做参数的部分
-     for(int i = 0; i<=6;i ++)
-    {
-        int r = (int)(t0) + i;
-        int tmp1 = ++ Analyz::vcount;
-        tmpvec.push_back(tmp1);
-        new Expression(MoveRR,{tmp1},{r},{});
-    }
-    paramToCallWithCount = paramToCallWithCount > 0 ? paramToCallWithCount : 1;
-    for(int i = paramToCallWithCount;i <= 7; i++)
-    {
-        int r =(int)(a0) + i;
-        int tmp1 = ++Analyz::vcount;
-        tmpvec.push_back(tmp1);
-        new Expression(MoveRR,{tmp1},{r},{});
-    } 
-    //t0-t6调用者保存的寄存器会被def
-    new Expression(Call,{(int)(a0),(int)(a1),(int)(a2),(int)(a3),(int)(a4),(int)(a5),(int)(a6),(int)(a7),
-    (int)(t0),(int)(t1),(int)(t2),(int)(t3),(int)(t4),(int)(t5),(int)(t6)}
-    ,paramvec,{},f);
+    new Expression(Call,{(int)(a0)},paramvec,{},f);
     new Expression(MoveRR,{v},{(int)(a0)},{});
-    for(int i = 0; i<=6; i++)
-    {
-        int r = (int)(t0) + i;
-        new Expression(MoveRR,{r},{tmpvec[i]},{});
-    } 
-    for(int i = paramToCallWithCount;i <= 7; i++)
-    {
-        int r =(int)(a0) + i;
-        new Expression(MoveRR,{r},{tmpvec[7 - paramToCallWithCount + i]},{});
-    } 
     paramToCallWithCount = 0;
-    } 
-    else */
-    {
-        vector<int> paramvec;
-        paramvec.push_back(int(a0));
-        for(int i = 1; i<paramToCallWithCount;i ++)
-        {
-            paramvec.push_back((int)(a0) + i);
-        }
-        new Expression(Call,{(int)(a0)},paramvec,{},f);
-        new Expression(MoveRR,{v},{(int)(a0)},{});
-        paramToCallWithCount = 0;
-    }
 }
 void Func::SaveReg()
 {
@@ -457,47 +369,6 @@ void Func::livelyAnalyz()
             std::sort(e->out.begin(),e->out.end());
             e->out.erase(std::unique(e->out.begin(),e->out.end()),e->out.end());//这句话可能是n方的
             
-            //重写,避免使用unique,不过好像没什么区别,还是很慢呢
-            /* vector<int> merge_counter;
-            vector<bool> merge_finish;
-            vector<int> merge_total;
-            for(Expression* expr: e->nexts) 
-            {
-                merge_counter.push_back(0);
-                if(expr->in.size()==0)
-                    merge_finish.push_back(true);
-                else  merge_finish.push_back(false);
-                merge_total.push_back(expr->in.size());
-            }
-            while(1)
-            {
-                int min = (1<<30)-1;
-                list<int> minarg;
-                int i = 0;
-                auto iter = e->nexts.begin();
-                for(;i<merge_counter.size(); i++,iter++)
-                if(merge_finish[i]==false)
-                {
-                    if((*iter)->in[merge_counter[i]] < min)
-                    {
-                        min = (*iter)->in[merge_counter[i]];
-                        minarg.clear();
-                        minarg.push_back(i);
-                    }
-                    else if((*iter)->in[merge_counter[i]] == min)
-                    {
-                        minarg.push_back(i);
-                    }
-                }
-                if(minarg.size()==0) break;
-                e->out.push_back(min);
-                for(auto x:minarg)
-                {
-                    merge_counter[x]++;
-                    if(merge_counter[x] == merge_total[x]) merge_finish[x] = true;
-                }
-            }
-            */
             if(e->in != e->in1 || e->out != e->out1)
             {
                 flag = false;
@@ -724,7 +595,6 @@ list<int>& Func::Adjacent(int n)
 void Func::Simplify()
 {
     int n = simplifyWorklist.front();
-    // cerr<<"Simplify_"<<n<<endl;
     simplifyWorklist.pop_front();
     selectStack.push_back(n);
     status[n] = Stacked;
@@ -865,7 +735,6 @@ int Func::GetAlias(int x)
 }
 void Func::Combine(int u,int v)
 {
-    // cerr<<"Combine_"<<u<<" "<<v<<endl;
     if(status[v] == Related)
     {
         freezeWorklist.remove(v);
@@ -896,7 +765,6 @@ void Func::Combine(int u,int v)
 void Func::FreezeAction()
 {
     int u = freezeWorklist.front();
-    // cerr<<"Freeze_"<<u<<endl;
     freezeWorklist.pop_front();
     simplifyWorklist.push_back(u);
     status[u]= Simple;
@@ -932,7 +800,6 @@ void Func::SelectSpill()
     //选择一个启发式算法找出下一个溢出的节点,此处暂时选择度数最大的顶点
     /*int m = spillWorklist.back();
     spillWorklist.pop_back();*/
-    //优先溢出保存保留节点的节点。
     int maxde = 0;int m = 0;
     for(auto x:spillWorklist)
     {
@@ -943,11 +810,7 @@ void Func::SelectSpill()
         }
     } 
 
-    /* spillWorklist.sort();
-    int  m =spillWorklist.front(); 
-     */
     spillWorklist.remove(m);
-    // cerr<<"Spill_"<<m<<endl;
     simplifyWorklist.push_back(m);
     status[m]  = Simple;
     FreezeMoves(m);
@@ -989,7 +852,6 @@ void Func::RewriteProgram()
 {
     for(auto v:spilledNodes)
     {
-        //cerr<<"SPILL_"<<v<<endl;
         //暂时默认指针类型也是4字节..
         //向栈帧中添加
         int tmp = insert();
@@ -1020,13 +882,6 @@ void Func::InsertExprForRead(Expression* e,int v)
             *iter = tempVar;
         }
     }
-    /* for(auto p: e->prevs)
-    {
-        p->nexts.remove(p);
-        p->nexts.push_back(readExpr);
-    }
-    readExpr->prevs = e->prevs;
-    readExpr->nexts.push_back(e); */
 }
 void Func::InsertExprForWrite(Expression* e, int v)
 {
@@ -1043,13 +898,6 @@ void Func::InsertExprForWrite(Expression* e, int v)
             *iter = tempVar;
         }
     }
-    /* for(auto p: e->nexts)
-    {
-        p->prevs.remove(p);
-        p->prevs.push_back(writeExpr);
-    }
-    writeExpr->nexts = e->nexts;
-    writeExpr->prevs.push_back(e); */
 }
 int Func::GenTempVariable()
 {
@@ -1057,12 +905,8 @@ int Func::GenTempVariable()
 }
 void Func::ColorAlgorithmMain()
 {
-    // DebugPrint();
     genFlow();
-    // cerr<<"GenFlowFinish"<<endl;
     livelyAnalyz();
-    // cerr<<"LivelyAnalyzFinish"<<endl;
-    // DebugPrint();
     InitializeVectorSpace();
     InitColorAlgorithm();
     while(1)
@@ -1077,7 +921,6 @@ void Func::ColorAlgorithmMain()
     if(!spilledNodes.empty()) 
     {
         RewriteProgram();
-        //GenCode();//Debug
         ColorAlgorithmMain(); //尾递归
     }
 }
@@ -1219,8 +1062,7 @@ void Func::GenRiscv64()
                         break;
             case FrameLoadAddr: cout<<"\t"<<"addi\t"<<REGNAMEFORVAR(e->left[0])<<",sp,"<<4*e->imm[0]<<endl;break;
             case Empty: break;
-            case Call: //if(e->funtocall=="f_putchar")cout<<"\t"<<"call\tputchar"<<endl;
-                    //else 
+            case Call: 
                     cout<<"\t"<<"call\t"<<e->funtocall<<endl;
                 break;
             case Return: cout<<"\t"<<"ld\tra,"<<stk-8<<"(sp)"<<endl;
@@ -1240,10 +1082,6 @@ void Func::Processor()
     InitFunEnv();
     ColorAlgorithmMain();
     SaveReg();
-    //DebugPrintColorResult();
-    //AssignPhysicsRegs();
-    //DebugPrintPhysicsResult();
-    //DebugPrint();
     if(target==0) GenCode();
     else if(target == 1) GenRiscv64();
 }

@@ -196,6 +196,5 @@ public:
     Analyz();
 };
 extern int target;//0 for tigger; 1 for RiscV64
-// extern unordered_map<int,int> frameArrayTable;
 extern Analyz AnalyzInstance;
 #endif
