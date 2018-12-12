@@ -81,6 +81,7 @@ public:
     int paramToCallWithCount;
     vector<int> calledStoredRegs;
     int frameSize;
+    unordered_map<int,int> frameSaveTable; 
     unordered_map<int,int> frameArrayTable;
     string name;
     vector<int> offset;
@@ -150,6 +151,7 @@ public:
     void genFlow();
     void InitializeVectorSpace();
     void Processor();
+    void SaveReg();
 
     //GenCode
     string opstring(int op);

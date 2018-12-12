@@ -7,6 +7,7 @@
 #include <string>
 #include <map>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 #include <initializer_list>
 #include <set>
@@ -19,6 +20,8 @@ using std::string;
 using std::stringstream;
 using std::vector;
 using std::unordered_map;
+using std::unordered_set;
+using std::set;
 using std::cerr;
 using std::endl;
 using std::stack;

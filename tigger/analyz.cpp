@@ -175,6 +175,7 @@ void Func::InitFunEnv()//此函数处理函数入口和出口出的寄存器管�
         auto e= new Expression(MoveRR,{paramTable[i]},{r},{},"","",false);
         exprs.push_front(e);
     }
+    /* //取消预着色
     if(name != "f_main")
     //保存被调用者保存的寄存器
     for(int i = 0; i<= 11; i++)
@@ -184,7 +185,7 @@ void Func::InitFunEnv()//此函数处理函数入口和出口出的寄存器管�
         calledStoredRegs.push_back(tmp1);
         auto e =  new Expression(MoveRR,{tmp1},{r},{},"","",false);
         exprs.push_front(e);
-    }
+    } */
 }
 void Analyz::process()
 {
@@ -236,6 +237,7 @@ void Func::ReturnFunc(int v,int t)
     {
         InitFunEnv();
     }
+    /* //取消预着色
     if(name != "f_main")
     //恢复被调用者保存的寄存器
     for(int i = 0; i<= 11; i++)
@@ -244,7 +246,7 @@ void Func::ReturnFunc(int v,int t)
         int tmp1 = calledStoredRegs[i];
         auto e =  new Expression(MoveRR,{r},{tmp1},{},"","",false);
         exprs.push_back(e);
-    }
+    } */
     //传送返回值到a0
     if(t == 1)
     {
@@ -254,12 +256,13 @@ void Func::ReturnFunc(int v,int t)
     {
         new Expression(MoveRI,{(int)(a0)},{},{v});
     }
-    if(name != "f_main")
+    //取消预着色
+    /* if(name != "f_main")
     //s开头的寄存器需要设为出口活跃以免冲突,a0也需要
     new Expression(Return,{},{(int)(a0),(int)(s0),(int)(s0)+1,(int)(s0)+2,(int)(s0)+3,
                                             (int)(s0)+4,(int)(s0)+5,(int)(s0)+6,(int)(s0)+7,(int)(s0)+8,(int)(s0)+9,
                                             (int)(s0)+10,(int)(s0)+11},{});
-    else
+    else */
     new Expression(Return,{},{(int)(a0)},{});
 }
 void Func::CallParam(int v,int t)
@@ -276,7 +279,7 @@ void Func::CallParam(int v,int t)
 }
 void Func::CallFunc(int v,string f)
 {
-    if(f!="f_getint" && f!="f_putint" && f!="f_putchar")
+    /* if(f!="f_getint" && f!="f_putint" && f!="f_putchar")
     {
     vector<int> paramvec;
     for(int i = 0; i<paramToCallWithCount;i ++)
@@ -320,12 +323,76 @@ void Func::CallFunc(int v,string f)
         new Expression(MoveRR,{r},{tmpvec[7 - paramToCallWithCount + i]},{});
     } 
     paramToCallWithCount = 0;
-    }
-    else
+    } 
+    else */
     {
-        new Expression(Call,{(int)(a0)},{(int)(a0)},{},f);
+        vector<int> paramvec;
+        paramvec.push_back(int(a0));
+        for(int i = 1; i<paramToCallWithCount;i ++)
+        {
+            paramvec.push_back((int)(a0) + i);
+        }
+        new Expression(Call,{(int)(a0)},paramvec,{},f);
         new Expression(MoveRR,{v},{(int)(a0)},{});
         paramToCallWithCount = 0;
+    }
+}
+void Func::SaveReg()
+{
+    //call语句
+    for(auto it = exprs.begin(); it!= exprs.end(); it++)
+    {
+        if((*it)->type == Call)
+        {
+            int usedRegs[30]={}; //既入口活跃又出口活跃的,并且不是a0,并且不是被调用者保存的，才需要恢复
+            for(auto x: (*it)->in)
+            {
+                usedRegs[color[GetAlias(x)]]++;
+            }
+            for(auto x: (*it)->out)
+            {
+                usedRegs[color[GetAlias(x)]]++;
+            }
+            usedRegs[int(a0)] = 0;
+            for(int i = int(s0); i<=int(s11); i++) usedRegs[i] =0;
+            for(int i = 0; i<28; i++) if(usedRegs[i] == 2)
+            {
+                int tmp = insert(); //向栈帧中申请空间
+                int position = offset[tmp] / 4;
+                Expression * writeExpr = new Expression(FrameStore,{},{i},{position},"","",false);
+                it = exprs.insert(it,writeExpr);//保存
+                it++;
+                it++;
+                Expression * readExpr = new Expression(FrameLoad,{i},{},{position},"","",false);
+                it = exprs.insert(it,readExpr);//回复
+                it --;
+            }
+        }
+    }
+    //进入函数体,保存所有被调用者保存的寄存器，如果为main函数就不用
+    if( (target && name != "main")|| (!target && name != "f_main"))
+    {
+        auto it = exprs.begin();
+        for(int i = (int)s0; i<=(int)s11; i++)
+        {
+            int tmp = insert(); //向栈帧中申请空间
+            int position = offset[tmp] / 4;
+            frameSaveTable[i] = position;
+            Expression * writeExpr = new Expression(FrameStore,{},{i},{position},"","",false);
+            it = exprs.insert(it,writeExpr);//保存
+            it++;
+        }
+        //处理返回语句
+        for(it = exprs.begin(); it != exprs.end(); ++it)
+        if((*it)->type == Return)
+        {
+            for(auto x:frameSaveTable)
+            {
+                Expression *readExpr = new Expression(FrameLoad,{x.first},{},{x.second},"","",false);
+                it = exprs.insert(it,readExpr);
+                it ++;
+            }
+        }
     }
 }
 void Func::livelyAnalyz()
@@ -1172,6 +1239,7 @@ void Func::Processor()
 {
     InitFunEnv();
     ColorAlgorithmMain();
+    SaveReg();
     //DebugPrintColorResult();
     //AssignPhysicsRegs();
     //DebugPrintPhysicsResult();
