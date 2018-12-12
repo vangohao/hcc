@@ -95,7 +95,6 @@ public:
 
     //Color Algorithm
     static int colorNumber;
-    //int maxVariable;
     list<int> initial;
     list<int> simplifyWorklist;
     list<int> freezeWorklist;
