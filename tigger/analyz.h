@@ -149,6 +149,7 @@ public:
     int insert();
     Func(int _paramCount,string _name);
     void genFlow();
+    void OptimizeFlow();
     void InitializeVectorSpace();
     void Processor();
     void SaveReg();

@@ -182,7 +182,7 @@ void Func::genFlow()
         iter++;
         e->nexts.clear();
         e->prevs.clear();
-        if(iter != exprs.end())
+        if(iter != exprs.end() && e->type != Goto) //如果是Goto则下一语句不是后继
         e->nexts.push_back(*iter);
         iter--;
         e->use = e->right;
@@ -278,7 +278,7 @@ void Func::SaveReg()
         }
     }
     //进入函数体,保存所有被调用者保存的寄存器，如果为main函数就不用
-    if( (target && name != "main")|| (!target && name != "f_main"))
+    if(name != "main")
     {
         auto it = exprs.begin();
         for(int i = (int)s0; i<=(int)s11; i++)
@@ -372,6 +372,28 @@ void Func::livelyAnalyz()
         }
         if(flag) break;
     }while(1);
+}
+void Func::OptimizeFlow()
+{
+    for(auto it = exprs.begin(); it != exprs.end(); ++it)
+    {
+        if(!((*it)->def.empty()))
+        {
+            bool flag = true;
+            for(auto x: (*it)->def)
+            {
+                for(auto y: (*it)->out)
+                {
+                    if(x == y) {flag = false;break;}
+                }
+            }
+            if(flag) //死代码
+            {
+                it = exprs.erase(it);
+                it--;
+            }
+        }
+    }
 }
 void Func::DebugPrint()
 {
@@ -901,6 +923,9 @@ int Func::GenTempVariable()
 }
 void Func::ColorAlgorithmMain()
 {
+    genFlow();
+    livelyAnalyz();
+    OptimizeFlow();
     genFlow();
     livelyAnalyz();
     InitializeVectorSpace();
