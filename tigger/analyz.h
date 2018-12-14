@@ -52,14 +52,15 @@ class Expression
 public:
     ExprType type;
     bool isMove;
+    bool dead;
     vector<int> left;
     vector<int> right;
     vector<int> imm;
     vector<int> use;
     vector<int> def;
-    vector<int> in;
+    set<int> in;
     vector<int> in1;
-    vector<int> out;
+    set<int> out;
     vector<int> out1;
     list<Expression*> nexts;
     list<Expression*> prevs;
@@ -166,7 +167,8 @@ public:
 
     //Debug
     void DebugPrint();
-    void DebugPrint(vector<int> & v);
+    template<class T>
+    void DebugPrint(T & v);
     void DebugPrintColorResult();
     void DebugPrintPhysicsResult();
 private:
