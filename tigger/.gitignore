@@ -8,7 +8,6 @@ lex.yy.c
 main.o
 *.c
 *.s
-!getint_putint.c
 *.old
 y.output
 y.tab.h
