@@ -15,6 +15,7 @@
 #include <stack>
 #include <list>
 #include <sstream>
+#include <queue>
 
 using std::string;
 using std::stringstream;
@@ -27,6 +28,7 @@ using std::endl;
 using std::stack;
 using std::list;
 using std::cout;
+using std::queue;
 
 int yylex();
 int yyerror(string s);

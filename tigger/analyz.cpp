@@ -182,7 +182,7 @@ void Func::genFlow()
         iter++;
         e->nexts.clear();
         e->prevs.clear();
-        if(iter != exprs.end())
+        if(iter != exprs.end() && e->type != Goto && e->type != Return) //如果是Goto或Return则下一语句不是后继
         e->nexts.push_back(*iter);
         iter--;
         e->use = e->right;
@@ -194,6 +194,10 @@ void Func::genFlow()
         else if(e->type==IfRR || e->type==IfRI || e->type==IfIR)
         {
             e->nexts.push_back(AnalyzInstance.labelTable[e->imm[1]]);
+        }
+        else if(e->type == Return)
+        {
+                e->nexts.push_back(exprs.back());
         }
     }
     for(auto e:exprs)
@@ -278,7 +282,7 @@ void Func::SaveReg()
         }
     }
     //进入函数体,保存所有被调用者保存的寄存器，如果为main函数就不用
-    if( (target && name != "main")|| (!target && name != "f_main"))
+    if(name != "main")
     {
         auto it = exprs.begin();
         for(int i = (int)s0; i<=(int)s11; i++)
@@ -308,11 +312,12 @@ void Func::livelyAnalyz()
     
     for(auto e:exprs)
     {
-        e->in = vector<int>();
-        e->out = vector<int>();
+        // e->in = list<int>();
+        // e->out = list<int>();
         std::sort(e->use.begin(),e->use.end());
         std::sort(e->def.begin(),e->def.end());
     }
+    /*
     do
     {
         bool flag = true;
@@ -372,6 +377,105 @@ void Func::livelyAnalyz()
         }
         if(flag) break;
     }while(1);
+    */
+    set<int> liveVar;
+    queue<Expression*> qex;
+    // DebugPrint();
+    qex.push(exprs.back());
+    while(!qex.empty()) // 宽搜,去除死代码
+    {
+        auto e = qex.front();
+        qex.pop();
+        //设置out
+        bool flagout = false,flagin = false;
+        for(auto x:liveVar)
+        {
+            if(e->out.find(x)== e->out.end())
+            {
+                flagout = true;
+                e->out.insert(x);
+            }
+        }
+        bool flag = true;//若为true，则为死代码
+        if(e->def.empty())
+        {
+            flag = false;
+        }
+        else
+        {
+            for(auto x:e->def)
+            {
+                auto it = liveVar.find(x);
+                if(it != liveVar.end())
+                {
+                    flag = false;
+                    it = liveVar.erase(it);
+                }
+            }
+        }
+        if(flag)
+        {
+            //死代码
+            e->dead = true;
+        }
+        else
+        {
+            //继续;
+            for(auto x: e->use)
+            {
+                liveVar.insert(x);
+            }
+            //加入in
+            for(auto x: liveVar)
+            {
+                if(e->in.find(x)== e->in.end())
+                {
+                    flagin = true;
+                    e->in.insert(x);
+                }
+            }
+            if((flagin || flagout) && e->dead == false)
+            {
+                //加入前驱
+                for(auto ee:e->prevs)
+                if(ee->dead == false)
+                {
+                    qex.push(ee);
+                }
+            }
+        }
+    }
+    // DebugPrint();
+}
+void Func::OptimizeFlow()
+{
+    /* for(auto it = exprs.begin(); it != exprs.end(); ++it)
+    {
+        if(!((*it)->def.empty()))
+        {
+            bool flag = true;
+            for(auto x: (*it)->def)
+            {
+                for(auto y: (*it)->out)
+                {
+                    if(x == y) {flag = false;break;}
+                }
+            }
+            if(flag) //死代码
+            {
+                it = exprs.erase(it);
+                it--;
+            }
+        }
+    } */
+    for(auto it = exprs.begin(); it!=exprs.end(); it++)
+    {
+        if((*it)->dead)
+        {
+            it = exprs.erase(it);
+            it--;
+        }
+    }
 }
 void Func::DebugPrint()
 {
@@ -380,6 +484,7 @@ void Func::DebugPrint()
     for(auto e: exprs)
     {
         cerr<<DebugCounter++<<"_";
+        cerr<<e->dead<<" ";
         switch(e->type)
         {
     case Invalid:cerr<<"Invalid"<<endl;break;
@@ -416,7 +521,8 @@ void Func::DebugPrint()
     }
     cerr<<"---------------"<<endl;
 }
-void Func::DebugPrint(vector<int> & v)
+template <class T>
+void Func::DebugPrint(T  & v)
 {
     for(auto x: v)
     {
@@ -493,14 +599,18 @@ void Func::InitColorAlgorithm()
     {
         if(e->isMove)
         {
-            moveList[e->def[0]].push_back(e);
-            moveList[e->use[0]].push_back(e);
+            int dd = *(e->def.begin());
+            int uu = *(e->use.begin());
+            moveList[dd].push_back(e);
+            moveList[uu].push_back(e);
             worklistMoves.push_back(e);
             for(auto i = e->in.begin();i!=e->in.end(); i++)
             {
-                for(auto j = i+1; j!= e->in.end(); j++)
+                auto j = ++i;
+                i--;
+                for(; j!= e->in.end(); j++)
                 {
-                    if((*i == e->def[0] && *j== e->use[0]) || (*i==e->use[0] && *j == e->def[0]))
+                    if((*i == dd && *j== uu) || (*i==uu && *j == dd))
                     {
                         
                     }
@@ -513,8 +623,9 @@ void Func::InitColorAlgorithm()
         }
         else
         for(auto i = e->in.begin();i!=e->in.end(); i++)
-        {
-            for(auto j = i+1; j!= e->in.end(); j++)
+        {auto j = ++i;
+                i--;
+                for(; j!= e->in.end(); j++)
             {
                 AddEdge(*i,*j);
             }
@@ -903,6 +1014,9 @@ void Func::ColorAlgorithmMain()
 {
     genFlow();
     livelyAnalyz();
+    OptimizeFlow();
+    genFlow();
+    livelyAnalyz();
     InitializeVectorSpace();
     InitColorAlgorithm();
     while(1)
@@ -963,7 +1077,7 @@ void Func::OutputArithRIMul(int reg1,int reg2,int imm)
 void Func::GenCode()
 {
     cout<<name<<" ["<<paramCount<<"] ["<<frameSize/4<<"]"<<endl;
-    for(auto e:exprs)
+    for(auto e:exprs) 
     {
         switch(e->type)
         {
