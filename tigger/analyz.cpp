@@ -312,8 +312,8 @@ void Func::livelyAnalyz()
     
     for(auto e:exprs)
     {
-        // e->in = list<int>();
-        // e->out = list<int>();
+        e->in.clear();
+        e->out.clear();
         std::sort(e->use.begin(),e->use.end());
         std::sort(e->def.begin(),e->def.end());
     }
@@ -436,7 +436,7 @@ void Func::livelyAnalyz()
                 }
         }
     }
-     //DebugPrint();
+     DebugPrint();
 }
 void Func::OptimizeFlow()
 {
@@ -1205,7 +1205,10 @@ void Func::checkReturn()
             flag = true;
             auto it = find(exprs.begin(),exprs.end(),f);
             it++;
-            Expression * e1 = new Expression(Return,{},{0},{},"","",false); //返回不确定的a0值
+            Expression * e0 = new Expression(MoveRI,{(int)(a0)},{},{0},"","",false); 
+            Expression * e1 = new Expression(Return,{},{(int)(a0)},{},"","",false); //返回a0=0值
+            it = exprs.insert(it,e0);
+            it++;
             exprs.insert(it,e1);
         }
     }
