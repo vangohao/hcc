@@ -461,7 +461,7 @@ void Func::OptimizeFlow()
             }
         }
     } */
-    /* for(auto e:exprs)
+    for(auto e:exprs)
     {
         bool flag = true;
         if(e->def.empty()) flag = false;
@@ -490,7 +490,7 @@ void Func::OptimizeFlow()
             it = exprs.erase(it);
             it--;
         }
-    } */
+    }
 }
 void Func::DebugPrint()
 {
@@ -1029,9 +1029,9 @@ void Func::ColorAlgorithmMain()
 {
     genFlow();
     livelyAnalyz();
-    /* OptimizeFlow();
+    OptimizeFlow();
     genFlow();
-    livelyAnalyz(); */
+    livelyAnalyz();
     InitializeVectorSpace();
     InitColorAlgorithm();
     while(1)
