@@ -438,7 +438,7 @@ void Func::livelyAnalyz()
                 }
         }
     }
-     DebugPrint();
+    // DebugPrint();
 }
 void Func::OptimizeFlow()
 {

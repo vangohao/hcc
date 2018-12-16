@@ -1,0 +1,24 @@
+#!/bin/bash
+if [ $# -gt 1 ]
+then
+	if [ $1 -eq 1 ]
+	then
+		RISCV=/mnt/c/Users/hao/RISCV
+		echo "windows"
+	else
+		RISCV=/home/hao/RISCV
+		echo "ubuntu"
+	fi
+	./eeyore < $2.c > $2.ee
+	echo "./eeyore < $2.c > $2.ee"
+	./tigger < $2.ee > $2.tg
+	echo "./tigger < $2.ee > $2.tg"
+	./tigger 1 < $2.ee > $2.s
+	echo "./tigger 1 < $2.ee > $2.s"
+	$RISCV/bin/riscv-unknown-gnu-linux-gcc $2.s getint_putint.s
+	echo "$RISCV/bin/riscv-unknown-gnu-linux-gcc $2.s getint_putint.s"
+	echo "$RISCV/bin/qemu-riscv64 -L $RISCV/sysroot a.out"
+	$RISCV/bin/qemu-riscv64 -L $RISCV/sysroot a.out
+else
+	echo "no parameter"
+fi
