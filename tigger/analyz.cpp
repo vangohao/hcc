@@ -442,7 +442,90 @@ void Func::livelyAnalyz()
 }
 void Func::OptimizeFlow()
 {
-    //检查死代码
+    //常数传播
+    unordered_map<int,int> constant;
+    auto it = exprs.begin();
+    for(; it!=exprs.end(); it++)
+    {
+        Expression * e = *it;
+        if(e->def.empty()) continue;
+        if(e->type == MoveRI)
+        {
+            constant[e->def[0]] = e->imm[0];
+        }
+        else
+        {
+            if(e->type != Call && e->type!= Return && e->type != Goto  && e->type != GlobalLoad && e->type!=GlobalLoadAddr 
+            && e->type != FrameLoad && e->type != FrameLoadAddr && e->type != FrameStore && e->type != ArrayRead && e->type!= ArrayWrite)
+            {
+                bool flag = true;
+                for(auto x: e->use)
+                {
+                    if(!constant.count(x))
+                    {
+                        flag = false;
+                        break;
+                    }
+                }
+                if(flag)
+                {
+                    int result;
+                    switch(e->type)
+                    {
+                        case MoveRR: result = constant[e->use[0]] ;break;
+                        case ArithRRD:
+                        case ArithRR: result = calcarith(constant[e->use[0]],e->imm[0],constant[e->use[1]]);break;
+                        case ArithRRSame: result = calcarith(constant[e->use[0]],e->imm[0],constant[e->use[0]]);break;
+                        case ArithRI: result = calcarith(constant[e->use[0]],e->imm[1],e->imm[0]);break;
+                        case Negative: result = calcarith(0,'-',constant[e->use[0]]);break;
+                        case IfRR: result = calcarith(constant[e->use[0]],e->imm[0],constant[e->use[1]]);break;
+                        case IfRI: result = calcarith(constant[e->use[0]],e->imm[0],e->imm[2]);break;
+                        case IfIR: result = calcarith(e->imm[2],e->imm[0],constant[e->use[0]]);break;
+                        default:cerr<<"CONSTANT ERROR"<<endl;break;
+                    }
+                    if(e->type == IfRR || e->type ==IfRI || e->type ==IfIR)
+                    {
+                        if(result) 
+                        {
+                            e->type = Goto;
+                            e->left = e->def = {};
+                            e->right = e->use = {};
+                            e->imm = {e->imm[1]};
+                        }
+                        else
+                        {
+                            it = exprs.erase(it);
+                            it --;
+                        }
+                    }
+                    else
+                    {
+                        e->type = MoveRI;
+                        e->right = e->use = {};
+                        e->imm = {result};
+                        constant[e->def[0]] = result;
+                    }
+                }
+                else
+                {
+                    for(auto x:e->def)
+                    {
+                        auto it = constant.find(x);
+                        if(it!=constant.end())
+                        {
+                            constant.erase(it);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+void Func::OptimizeDead()
+{
+    //消除死代码
+    // DebugPrint();
     auto it= exprs.end();
     it--;
     for(; it != exprs.begin(); it --)
@@ -489,16 +572,8 @@ void Func::OptimizeFlow()
                 }
             }
         }
-    }/* 
-    //消除死代码
-    for(auto it = exprs.begin(); it!=exprs.end(); it++)
-    {
-        if((*it)->dead)
-        {
-            it = exprs.erase(it);
-            it--;
-        }
-    } */
+    }
+
 }
 void Func::DebugPrint()
 {
@@ -1215,6 +1290,9 @@ void Func::Processor()
     genFlow();
     livelyAnalyz();
     OptimizeFlow();
+    genFlow();
+    livelyAnalyz();
+    OptimizeDead();
     ColorAlgorithmMain();
     SaveReg();
     if(target==0) GenCode();

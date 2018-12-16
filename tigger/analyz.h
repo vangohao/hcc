@@ -152,6 +152,7 @@ public:
     Func(int _paramCount,string _name);
     void genFlow();
     void OptimizeFlow();
+    void OptimizeDead();
     void InitializeVectorSpace();
     void Processor();
     void SaveReg();
