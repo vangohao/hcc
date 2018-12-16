@@ -1029,9 +1029,9 @@ void Func::ColorAlgorithmMain()
 {
     genFlow();
     livelyAnalyz();
-    OptimizeFlow();
+    /* OptimizeFlow();
     genFlow();
-    livelyAnalyz();
+    livelyAnalyz(); */
     InitializeVectorSpace();
     InitColorAlgorithm();
     while(1)
