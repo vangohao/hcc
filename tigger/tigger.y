@@ -40,7 +40,7 @@ FUNCTION '[' INTEGER ']' '\n'                  {AnalyzInstance.funcs.push_back(F
                                                 AnalyzInstance.FuncMap[$1] = &(AnalyzInstance.currentFunc());
                                                 }
 Statements                                     {}                        
-END FUNCTION                                  { new Expression(Empty,{},{},{});}
+END FUNCTION                                  { new Expression(Empty,{},{(int)(a0)},{});}
 ;
 Statements:
 Statements Expression '\n'            {

@@ -93,8 +93,6 @@ public:
     list<Expression*> exprs;
     vector<int> spilledVariableFrameMap; //由变量id映射到上面的offset和size数组的下标
 
-    //进入函数环境处理
-    void InitFunEnv();
 
     //Color Algorithm
     static int colorNumber;
@@ -147,6 +145,8 @@ public:
     void InsertExprForRead(Expression* e,int v);
     int GenTempVariable();
 
+    //进入函数环境处理
+    void InitFunEnv();
     int insert(int s,int v);
     int insert();
     Func(int _paramCount,string _name);

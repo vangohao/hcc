@@ -162,7 +162,9 @@ void Func::InitFunEnv()//此函数处理函数入口处的参数转移
     {
         int r = (int)(a0) + i;
         auto e= new Expression(MoveRR,{paramTable[i]},{r},{},"","",false);
-        exprs.push_front(e);
+        auto it = exprs.begin();
+        it++;
+        exprs.insert(it,e);
     }
 }
 void Analyz::process()
@@ -441,8 +443,11 @@ void Func::livelyAnalyz()
 void Func::OptimizeFlow()
 {
     //检查死代码
-    for(auto e:exprs)
+    auto it= exprs.end();
+    it--;
+    for(; it != exprs.begin(); it --)
     {
+        Expression * e = *it;
         bool flag = true;
         if(e->def.empty()) flag = false;
         else
@@ -462,8 +467,29 @@ void Func::OptimizeFlow()
             }
         }
         if(flag) e->dead = true;
+        if(e->type == Call) e->dead = false; //Call不可能为死代码，除非运行不到
         if(e->visited == false) e->dead = true; //不可运行到的代码也是死代码
-    }
+        if(e->dead)
+        {
+            it = exprs.erase(it);
+            for(auto f: e->nexts)
+            {
+                f->prevs.remove(e);
+                for(auto g: e->prevs)
+                {
+                    f->prevs.push_back(g);
+                }
+            }
+            for(auto f: e->prevs)
+            {
+                f->nexts.remove(e);
+                for(auto g: e->nexts)
+                {
+                    f->nexts.push_back(g);
+                }
+            }
+        }
+    }/* 
     //消除死代码
     for(auto it = exprs.begin(); it!=exprs.end(); it++)
     {
@@ -472,7 +498,7 @@ void Func::OptimizeFlow()
             it = exprs.erase(it);
             it--;
         }
-    }
+    } */
 }
 void Func::DebugPrint()
 {
