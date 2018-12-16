@@ -165,6 +165,7 @@ public:
     void ReturnFunc(int v,int t);
     void CallParam(int v,int t);
     void CallFunc(int v,string f);
+    void checkReturn();
 
     //Debug
     void DebugPrint();
@@ -193,6 +194,7 @@ public:
                 //type0表示int,1表示数组
     vector<Func> funcs;
     Func& currentFunc();
+    void ReportWarning(string s);
     void process();
     //void GenPutGet();
     void GenGlobalTigger();

@@ -210,10 +210,10 @@ void Func::genFlow()
 }
 void Func::ReturnFunc(int v,int t)
 {
-    if(calledStoredRegs.empty())
+    /* if(calledStoredRegs.empty())
     {
         InitFunEnv();
-    }
+    } */ //是否还有必要》？
     //传送返回值到a0
     if(t == 1)
     {
@@ -379,8 +379,6 @@ void Func::livelyAnalyz()
     }while(1);
     */
     queue<Expression*> qex;
-    // DebugPrint();
-
     qex.push(exprs.back());
     while(!qex.empty()) // 宽搜,去除死代码
     {
@@ -442,25 +440,7 @@ void Func::livelyAnalyz()
 }
 void Func::OptimizeFlow()
 {
-    /* for(auto it = exprs.begin(); it != exprs.end(); ++it)
-    {
-        if(!((*it)->def.empty()))
-        {
-            bool flag = true;
-            for(auto x: (*it)->def)
-            {
-                for(auto y: (*it)->out)
-                {
-                    if(x == y) {flag = false;break;}
-                }
-            }
-            if(flag) //死代码
-            {
-                it = exprs.erase(it);
-                it--;
-            }
-        }
-    } */
+    //检查死代码
     for(auto e:exprs)
     {
         bool flag = true;
@@ -482,7 +462,9 @@ void Func::OptimizeFlow()
             }
         }
         if(flag) e->dead = true;
+        if(e->visited == false) e->dead = true; //不可运行到的代码也是死代码
     }
+    //消除死代码
     for(auto it = exprs.begin(); it!=exprs.end(); it++)
     {
         if((*it)->dead)
@@ -1029,9 +1011,6 @@ void Func::ColorAlgorithmMain()
 {
     genFlow();
     livelyAnalyz();
-    OptimizeFlow();
-    genFlow();
-    livelyAnalyz();
     InitializeVectorSpace();
     InitColorAlgorithm();
     while(1)
@@ -1205,10 +1184,35 @@ void Func::GenRiscv64()
 void Func::Processor()
 {
     InitFunEnv();
+    genFlow();
+    checkReturn();
+    genFlow();
+    livelyAnalyz();
+    OptimizeFlow();
     ColorAlgorithmMain();
     SaveReg();
     if(target==0) GenCode();
     else if(target == 1) GenRiscv64();
+}
+void Func::checkReturn()
+{
+    bool flag = false;
+    Expression * e = exprs.back();
+    for(auto f: e->prevs)
+    {
+        if( f->type != Return)
+        {
+            flag = true;
+            auto it = find(exprs.begin(),exprs.end(),f);
+            it++;
+            Expression * e1 = new Expression(Return,{},{0},{},"","",false); //返回不确定的a0值
+            exprs.insert(it,e1);
+        }
+    }
+    if(flag)
+    {
+        AnalyzInstance.ReportWarning("Control reaches end of non-void function "+name);
+    }
 }
 void Func::DebugPrintColorResult()
 {
@@ -1226,6 +1230,10 @@ void Func::DebugPrintPhysicsResult()
     {
         cerr<<"PARAM_"<<i<<":Variable_"<<paramTable[i]<<endl;
     }
+}
+void Analyz::ReportWarning(string s)
+{
+    cerr<<"Warning: "<<s<<endl;
 }
 int Func::colorNumber = 27;
 vector<string> Reg::names = {"a0","a1","a2","a3","a4","a5","a6","a7",
