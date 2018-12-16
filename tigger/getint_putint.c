@@ -39,14 +39,14 @@ int getint()
 	{
 		if(ch =='-' && negative ==0 ) negative = 1;
 		else if(ch =='-') return 0;
-		else
+		else 
 		{
 			result = result * 10 + ch - '0';
-			negative = 2;
+			if(negative == 0) negative = 2;
 		}
 		ch = getchar();
 	}
-	while(ch>'9' || ch <'0');
-	if(negative)   return -result;
+	while(ch<='9' && ch >='0');
+	if(negative == 1)   return -result;
 	else return result;
 }

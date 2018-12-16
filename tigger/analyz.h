@@ -53,6 +53,7 @@ public:
     ExprType type;
     bool isMove;
     bool dead;
+    bool visited;
     vector<int> left;
     vector<int> right;
     vector<int> imm;

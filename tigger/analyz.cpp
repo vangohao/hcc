@@ -378,74 +378,67 @@ void Func::livelyAnalyz()
         if(flag) break;
     }while(1);
     */
-    set<int> liveVar;
     queue<Expression*> qex;
     // DebugPrint();
+
     qex.push(exprs.back());
     while(!qex.empty()) // 宽搜,去除死代码
     {
+        set<int> liveVar;
         auto e = qex.front();
         qex.pop();
-        //设置out
-        bool flagout = false,flagin = false;
-        for(auto x:liveVar)
+        for (auto f : e->nexts)
         {
-            if(e->out.find(x)== e->out.end())
+            for (auto x : f->in)
+            {
+                liveVar.insert(x);
+            }
+        }
+        //设置out
+        bool flagout = false, flagin = false;
+        for (auto x : liveVar)
+        {
+            if (e->out.find(x) == e->out.end())
             {
                 flagout = true;
                 e->out.insert(x);
             }
         }
-        bool flag = true;//若为true，则为死代码
-        if(e->def.empty())
+        for (auto x : e->def)
         {
-            flag = false;
-        }
-        else
-        {
-            for(auto x:e->def)
+            auto it = liveVar.find(x);
+
+            if (it != liveVar.end())
             {
-                auto it = liveVar.find(x);
-                if(it != liveVar.end())
-                {
-                    flag = false;
-                    it = liveVar.erase(it);
-                }
+                it = liveVar.erase(it);
             }
         }
-        if(flag)
+        //继续;
+        for (auto x : e->use)
         {
-            //死代码
-            e->dead = true;
+            liveVar.insert(x);
         }
-        else
+        //加入in
+        for (auto x : liveVar)
         {
-            //继续;
-            for(auto x: e->use)
+            if (e->in.find(x) == e->in.end())
             {
-                liveVar.insert(x);
+                flagin = true;
+                e->in.insert(x);
             }
-            //加入in
-            for(auto x: liveVar)
-            {
-                if(e->in.find(x)== e->in.end())
-                {
-                    flagin = true;
-                    e->in.insert(x);
-                }
-            }
-            if((flagin || flagout) && e->dead == false)
-            {
-                //加入前驱
-                for(auto ee:e->prevs)
-                if(ee->dead == false)
+        }
+        if ((flagin || flagout || !e->visited || e->use.empty()) && e->dead == false)
+        {
+            e->visited = true;
+            //加入前驱
+            for (auto ee : e->prevs)
+                if (ee->dead == false)
                 {
                     qex.push(ee);
                 }
-            }
         }
     }
-    // DebugPrint();
+     DebugPrint();
 }
 void Func::OptimizeFlow()
 {
@@ -468,6 +461,28 @@ void Func::OptimizeFlow()
             }
         }
     } */
+    /* for(auto e:exprs)
+    {
+        bool flag = true;
+        if(e->def.empty()) flag = false;
+        else
+        {
+            for (auto x : e->def)
+            {
+                for (auto f : e->nexts)
+                {
+                    if (f->in.find(x) != f->in.end())
+                    {
+                        flag = false;
+                        break;
+                    }
+                }
+                if (!flag)
+                    break;
+            }
+        }
+        if(flag) e->dead = true;
+    }
     for(auto it = exprs.begin(); it!=exprs.end(); it++)
     {
         if((*it)->dead)
@@ -475,7 +490,7 @@ void Func::OptimizeFlow()
             it = exprs.erase(it);
             it--;
         }
-    }
+    } */
 }
 void Func::DebugPrint()
 {
