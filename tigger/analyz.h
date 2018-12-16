@@ -65,6 +65,7 @@ public:
     vector<int> out1;
     list<Expression*> nexts;
     list<Expression*> prevs;
+    map<int,int> constant;
     string funtocall;
     string funin;
     Expression(ExprType _type,vector<int> _left,

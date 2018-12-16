@@ -443,15 +443,40 @@ void Func::livelyAnalyz()
 void Func::OptimizeFlow()
 {
     //常数传播
-    unordered_map<int,int> constant;
     auto it = exprs.begin();
+    it++;
     for(; it!=exprs.end(); it++)
     {
         Expression * e = *it;
+        if(e->prevs.empty()) continue;
+        map<int,int> mp=e->prevs.front()->constant;
+        for(auto it = mp.begin(); it != mp.end();)
+        {
+            int x = it->first;
+            bool flag = true;
+            for(auto f: e->prevs)
+            {
+                if(f->constant.find(x) == f->constant.end() ||
+                (f->constant.find(x) != f->constant.end() && f->constant[x] != mp[x]))
+                {
+                    flag = false;
+                    break;
+                }
+            }
+            if(flag == false)
+            {
+                it = mp.erase(it);
+            }
+            else
+            {
+                ++it;
+            }
+        }
+        e->constant = mp;
         if(e->def.empty()) continue;
         if(e->type == MoveRI)
         {
-            constant[e->def[0]] = e->imm[0];
+            e->constant[e->def[0]] = e->imm[0];
         }
         else
         {
@@ -461,7 +486,7 @@ void Func::OptimizeFlow()
                 bool flag = true;
                 for(auto x: e->use)
                 {
-                    if(!constant.count(x))
+                    if(!e->constant.count(x))
                     {
                         flag = false;
                         break;
@@ -472,15 +497,15 @@ void Func::OptimizeFlow()
                     int result;
                     switch(e->type)
                     {
-                        case MoveRR: result = constant[e->use[0]] ;break;
+                        case MoveRR: result = e->constant[e->use[0]] ;break;
                         case ArithRRD:
-                        case ArithRR: result = calcarith(constant[e->use[0]],e->imm[0],constant[e->use[1]]);break;
-                        case ArithRRSame: result = calcarith(constant[e->use[0]],e->imm[0],constant[e->use[0]]);break;
-                        case ArithRI: result = calcarith(constant[e->use[0]],e->imm[1],e->imm[0]);break;
-                        case Negative: result = calcarith(0,'-',constant[e->use[0]]);break;
-                        case IfRR: result = calcarith(constant[e->use[0]],e->imm[0],constant[e->use[1]]);break;
-                        case IfRI: result = calcarith(constant[e->use[0]],e->imm[0],e->imm[2]);break;
-                        case IfIR: result = calcarith(e->imm[2],e->imm[0],constant[e->use[0]]);break;
+                        case ArithRR: result = calcarith(e->constant[e->use[0]],e->imm[0],e->constant[e->use[1]]);break;
+                        case ArithRRSame: result = calcarith(e->constant[e->use[0]],e->imm[0],e->constant[e->use[0]]);break;
+                        case ArithRI: result = calcarith(e->constant[e->use[0]],e->imm[1],e->imm[0]);break;
+                        case Negative: result = calcarith(0,'-',e->constant[e->use[0]]);break;
+                        case IfRR: result = calcarith(e->constant[e->use[0]],e->imm[0],e->constant[e->use[1]]);break;
+                        case IfRI: result = calcarith(e->constant[e->use[0]],e->imm[0],e->imm[2]);break;
+                        case IfIR: result = calcarith(e->imm[2],e->imm[0],e->constant[e->use[0]]);break;
                         default:cerr<<"CONSTANT ERROR"<<endl;break;
                     }
                     if(e->type == IfRR || e->type ==IfRI || e->type ==IfIR)
@@ -494,8 +519,10 @@ void Func::OptimizeFlow()
                         }
                         else
                         {
-                            it = exprs.erase(it);
-                            it --;
+                            e->type = Empty; //设为空语句
+                            e->left = e->def ={};
+                            e->right = e->use = {};
+                            e->imm = {};
                         }
                     }
                     else
@@ -503,17 +530,17 @@ void Func::OptimizeFlow()
                         e->type = MoveRI;
                         e->right = e->use = {};
                         e->imm = {result};
-                        constant[e->def[0]] = result;
+                        e->constant[e->def[0]] = result;
                     }
                 }
                 else
                 {
                     for(auto x:e->def)
                     {
-                        auto it = constant.find(x);
-                        if(it!=constant.end())
+                        auto it = e->constant.find(x);
+                        if(it!=e->constant.end())
                         {
-                            constant.erase(it);
+                            e->constant.erase(it);
                         }
                     }
                 }
