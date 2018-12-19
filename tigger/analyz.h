@@ -157,6 +157,7 @@ public:
     void InitializeVectorSpace();
     void Processor();
     void SaveReg();
+    void OptimizeLoadStore();
 
     //GenCode
     string opstring(int op);

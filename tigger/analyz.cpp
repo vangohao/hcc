@@ -175,6 +175,7 @@ void Analyz::process()
         f.Processor();
     }
     if(target==1) GenGlobal();
+    else if(target ==2) GenGlobal();
 }
 void Func::genFlow()
 {
@@ -1131,6 +1132,72 @@ void Func::InsertExprForWrite(Expression* e, int v)
         }
     }
 }
+void Func::OptimizeLoadStore()
+{
+    map<int,int> frmReg;
+    map<int,int> frmSts;//0 无效 1 有效寄存器Load 2 有效寄存器LoadAddr
+    int regs[28] = {};
+    memset(regs,-1,sizeof(regs));
+    for(auto it = exprs.begin(); it != exprs.end(); it++)
+    {
+        if((*it)->type == Goto || (*it)->type == IfRR || (*it)->type == IfRI || (*it)->type == IfIR 
+                || (*it)->type == Call ||  (*it)->type == Return || (*it)->type == Label || 
+                (*it)->ArrayWrite)
+        {
+            frmReg.clear(); frmSts.clear(); frmLast.clear(); memset(regs,-1,sizeof(regs));
+        }
+        else if((*it)->type == FrameLoad)
+        {
+            if(frmSts[(*it)->imm[0]] == 1 &&colors[GetAlias((*it)->def[0])] == frmReg[(*it)->imm[0]] && regs[frmReg[(*it)->imm[0]]] == (*it)->imm[0])
+            {
+                (*it)->dead = true;
+            }
+            else
+            {
+                if(regs[frmReg[(*it)->imm[0]]])
+                {
+                    frmReg[(*it)->imm[0]] = 0;
+                    frmSts[(*it)->imm[0]] = 0;
+                }
+                regs[frmReg[(*it)->imm[0]]] = 0;
+                regs[(*it)->imm[0]] =  colors[GetAlias((*it)->def[0])];
+                frmSts[(*it)->imm[0]] = 1;
+                frmReg[(*it)->imm[0]] = colors[GetAlias((*it)->def[0])];
+            }
+        }
+        else if((*it)->type == FrameLoadAddr)
+        {
+            if(frmSts[(*it)->imm[0]] == 2 &&colors[GetAlias((*it)->def[0])] == frmReg[(*it)->imm[0]] && regs[frmReg[(*it)->imm[0]]] == (*it)->imm[0])
+            {
+                (*it)->dead = true;
+            }
+            else
+            {
+                if(regs[frmReg[(*it)->imm[0]]])
+                {
+                    frmReg[(*it)->imm[0]] = 0;
+                    frmSts[(*it)->imm[0]] = 0;
+                }
+                regs[frmReg[(*it)->imm[0]]] = 0;
+                regs[(*it)->imm[0]] =  colors[GetAlias((*it)->def[0])];
+                frmSts[(*it)->imm[0]] = 2;
+                frmReg[(*it)->imm[0]] = colors[GetAlias((*it)->def[0])];
+            }
+        }
+        else
+        {
+            for(auto x: (*it)->def)
+            {
+                if(regs[colors[GetAlias(x)]])
+                {
+                    frmSts[regs[colors[GetAlias(x)]]] = 0;
+                    frmReg[regs[colors[GetAlias(x)]]] = 0;
+                    regs[colors[GetAlias(x)]] = 0;
+                }
+            }
+        }
+    }
+}
 int Func::GenTempVariable()
 {
     return ++Analyz::vcount;
@@ -1388,6 +1455,7 @@ void Func::Processor()
     SaveReg();
     if(target==0) GenCode();
     else if(target == 1) GenRiscv64();
+    else if(target == 2) GenRiscv32();
 }
 void Func::checkReturn()
 {
