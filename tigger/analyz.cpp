@@ -1309,6 +1309,70 @@ void Func::GenRiscv64()
     }
     cout<<"\t.size\t"<<name<<", .-"<<name<<endl;
 }
+void Func::GenRiscv32()
+{
+    if(name=="f_main") name = "main";
+    int stk = (frameSize+8+15)/16 * 16;
+    cout<<"\t.align\t1"<<endl;
+    cout<<"\t.global\t"<<name<<endl;
+    cout<<"\t.type\t"<<name<<", @function"<<endl;
+    cout<<name<<":"<<endl;
+    cout<<"\tadd\tsp,sp,"<<-stk<<endl;
+    cout<<"\tsd\tra,"<<stk-4<<"(sp)"<<endl;
+    for(auto e:exprs)
+    {
+        switch(e->type)
+        {
+            case ArithRR:cout<<"\t"<<opinstruct(e->imm[0])<<"\t"<<REGNAMEFORVAR(e->left[0])<<","<<REGNAMEFORVAR(e->right[0])<<","
+            <<REGNAMEFORVAR(e->right[1])<<endl;break;
+            case ArithRRD:cout<<"\t"<<"add\t"<<REGNAMEFORVAR(e->left[0])<<","<<REGNAMEFORVAR(e->right[0])<<","
+            <<REGNAMEFORVAR(e->right[1])<<endl;break;   //ArithRRD只用于计算地址
+            case ArithRRSame:cout<<"\t"<<opinstruct(e->imm[0])<<"\t"<<REGNAMEFORVAR(e->left[0])<<","<<REGNAMEFORVAR(e->right[0])<<","
+            <<REGNAMEFORVAR(e->right[0])<<endl;break;
+            case ArithRI:if(e->imm[1]=='+')
+            {
+                cout<<"\t"<<"addiw\t"<<REGNAMEFORVAR(e->left[0])<<","<<REGNAMEFORVAR(e->right[0])<<","<<e->imm[0]<<endl;
+            }
+            else OutputArithRIMul(e->left[0],e->right[0],e->imm[0]);//parser需要修改
+            break;
+            case Negative:cout<<"\t"<<"subw\t"<<REGNAMEFORVAR(e->left[0])<<",zero,"<<REGNAMEFORVAR(e->right[0])<<endl;break;
+            case MoveRI: cout<<"\t"<<"addiw\t"<<REGNAMEFORVAR(e->left[0])<<",zero,"<<e->imm[0]<<endl;break;
+            case MoveRR: if(REGNAMEFORVAR(e->left[0])!=REGNAMEFORVAR(e->right[0]))
+            {
+                cout<<"\t"<<"mv\t"<<REGNAMEFORVAR(e->left[0])<<","<<REGNAMEFORVAR(e->right[0])<<endl;
+            }
+            break;
+            case ArrayWrite: cout<<"\t"<<"sw\t"<<REGNAMEFORVAR(e->right[1])<<","<<e->imm[0]<<"("<<REGNAMEFORVAR(e->right[0])<<")"<<endl;break;
+            case ArrayRead: cout<<"\t"<<"lw\t"<<REGNAMEFORVAR(e->left[0])<<","<<e->imm[0]<<"("<<REGNAMEFORVAR(e->right[0])<<")"<<endl;break;
+            case IfRR: cout<<"\t"<<opinstruct(e->imm[0])<<"\t"<<REGNAMEFORVAR(e->right[0])<<","<<REGNAMEFORVAR(e->right[1])<<",.L"<<e->imm[1]<<endl;break;
+            case IfRI: cout<<"\t"<<opinstruct(e->imm[0])<<"\t"<<REGNAMEFORVAR(e->right[0])<<","<<"zero"<<",.L"<<e->imm[1]<<endl;break;
+            case IfIR: cout<<"\t"<<opinstruct(e->imm[0])<<"\t"<<"zero"<<","<<REGNAMEFORVAR(e->right[0])<<",.L"<<e->imm[1]<<endl;break;
+            case Goto: cout<<"\t"<<"j\t"<<".L"<<e->imm[0]<<endl;break;
+            case FrameLoad: cout<<"\t"<<"lw\t"<<REGNAMEFORVAR(e->left[0])<<","<<4*e->imm[0]<<"(sp)"<<endl;break;
+            case FrameStore: cout<<"\t"<<"sw\t"<<REGNAMEFORVAR(e->right[0])<<","<<4*e->imm[0]<<"(sp)"<<endl;break;
+            case GlobalLoad: cout<<"\t"<<"lui\t"<<REGNAMEFORVAR(e->left[0])<<",%hi(v"<<AnalyzInstance.globalVaribleMap[e->imm[0]]<<")"<<endl;
+                        cout<<"\t"<<"lw\t"<<REGNAMEFORVAR(e->left[0])<<",%lo(v"<<AnalyzInstance.globalVaribleMap[e->imm[0]]<<")("<<REGNAMEFORVAR(e->left[0])<<")"<<endl;
+                        break;
+            case GlobalLoadAddr: cout<<"\t"<<"lui\t"<<REGNAMEFORVAR(e->left[0])<<",%hi(v"<<AnalyzInstance.globalVaribleMap[e->imm[0]]<<")"<<endl;
+                        cout<<"\t"<<"addi\t"<<REGNAMEFORVAR(e->left[0])<<","<<REGNAMEFORVAR(e->left[0])<<",%lo(v"<<AnalyzInstance.globalVaribleMap[e->imm[0]]<<")"<<endl;
+                        break;
+            case FrameLoadAddr: cout<<"\t"<<"addi\t"<<REGNAMEFORVAR(e->left[0])<<",sp,"<<4*e->imm[0]<<endl;break;
+            case Empty: break;
+            case Call: 
+                    cout<<"\t"<<"call\t"<<e->funtocall<<endl;
+                break;
+            case Return: cout<<"\t"<<"ld\tra,"<<stk-4<<"(sp)"<<endl;
+                    cout<<"\t"<<"addi\tsp,sp,"<<stk<<endl;
+                    cout<<"\t"<<"jr\tra"<<endl;
+                    break;
+            case Label:cout<<"\t"<<".L"<<e->imm[0]<<":"<<endl;break;
+            case Invalid:cout<<"\t"<<"INVALIDINSTRUCT"<<endl;break;
+            case Begin:break;
+            default: cerr<<"TYPE_ERROR"<<endl;
+        }
+    }
+    cout<<"\t.size\t"<<name<<", .-"<<name<<endl;    
+}
 void Func::Processor()
 {
     InitFunEnv();

@@ -164,6 +164,7 @@ public:
     void OutputArithRIMul(int reg1,int reg2,int imm);
     void GenCode();
     void GenRiscv64();
+    void GenRiscv32();
     void ReturnFunc(int v,int t);
     void CallParam(int v,int t);
     void CallFunc(int v,string f);

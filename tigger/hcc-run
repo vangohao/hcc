@@ -11,10 +11,10 @@ then
 	fi
 	./eeyore < $2.c > $2.ee
 	echo "./eeyore < $2.c > $2.ee"
-	./tigger < $2.ee > $2.tg
-	echo "./tigger < $2.ee > $2.tg"
+	./tigger -tg < $2.ee > $2.tg
+	echo "./tigger -tg < $2.ee > $2.tg"
 	./tigger 1 < $2.ee > $2.s
-	echo "./tigger 1 < $2.ee > $2.s"
+	echo "./tigger < $2.ee > $2.s"
 	$RISCV/bin/riscv64-unknown-linux-gnu-gcc $2.s getint_putint.s
 	echo "$RISCV/bin/riscv64-unknown-linux-gnu-gcc $2.s getint_putint.s"
 	echo "$RISCV/bin/qemu-riscv64 -L $RISCV/sysroot a.out"
