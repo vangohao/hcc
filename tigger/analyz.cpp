@@ -1153,6 +1153,63 @@ void Func::OptimizeLoadStore()
     map<int,Expression *> lastLoad;
     map<int,Expression *> lastStore;
     int regs[28] = {};
+    
+    
+    //优化先Load再Store 中间没有使用的
+    frmReg.clear(); frmSts.clear();lastLoad.clear();lastStore.clear(); memset(regs,-1,sizeof(regs));
+    for(auto it = exprs.begin();it != exprs.end(); ++it)
+    {
+        Expression * e = *it;
+        if(e->type == FrameLoad)
+        {
+            if(regs[frmReg[e->imm[0]]] != -1)
+            {
+                frmReg[regs[frmReg[e->imm[0]]]] = 0;
+                frmSts[regs[frmReg[e->imm[0]]]] = 0;
+                regs[frmReg[e->imm[0]]] = -1;
+            }
+            frmReg[e->imm[0]] = color[GetAlias(e->left[0])];
+            frmSts[e->imm[0]] = 1;
+            lastLoad[e->imm[0]] = e;
+        }
+        else if(e->type == FrameStore)
+        {
+            if(frmSts[e->imm[0]] == 1 && frmReg[e->imm[0]] == color[GetAlias(e->right[0])])
+            {
+                lastLoad[e->imm[0]] -> dead = true;
+                e-> dead = true;
+            }
+        }
+        else if(e->type == Goto || e->type == IfRR || e->type == IfRI || e->type == IfIR 
+                || e->type == Call ||  e->type == Return || e->type == Label || 
+                e->type == ArrayWrite)
+        {
+            frmReg.clear(); frmSts.clear(); lastLoad.clear();lastStore.clear(); memset(regs,-1,sizeof(regs));
+        }
+        else
+        {
+            for(auto x: e->left)
+            {
+                if(regs[color[GetAlias(x)]] != -1)
+                {
+                    frmSts[regs[color[GetAlias(x)]]] = 0;
+                    frmReg[regs[color[GetAlias(x)]]] = 0;
+                    regs[color[GetAlias(x)]] = -1;
+                }
+            }
+            for(auto x: e->right)
+            {
+                if(regs[color[GetAlias(x)]] != -1)
+                {
+                    frmSts[regs[color[GetAlias(x)]]] = 0;
+                    frmReg[regs[color[GetAlias(x)]]] = 0;
+                    regs[color[GetAlias(x)]] = -1;
+                }
+            }
+        }
+    }
+    
+    //优化连续多次Load
     frmReg.clear(); frmSts.clear();memset(regs,-1,sizeof(regs));
     for(auto it = exprs.begin(); it != exprs.end(); it++)
     {
@@ -1204,60 +1261,6 @@ void Func::OptimizeLoadStore()
         else
         {
             for(auto x: e->left)
-            {
-                if(regs[color[GetAlias(x)]] != -1)
-                {
-                    frmSts[regs[color[GetAlias(x)]]] = 0;
-                    frmReg[regs[color[GetAlias(x)]]] = 0;
-                    regs[color[GetAlias(x)]] = -1;
-                }
-            }
-        }
-    }
-    
-    //优化先Load再Store 中间没有使用的
-    frmReg.clear(); frmSts.clear();lastLoad.clear();lastStore.clear(); memset(regs,-1,sizeof(regs));
-    for(auto it = exprs.begin();it != exprs.end(); ++it)
-    {
-        Expression * e = *it;
-        if(e->type == FrameLoad)
-        {
-            if(regs[frmReg[e->imm[0]]] != -1)
-            {
-                frmReg[regs[frmReg[e->imm[0]]]] = 0;
-                frmSts[regs[frmReg[e->imm[0]]]] = 0;
-                regs[frmReg[e->imm[0]]] = -1;
-            }
-            frmReg[e->imm[0]] = color[GetAlias(e->left[0])];
-            frmSts[e->imm[0]] = 1;
-            lastLoad[e->imm[0]] = e;
-        }
-        else if(e->type == FrameStore)
-        {
-            if(frmSts[e->imm[0]] == 1 && frmReg[e->imm[0]] == color[GetAlias(e->right[0])])
-            {
-                lastLoad[e->imm[0]] -> dead = true;
-                e-> dead = true;
-            }
-        }
-        else if(e->type == Goto || e->type == IfRR || e->type == IfRI || e->type == IfIR 
-                || e->type == Call ||  e->type == Return || e->type == Label || 
-                e->type == ArrayWrite)
-        {
-            frmReg.clear(); frmSts.clear(); lastLoad.clear();lastStore.clear(); memset(regs,-1,sizeof(regs));
-        }
-        else
-        {
-            for(auto x: e->left)
-            {
-                if(regs[color[GetAlias(x)]] != -1)
-                {
-                    frmSts[regs[color[GetAlias(x)]]] = 0;
-                    frmReg[regs[color[GetAlias(x)]]] = 0;
-                    regs[color[GetAlias(x)]] = -1;
-                }
-            }
-            for(auto x: e->right)
             {
                 if(regs[color[GetAlias(x)]] != -1)
                 {
