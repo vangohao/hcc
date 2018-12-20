@@ -1140,59 +1140,60 @@ void Func::OptimizeLoadStore()
     memset(regs,-1,sizeof(regs));
     for(auto it = exprs.begin(); it != exprs.end(); it++)
     {
-        if((*it)->type == Goto || (*it)->type == IfRR || (*it)->type == IfRI || (*it)->type == IfIR 
-                || (*it)->type == Call ||  (*it)->type == Return || (*it)->type == Label || 
-                (*it)->ArrayWrite)
+        Expression * e = *it;
+        if(e->type == Goto || e->type == IfRR || e->type == IfRI || e->type == IfIR 
+                || e->type == Call ||  e->type == Return || e->type == Label || 
+                e->type == ArrayWrite)
         {
-            frmReg.clear(); frmSts.clear(); frmLast.clear(); memset(regs,-1,sizeof(regs));
+            frmReg.clear(); frmSts.clear(); memset(regs,-1,sizeof(regs));
         }
-        else if((*it)->type == FrameLoad)
+        else if(e->type == FrameLoad)
         {
-            if(frmSts[(*it)->imm[0]] == 1 &&colors[GetAlias((*it)->def[0])] == frmReg[(*it)->imm[0]] && regs[frmReg[(*it)->imm[0]]] == (*it)->imm[0])
+            if(frmSts[e->imm[0]] == 1 &&color[GetAlias(e->left[0])] == frmReg[e->imm[0]] && regs[frmReg[e->imm[0]]] == e->imm[0])
             {
-                (*it)->dead = true;
+                e->dead = true;
             }
             else
             {
-                if(regs[frmReg[(*it)->imm[0]]])
+                if(regs[frmReg[e->imm[0]]])
                 {
-                    frmReg[(*it)->imm[0]] = 0;
-                    frmSts[(*it)->imm[0]] = 0;
+                    frmReg[e->imm[0]] = 0;
+                    frmSts[e->imm[0]] = 0;
                 }
-                regs[frmReg[(*it)->imm[0]]] = 0;
-                regs[(*it)->imm[0]] =  colors[GetAlias((*it)->def[0])];
-                frmSts[(*it)->imm[0]] = 1;
-                frmReg[(*it)->imm[0]] = colors[GetAlias((*it)->def[0])];
+                regs[frmReg[e->imm[0]]] = 0;
+                regs[color[GetAlias(e->left[0])]] =e->imm[0];
+                frmSts[e->imm[0]] = 1;
+                frmReg[e->imm[0]] = color[GetAlias(e->left[0])];
             }
         }
-        else if((*it)->type == FrameLoadAddr)
+        else if(e->type == FrameLoadAddr)
         {
-            if(frmSts[(*it)->imm[0]] == 2 &&colors[GetAlias((*it)->def[0])] == frmReg[(*it)->imm[0]] && regs[frmReg[(*it)->imm[0]]] == (*it)->imm[0])
+            if(frmSts[e->imm[0]] == 2 &&color[GetAlias(e->left[0])] == frmReg[e->imm[0]] && regs[frmReg[e->imm[0]]] == e->imm[0])
             {
-                (*it)->dead = true;
+                e->dead = true;
             }
             else
             {
-                if(regs[frmReg[(*it)->imm[0]]])
+                if(regs[frmReg[e->imm[0]]])
                 {
-                    frmReg[(*it)->imm[0]] = 0;
-                    frmSts[(*it)->imm[0]] = 0;
+                    frmReg[e->imm[0]] = 0;
+                    frmSts[e->imm[0]] = 0;
                 }
-                regs[frmReg[(*it)->imm[0]]] = 0;
-                regs[(*it)->imm[0]] =  colors[GetAlias((*it)->def[0])];
-                frmSts[(*it)->imm[0]] = 2;
-                frmReg[(*it)->imm[0]] = colors[GetAlias((*it)->def[0])];
+                regs[frmReg[e->imm[0]]] = 0;
+                regs[color[GetAlias(e->left[0])]] =e->imm[0];
+                frmSts[e->imm[0]] = 2;
+                frmReg[e->imm[0]] = color[GetAlias(e->left[0])];
             }
         }
         else
         {
-            for(auto x: (*it)->def)
+            for(auto x: e->left)
             {
-                if(regs[colors[GetAlias(x)]])
+                if(regs[color[GetAlias(x)]])
                 {
-                    frmSts[regs[colors[GetAlias(x)]]] = 0;
-                    frmReg[regs[colors[GetAlias(x)]]] = 0;
-                    regs[colors[GetAlias(x)]] = 0;
+                    frmSts[regs[color[GetAlias(x)]]] = 0;
+                    frmReg[regs[color[GetAlias(x)]]] = 0;
+                    regs[color[GetAlias(x)]] = 0;
                 }
             }
         }
@@ -1453,6 +1454,7 @@ void Func::Processor()
     OptimizeDead();
     ColorAlgorithmMain();
     SaveReg();
+    OptimizeLoadStore();
     if(target==0) GenCode();
     else if(target == 1) GenRiscv64();
     else if(target == 2) GenRiscv32();

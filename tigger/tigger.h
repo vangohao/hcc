@@ -16,6 +16,7 @@
 #include <list>
 #include <sstream>
 #include <queue>
+#include <string.h>
 
 using std::string;
 using std::stringstream;
