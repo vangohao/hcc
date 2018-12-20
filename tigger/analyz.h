@@ -84,6 +84,7 @@ public:
     int paramToCallWithCount;
     vector<int> calledStoredRegs;
     int frameSize;
+    int frameMaxSize;
     unordered_map<int,int> frameSaveTable; 
     unordered_map<int,int> frameArrayTable;
     string name;
@@ -150,6 +151,7 @@ public:
     void InitFunEnv();
     int insert(int s,int v);
     int insert();
+    void frameFree();
     Func(int _paramCount,string _name);
     void genFlow();
     void OptimizeFlow();

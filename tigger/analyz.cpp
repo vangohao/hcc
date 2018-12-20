@@ -132,6 +132,7 @@ int Func::insert(int s,int v)
     offset.push_back(frameSize);
     size.push_back(s);
     frameSize += s;
+    if(frameSize > frameMaxSize) frameMaxSize = frameSize;
     frameArrayTable[v] = tmp;
     return tmp;
 }
@@ -141,7 +142,14 @@ int Func::insert()
     offset.push_back(frameSize);
     size.push_back(4);
     frameSize += 4;
+    if(frameSize > frameMaxSize) frameMaxSize = frameSize;
     return tmp;
+}
+void Func::frameFree()
+{
+    offset.pop_back();
+    size.pop_back();
+    frameSize -= 4;
 }
 Func::Func(int _paramCount,string _name):paramCount(_paramCount),paramToCallWithCount(0),frameSize(0),name(_name)
 {
@@ -259,6 +267,7 @@ void Func::SaveReg()
     {
         if((*it)->type == Call)
         {
+            int usedCount = 0;
             int usedRegs[30]={}; //既入口活跃又出口活跃的,并且不是a0,并且不是被调用者保存的，才需要恢复
             for(auto x: (*it)->in)
             {
@@ -272,6 +281,7 @@ void Func::SaveReg()
             for(int i = int(s0); i<=int(s11); i++) usedRegs[i] =0;
             for(int i = 0; i<28; i++) if(usedRegs[i] == 2)
             {
+                usedCount++;
                 int tmp = insert(); //向栈帧中申请空间
                 int position = offset[tmp] / 4;
                 Expression * writeExpr = new Expression(FrameStore,{},{i},{position},"","",false);
@@ -281,6 +291,10 @@ void Func::SaveReg()
                 Expression * readExpr = new Expression(FrameLoad,{i},{},{position},"","",false);
                 it = exprs.insert(it,readExpr);//回复
                 it --;
+            }
+            while(usedCount --)
+            {
+                frameFree();//释放栈空间
             }
         }
     }
@@ -1266,7 +1280,7 @@ void Func::OutputArithRIMul(int reg1,int reg2,int imm)
 }
 void Func::GenCode()
 {
-    cout<<name<<" ["<<paramCount<<"] ["<<frameSize/4<<"]"<<endl;
+    cout<<name<<" ["<<paramCount<<"] ["<<frameMaxSize/4<<"]"<<endl;
     for(auto e:exprs) 
     {
         switch(e->type)
@@ -1316,7 +1330,7 @@ void Func::GenCode()
 void Func::GenRiscv64()
 {
     if(name=="f_main") name = "main";
-    int stk = (frameSize+8+15)/16 * 16;
+    int stk = (frameMaxSize+8+15)/16 * 16;
     cout<<"\t.align\t1"<<endl;
     cout<<"\t.global\t"<<name<<endl;
     cout<<"\t.type\t"<<name<<", @function"<<endl;
@@ -1380,7 +1394,7 @@ void Func::GenRiscv64()
 void Func::GenRiscv32()
 {
     if(name=="f_main") name = "main";
-    int stk = (frameSize+8+15)/16 * 16;
+    int stk = (frameMaxSize+8+15)/16 * 16;
     cout<<"\t.align\t1"<<endl;
     cout<<"\t.global\t"<<name<<endl;
     cout<<"\t.type\t"<<name<<", @function"<<endl;
