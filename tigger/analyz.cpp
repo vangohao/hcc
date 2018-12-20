@@ -9,7 +9,7 @@ Expression::Expression(ExprType _type,vector<int> _left,
         vector<int> _right,
         vector<int> _imm,string _funtocall,string _funin,
         bool push)
-:type(_type),left(_left),right(_right),
+:dead(false),isMove(false),visited(false),type(_type),left(_left),right(_right),
 imm(_imm),funtocall(_funtocall),funin(_funin)
 {
     if(_type == MoveRR)
@@ -1150,8 +1150,10 @@ void Func::OptimizeLoadStore()
 {
     map<int,int> frmReg;
     map<int,int> frmSts;//0 无效 1 有效寄存器Load 2 有效寄存器LoadAddr
+    map<int,Expression *> lastLoad;
+    map<int,Expression *> lastStore;
     int regs[28] = {};
-    memset(regs,-1,sizeof(regs));
+    frmReg.clear(); frmSts.clear();memset(regs,-1,sizeof(regs));
     for(auto it = exprs.begin(); it != exprs.end(); it++)
     {
         Expression * e = *it;
@@ -1169,12 +1171,12 @@ void Func::OptimizeLoadStore()
             }
             else
             {
-                if(regs[frmReg[e->imm[0]]])
+                if(regs[frmReg[e->imm[0]]] != -1)
                 {
                     frmReg[e->imm[0]] = 0;
                     frmSts[e->imm[0]] = 0;
                 }
-                regs[frmReg[e->imm[0]]] = 0;
+                regs[frmReg[e->imm[0]]] = -1;
                 regs[color[GetAlias(e->left[0])]] =e->imm[0];
                 frmSts[e->imm[0]] = 1;
                 frmReg[e->imm[0]] = color[GetAlias(e->left[0])];
@@ -1188,12 +1190,12 @@ void Func::OptimizeLoadStore()
             }
             else
             {
-                if(regs[frmReg[e->imm[0]]])
+                if(regs[frmReg[e->imm[0]]] != -1)
                 {
                     frmReg[e->imm[0]] = 0;
                     frmSts[e->imm[0]] = 0;
                 }
-                regs[frmReg[e->imm[0]]] = 0;
+                regs[frmReg[e->imm[0]]] = -1;
                 regs[color[GetAlias(e->left[0])]] =e->imm[0];
                 frmSts[e->imm[0]] = 2;
                 frmReg[e->imm[0]] = color[GetAlias(e->left[0])];
@@ -1203,11 +1205,65 @@ void Func::OptimizeLoadStore()
         {
             for(auto x: e->left)
             {
-                if(regs[color[GetAlias(x)]])
+                if(regs[color[GetAlias(x)]] != -1)
                 {
                     frmSts[regs[color[GetAlias(x)]]] = 0;
                     frmReg[regs[color[GetAlias(x)]]] = 0;
-                    regs[color[GetAlias(x)]] = 0;
+                    regs[color[GetAlias(x)]] = -1;
+                }
+            }
+        }
+    }
+    
+    //优化先Load再Store 中间没有使用的
+    frmReg.clear(); frmSts.clear();lastLoad.clear();lastStore.clear(); memset(regs,-1,sizeof(regs));
+    for(auto it = exprs.begin();it != exprs.end(); ++it)
+    {
+        Expression * e = *it;
+        if(e->type == FrameLoad)
+        {
+            if(regs[frmReg[e->imm[0]]] != -1)
+            {
+                frmReg[regs[frmReg[e->imm[0]]]] = 0;
+                frmSts[regs[frmReg[e->imm[0]]]] = 0;
+                regs[frmReg[e->imm[0]]] = -1;
+            }
+            frmReg[e->imm[0]] = color[GetAlias(e->left[0])];
+            frmSts[e->imm[0]] = 1;
+            lastLoad[e->imm[0]] = e;
+        }
+        else if(e->type == FrameStore)
+        {
+            if(frmSts[e->imm[0]] == 1 && frmReg[e->imm[0]] == color[GetAlias(e->right[0])])
+            {
+                lastLoad[e->imm[0]] -> dead = true;
+                e-> dead = true;
+            }
+        }
+        else if(e->type == Goto || e->type == IfRR || e->type == IfRI || e->type == IfIR 
+                || e->type == Call ||  e->type == Return || e->type == Label || 
+                e->type == ArrayWrite)
+        {
+            frmReg.clear(); frmSts.clear(); lastLoad.clear();lastStore.clear(); memset(regs,-1,sizeof(regs));
+        }
+        else
+        {
+            for(auto x: e->left)
+            {
+                if(regs[color[GetAlias(x)]] != -1)
+                {
+                    frmSts[regs[color[GetAlias(x)]]] = 0;
+                    frmReg[regs[color[GetAlias(x)]]] = 0;
+                    regs[color[GetAlias(x)]] = -1;
+                }
+            }
+            for(auto x: e->right)
+            {
+                if(regs[color[GetAlias(x)]] != -1)
+                {
+                    frmSts[regs[color[GetAlias(x)]]] = 0;
+                    frmReg[regs[color[GetAlias(x)]]] = 0;
+                    regs[color[GetAlias(x)]] = -1;
                 }
             }
         }
@@ -1281,7 +1337,7 @@ void Func::OutputArithRIMul(int reg1,int reg2,int imm)
 void Func::GenCode()
 {
     cout<<name<<" ["<<paramCount<<"] ["<<frameMaxSize/4<<"]"<<endl;
-    for(auto e:exprs) 
+    for(auto e:exprs)  if(!e->dead)
     {
         switch(e->type)
         {
@@ -1337,7 +1393,7 @@ void Func::GenRiscv64()
     cout<<name<<":"<<endl;
     cout<<"\tadd\tsp,sp,"<<-stk<<endl;
     cout<<"\tsd\tra,"<<stk-8<<"(sp)"<<endl;
-    for(auto e:exprs)
+    for(auto e:exprs) if(!e->dead)
     {
         switch(e->type)
         {
@@ -1401,7 +1457,7 @@ void Func::GenRiscv32()
     cout<<name<<":"<<endl;
     cout<<"\tadd\tsp,sp,"<<-stk<<endl;
     cout<<"\tsd\tra,"<<stk-4<<"(sp)"<<endl;
-    for(auto e:exprs)
+    for(auto e:exprs) if(!e->dead)
     {
         switch(e->type)
         {
