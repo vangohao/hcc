@@ -1325,17 +1325,12 @@ string Func::opinstruct(int op)
         default: return "OP_ERROR";
     }
 }
-void Func::OutputArithRIMul(int reg1,int reg2,int imm)
+void Func::OutputArithRIMul(int reg1,int reg2,unsigned imm)
 {
-    //暂时只处理imm ==4 
-    if(imm == 4)
-    {
-        cout<<"\tslli\t"<<REGNAMEFORVAR(reg1)<<","<<REGNAMEFORVAR(reg2)<<","<<2<<endl;
-    }
-    else
-    {
-        cout<<"ArithRIERROR!"<<endl;
-    }
+    //已经保证imm为2的幂
+    int x = 0;imm >>=1;
+    while(imm) {imm>>=1;x++;}
+    cout<<"\tslli\t"<<REGNAMEFORVAR(reg1)<<","<<REGNAMEFORVAR(reg2)<<","<<x<<endl;
 }
 void Func::GenCode()
 {

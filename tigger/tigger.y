@@ -59,7 +59,12 @@ Symbol '=' Symbol AOP Symbol             {  if($3!=$5)
                                             else
                                                 $$=new Expression(ArithRRSame,{$1},{$3},{$4});
                                                 }
-| Symbol '=' Symbol AOP INTEGER            {if($4=='+' || $4=='*')
+| Symbol '=' Symbol AOP INTEGER            {unsigned powerof2 = 0;
+                                            unsigned x = $5;
+                                            while(x){ powerof2 += x & 1; x>>=unsigned(1);}
+                                            if($4=='*' && $5==0)
+                                            $$=new Expression(MoveRI,{$1},{},{0});
+                                            else if($4=='+' || ($4=='*'  &&  powerof2 == 1))
                                             $$=new Expression(ArithRI,{$1},{$3},{$5,$4});
                                             else
                                             {

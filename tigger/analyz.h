@@ -164,7 +164,7 @@ public:
     //GenCode
     string opstring(int op);
     string opinstruct(int op);
-    void OutputArithRIMul(int reg1,int reg2,int imm);
+    void OutputArithRIMul(int reg1,int reg2,unsigned imm);
     void GenCode();
     void GenRiscv64();
     void GenRiscv32();
