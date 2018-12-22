@@ -1159,6 +1159,7 @@ void Func::OptimizeLoadStore()
     for(auto it = exprs.begin();it != exprs.end(); ++it)
     {
         Expression * e = *it;
+        if(e->dead) continue;
         if(e->type == FrameLoad)
         {
             if(regs[frmReg[e->imm[0]]] != -1)
@@ -1213,6 +1214,7 @@ void Func::OptimizeLoadStore()
     for(auto it = exprs.begin(); it != exprs.end(); it++)
     {
         Expression * e = *it;
+        if(e->dead) continue;
         if(e->type == Goto || e->type == IfRR || e->type == IfRI || e->type == IfIR 
                 || e->type == Call ||  e->type == Return || e->type == Label || 
                 e->type == ArrayWrite)
@@ -1266,6 +1268,33 @@ void Func::OptimizeLoadStore()
                     frmSts[regs[color[GetAlias(x)]]] = 0;
                     frmReg[regs[color[GetAlias(x)]]] = 0;
                     regs[color[GetAlias(x)]] = -1;
+                }
+            }
+        }
+    }
+    //删除死代码
+    auto it = exprs.end();
+    it --;
+    for(; it != exprs.begin(); it --)
+    {
+        Expression * e = *it;
+        if(e->dead)
+        {
+            it = exprs.erase(it);
+            for(auto f: e->nexts)
+            {
+                f->prevs.remove(e);
+                for(auto g: e->prevs)
+                {
+                    f->prevs.push_back(g);
+                }
+            }
+            for(auto f: e->prevs)
+            {
+                f->nexts.remove(e);
+                for(auto g: e->nexts)
+                {
+                    f->nexts.push_back(g);
                 }
             }
         }
