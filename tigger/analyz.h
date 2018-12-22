@@ -111,52 +111,52 @@ private:
     list<Expression*> frozenMoves;      //已冻结传送指令
     list<Expression*> worklistMoves;    //待合并的传送指令
     list<Expression*> activeMoves;      //活跃的传送指令
-    vector<vector<int>> adjMatrix;
-    vector<list<int>> adjList;
-    vector<int> degrees;
-    vector<int> alias;
-    vector<int> color;
-    vector<NodeStatus> status;
-    vector<list<Expression*>> useList;
-    vector<list<Expression*>> defList;
-    vector<list<Expression*>> moveList;
+    vector<vector<int>> adjMatrix;      //邻接矩阵
+    vector<list<int>> adjList;          //邻接表
+    vector<int> degrees;                //度
+    vector<int> alias;                  //别名
+    vector<int> color;                  //颜色
+    vector<NodeStatus> status;          //顶点状态
+    vector<list<Expression*>> useList;  //使用该变量的指令表
+    vector<list<Expression*>> defList;  //定义该变量的指令表
+    vector<list<Expression*>> moveList; //与该变量有关的传送指令表
 
 
-    void ColorAlgorithmMain();
-    void AddEdge(int x,int y);
-    void livelyAnalyz();
-    void InitColorAlgorithm();
-    void DecrementDegree(int m);
-    bool MoveRelated(int n);
-    list<Expression*>& NodeMoves(int n);
-    list<int>& Adjacent(int n);
-    void Simplify();
-    void Coalesce();
-    int GetAlias(int x);
-    void AddWorklist(int u);
-    bool TestPrecoloredCombine(int u/*precolored*/,int v);
-    bool TestConservative(int u,int v);
-    void Combine(int u,int v);
-    void EnableMoves(int m);
-    void FreezeMoves(int u);
-    void FreezeAction();
-    void SelectSpill();
-    void AssignColors();
-    void RewriteProgram();
-    void InsertExprForWrite(Expression* e,int v);
-    void InsertExprForRead(Expression* e,int v);
-    int GenTempVariable();
+    void ColorAlgorithmMain();          //图染色主函数
+    void AddEdge(int x,int y);          //建图添加边
+    void livelyAnalyz();                //活性分析
+    void InitColorAlgorithm();          //初始化
+    void DecrementDegree(int m);        //顶点度数减1
+    bool MoveRelated(int n);            //n是否是传送相关的
+    list<Expression*>& NodeMoves(int n);//与n相关的传送指令(未冻结的)
+    list<int>& Adjacent(int n);         //n的邻点集
+    void Simplify();                    //简化
+    void Coalesce();                    //合并
+    int GetAlias(int x);                //获取别名(由合并产生)
+    void AddWorklist(int u);            //加入工作表
+    bool TestPrecoloredCombine(int u/*precolored*/,int v); //测试预着色节点相关传送指令是否可以合并
+    bool TestConservative(int u,int v); //测试传送指令是否可以保守合并
+    void Combine(int u,int v);          //合并
+    void EnableMoves(int m);            //将m相关的传送指令设为待合并的
+    void FreezeMoves(int u);            //将u相关的传送指令冻结
+    void FreezeAction();                //冻结
+    void SelectSpill();                 //选择高度数节点溢出
+    void AssignColors();                //分配颜色
+    void RewriteProgram();              //重写程序,对于有真实溢出的情况
+    void InsertExprForWrite(Expression* e,int v);   //插入栈内存写入
+    void InsertExprForRead(Expression* e,int v);    //插入栈内存读取
+    int GenTempVariable();              //获取一个新临时变量的id
 
-    //进入函数环境处理
-    void InitFunEnv();
-    int insert();
-    void frameFree();
-    void genFlow();
-    void OptimizeFlow();
-    void OptimizeDead();
-    void InitializeVectorSpace();
-    void SaveReg();
-    void OptimizeLoadStore();
+
+    void InitFunEnv();                  //函数入口形参处理
+    int insert();                       //添加一个int变量到栈中
+    void frameFree();                   //释放栈的最后一个空间
+    void genFlow();                     //生成程序流
+    void OptimizeFlow();                //优化程序流(常数传播)
+    void OptimizeDead();                //死代码消除
+    void OptimizeLoadStore();           //优化
+    void InitializeVectorSpace();       //初始化
+    void SaveReg();                     //call语句出保存调用者保存的寄存器
 
     //GenCode
     string opstring(int op);
