@@ -65,10 +65,9 @@ public:
     list<Expression*> prevs;
     map<int,int> constant;
     string funtocall;
-    string funin;
     Expression(ExprType _type,vector<int> _left,
     vector<int> _right,vector<int> _imm,
-    string _funtocall="",string _funin="",bool push=true);
+    string _funtocall="",bool push=true);
 };
 class Reg
 {

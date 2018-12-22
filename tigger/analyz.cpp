@@ -7,10 +7,10 @@ Analyz::Analyz()
 }
 Expression::Expression(ExprType _type,vector<int> _left,
         vector<int> _right,
-        vector<int> _imm,string _funtocall,string _funin,
+        vector<int> _imm,string _funtocall,
         bool push)
 :type(_type),isMove(false),dead(false),visited(false),left(_left),right(_right),
-imm(_imm),funtocall(_funtocall),funin(_funin)
+imm(_imm),funtocall(_funtocall)
 {
     if(_type == MoveRR)
     {
@@ -167,7 +167,7 @@ void Func::InitFunEnv()//此函数处理函数入口处的参数转移
     for(int i = 0; i<paramCount; i++)
     {
         int r = (int)(a0) + i;
-        auto e= new Expression(MoveRR,{paramTable[i]},{r},{},"","",false);
+        auto e= new Expression(MoveRR,{paramTable[i]},{r},{},"",false);
         auto it = exprs.begin();
         it++;
         exprs.insert(it,e);
@@ -282,11 +282,11 @@ void Func::SaveReg()
                 usedCount++;
                 int tmp = insert(); //向栈帧中申请空间
                 int position = offset[tmp] / 4;
-                Expression * writeExpr = new Expression(FrameStore,{},{i},{position},"","",false);
+                Expression * writeExpr = new Expression(FrameStore,{},{i},{position},"",false);
                 it = exprs.insert(it,writeExpr);//保存
                 it++;
                 it++;
-                Expression * readExpr = new Expression(FrameLoad,{i},{},{position},"","",false);
+                Expression * readExpr = new Expression(FrameLoad,{i},{},{position},"",false);
                 it = exprs.insert(it,readExpr);//回复
                 it --;
             }
@@ -305,7 +305,7 @@ void Func::SaveReg()
             int tmp = insert(); //向栈帧中申请空间
             int position = offset[tmp] / 4;
             frameSaveTable[i] = position;
-            Expression * writeExpr = new Expression(FrameStore,{},{i},{position},"","",false);
+            Expression * writeExpr = new Expression(FrameStore,{},{i},{position},"",false);
             it = exprs.insert(it,writeExpr);//保存
             it++;
         }
@@ -315,7 +315,7 @@ void Func::SaveReg()
         {
             for(auto x:frameSaveTable)
             {
-                Expression *readExpr = new Expression(FrameLoad,{x.first},{},{x.second},"","",false);
+                Expression *readExpr = new Expression(FrameLoad,{x.first},{},{x.second},"",false);
                 it = exprs.insert(it,readExpr);
                 it ++;
             }
@@ -1115,7 +1115,7 @@ void Func::InsertExprForRead(Expression* e,int v)
 {
     int tempVar = GenTempVariable();
     int position = offset[spilledVariableFrameMap[v]] / 4;
-    Expression * readExpr = new Expression(FrameLoad,{tempVar},{},{position},"","",false);
+    Expression * readExpr = new Expression(FrameLoad,{tempVar},{},{position},"",false);
     auto it = find(exprs.begin(),exprs.end(),e);
     exprs.insert(it,readExpr);
     for(auto iter = e->right.begin(); iter!=e->right.end(); iter++)
@@ -1130,7 +1130,7 @@ void Func::InsertExprForWrite(Expression* e, int v)
 {
     int tempVar = GenTempVariable();
     int position = offset[spilledVariableFrameMap[v]] / 4;
-    Expression * writeExpr = new Expression(FrameStore,{},{tempVar},{position},"","",false);
+    Expression * writeExpr = new Expression(FrameStore,{},{tempVar},{position},"",false);
     auto it = find(exprs.begin(),exprs.end(),e);
     exprs.insert(++it,writeExpr);
 
@@ -1534,8 +1534,8 @@ void Func::checkReturn()
             flag = true;
             auto it = find(exprs.begin(),exprs.end(),f);
             it++;
-            Expression * e0 = new Expression(MoveRI,{(int)(a0)},{},{0},"","",false); 
-            Expression * e1 = new Expression(Return,{},{(int)(a0)},{},"","",false); //返回a0=0值
+            Expression * e0 = new Expression(MoveRI,{(int)(a0)},{},{0},"",false); 
+            Expression * e1 = new Expression(Return,{},{(int)(a0)},{},"",false); //返回a0=0值
             it = exprs.insert(it,e0);
             it++;
             exprs.insert(it,e1);
