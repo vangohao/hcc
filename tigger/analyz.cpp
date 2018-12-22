@@ -1,6 +1,9 @@
 #include "analyz.h"
-#define REGNAMEFORVAR(x) (Reg::names[color[GetAlias((x))]])
-
+int Func::colorNumber = 27;
+vector<string> Regnames = {"a0","a1","a2","a3","a4","a5","a6","a7",
+    "s0","s1","s2","s3","s4","s5","s6","s7","s8","s9","s10","s11",
+    "t0","t1","t2","t3","t4","t5","t6"};
+#define REGNAMEFORVAR(x) (Regnames[color[GetAlias((x))]])
 Analyz::Analyz()
 {
     globalSize = 0; globalVariableCount = 0;
@@ -1555,7 +1558,7 @@ void Func::DebugPrintColorResult()
 void Func::DebugPrintPhysicsResult()
 {
     for(int i = 0; i<= Analyz::vcount;i++)    {
-        cerr<<i<<":"<<Reg::names[color[i]]<<endl;
+        cerr<<i<<":"<<Regnames[color[i]]<<endl;
     }
     //顺便输出参数表
     for(size_t i = 0; i< paramTable.size(); i++)
@@ -1567,7 +1570,3 @@ void Analyz::ReportWarning(string s)
 {
     cerr<<"Warning: "<<s<<endl;
 }
-int Func::colorNumber = 27;
-vector<string> Reg::names = {"a0","a1","a2","a3","a4","a5","a6","a7",
-    "s0","s1","s2","s3","s4","s5","s6","s7","s8","s9","s10","s11",
-    "t0","t1","t2","t3","t4","t5","t6"};

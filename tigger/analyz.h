@@ -69,11 +69,6 @@ public:
     vector<int> _right,vector<int> _imm,
     string _funtocall="",bool push=true);
 };
-class Reg
-{
-    public:
-    static vector<string> names;
-};
 class Func
 {
 public:
