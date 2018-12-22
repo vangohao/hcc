@@ -9,7 +9,7 @@ Expression::Expression(ExprType _type,vector<int> _left,
         vector<int> _right,
         vector<int> _imm,string _funtocall,string _funin,
         bool push)
-:dead(false),isMove(false),visited(false),type(_type),left(_left),right(_right),
+:type(_type),isMove(false),dead(false),visited(false),left(_left),right(_right),
 imm(_imm),funtocall(_funtocall),funin(_funin)
 {
     if(_type == MoveRR)
@@ -22,7 +22,6 @@ imm(_imm),funtocall(_funtocall),funin(_funin)
     }
     if(push==false) return;
     bool leftGlobal = false;
-    bool rightGlobal = false;
     for(int l:left)
     {
         if(AnalyzInstance.globalVaribleMap.find(l) != AnalyzInstance.globalVaribleMap.end())
@@ -42,7 +41,6 @@ imm(_imm),funtocall(_funtocall),funin(_funin)
             else
             new Expression(GlobalLoadAddr,{tmp},{},{*iter});
             *iter = tmp;
-            rightGlobal = true;
         }
         else if(AnalyzInstance.currentFunc().frameArrayTable.count(*iter))
         {
