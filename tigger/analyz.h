@@ -18,8 +18,6 @@ enum ExprType
     IfIR,
     Goto,
     Return,
-    ParamR,
-    ParamI,
     Empty,
     Call,
     Begin,

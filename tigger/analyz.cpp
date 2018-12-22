@@ -641,8 +641,6 @@ void Func::DebugPrint()
     case IfIR:cerr<<"IfIR"<<endl;break;
     case Goto:cerr<<"Goto"<<endl;break;
     case Return:cerr<<"Return"<<endl;break;
-    case ParamR:cerr<<"ParamR"<<endl;break;
-    case ParamI:cerr<<"ParamI"<<endl;break;
     case Empty:cerr<<"Empty"<<endl;break;
     case Call:cerr<<"Call"<<endl;break;
     case Begin:cerr<<"Begin"<<endl;break;
