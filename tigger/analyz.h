@@ -96,21 +96,21 @@ private:
     vector<int> spilledVariableFrameMap; //由变量id映射到上面的offset和size数组的下标
 
 
-    //Color Algorithm
-    static int colorNumber;
-    list<int> initial;
-    list<int> simplifyWorklist;
-    list<int> freezeWorklist;
-    list<int> spillWorklist;          //高度数节点表
-    list<int> spilledNodes;
-    list<int> coalescedNodes;
-    list<int> coloredNodes;
-    list<int> selectStack;
-    list<Expression*> coalescedMoves;
-    list<Expression*> constrainedMoves;
-    list<Expression*> frozenMoves;
-    list<Expression*> worklistMoves;
-    list<Expression*> activeMoves;
+    //Color Algorithm图染色算法
+    static int colorNumber;             //颜色数
+    list<int> initial;                  //待初始化的节点表
+    list<int> simplifyWorklist;         //低度数传送无关节点表
+    list<int> freezeWorklist;           //低度数传送相关节点表
+    list<int> spillWorklist;            //高度数节点表
+    list<int> spilledNodes;             //溢出节点
+    list<int> coalescedNodes;           //已合并节点
+    list<int> coloredNodes;             //已染色节点
+    list<int> selectStack;              //栈
+    list<Expression*> coalescedMoves;   //已合并传送指令
+    list<Expression*> constrainedMoves; //已约束传送指令
+    list<Expression*> frozenMoves;      //已冻结传送指令
+    list<Expression*> worklistMoves;    //待合并的传送指令
+    list<Expression*> activeMoves;      //活跃的传送指令
     vector<vector<int>> adjMatrix;
     vector<list<int>> adjList;
     vector<int> degrees;
