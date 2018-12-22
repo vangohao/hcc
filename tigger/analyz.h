@@ -158,14 +158,14 @@ private:
     void InitializeVectorSpace();       //初始化
     void SaveReg();                     //call语句出保存调用者保存的寄存器
 
-    //GenCode
-    string opstring(int op);
-    string opinstruct(int op);
-    void OutputArithRIMul(int reg1,int reg2,unsigned imm);
-    void GenCode();
-    void GenRiscv64();
-    void GenRiscv32();
-    void checkReturn();
+    //生成代码
+    string opstring(int op);            //获得op对应的运算符
+    string opinstruct(int op);          //获得op对应的RiscV指令
+    void OutputArithRIMul(int reg1,int reg2,unsigned imm);  //处理ArithRI指令的RiscV输出(将乘以2的幂改为左移)
+    void GenCode();                     //生成tigger代码
+    void GenRiscv64();                  //生成RiscV64代码
+    void GenRiscv32();                  //生成Riscv32代码
+    void checkReturn();                 //检查函数退出前是否有返回指令
 
     //Debug
     void DebugPrint();
