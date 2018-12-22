@@ -166,7 +166,7 @@ Func& Analyz::currentFunc()
 }
 void Func::InitFunEnv()//此函数处理函数入口处的参数转移
 {
-    if(!calledStoredRegs.empty()) return ;
+    // if(!calledStoredRegs.empty()) return ;
     for(int i = 0; i<paramCount; i++)
     {
         int r = (int)(a0) + i;
