@@ -92,7 +92,7 @@ private:
     vector<int> size;                   //栈上数据大小
     vector<int> paramTable;             //形参对应局部变量表
     unordered_map<int,int> paramTableReverse;
-    list<Expression*> exprs;
+    list<Expression*> exprs;            //语句表
     vector<int> spilledVariableFrameMap; //由变量id映射到上面的offset和size数组的下标
 
 
