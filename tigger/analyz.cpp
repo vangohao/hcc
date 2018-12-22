@@ -157,7 +157,7 @@ Func::Func(int _paramCount,string _name):paramCount(_paramCount),paramToCallWith
     for(int i = 0;i<_paramCount;i++)
     {
         paramTable.push_back(++Analyz::vcount);
-        paramTableReverse[Analyz::vcount] = i;
+        // paramTableReverse[Analyz::vcount] = i;
     }
 }
 Func& Analyz::currentFunc()
