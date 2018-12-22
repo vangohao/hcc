@@ -1552,13 +1552,13 @@ void Func::checkReturn()
 void Func::DebugPrintColorResult()
 {
     for(int i = 0; i<= Analyz::vcount;i++)    {
-        cerr<<i<<":"<<color[i]<<endl;
+        cerr<<i<<":"<<color[GetAlias(i)]<<endl;
     }
 }
 void Func::DebugPrintPhysicsResult()
 {
     for(int i = 0; i<= Analyz::vcount;i++)    {
-        cerr<<i<<":"<<Regnames[color[i]]<<endl;
+        cerr<<i<<":"<<Regnames[color[GetAlias(i)]]<<endl;
     }
     //顺便输出参数表
     for(size_t i = 0; i< paramTable.size(); i++)
