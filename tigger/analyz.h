@@ -48,23 +48,22 @@ enum PhysicsRegs
 class Expression
 {
 public:
-    ExprType type;
-    bool isMove;
-    bool dead;
-    bool visited;
-    vector<int> left;
-    vector<int> right;
-    vector<int> imm;
-    vector<int> use;
-    vector<int> def;
-    set<int> in;
-    vector<int> in1;
-    set<int> out;
-    vector<int> out1;
-    list<Expression*> nexts;
-    list<Expression*> prevs;
-    map<int,int> constant;
-    string funtocall;
+    ExprType type;          //类型
+    bool isMove;            //是否为传送指令
+    bool dead;              //是否为死代码
+    bool visited;           //是否被访问过(用于活性分析)
+    vector<int> left;       //左值变量
+    vector<int> right;      //右值变量
+    vector<int> imm;        //直接数
+    vector<int> use;        //使用的变量集合
+    vector<int> def;        //定义的变量集合
+    set<int> in;            //入口活跃集合
+    set<int> out;           //出口活跃集合
+    list<Expression*> nexts;//下一条指令集合
+    list<Expression*> prevs;//上一条指令集合
+    map<int,int> constant;  //常数变量表,用于常数传播
+    string funtocall;       //仅用于call语句
+     //构造函数,用于创建Expression并自动将指针加入当前所在函数的exprs表
     Expression(ExprType _type,vector<int> _left,
     vector<int> _right,vector<int> _imm,
     string _funtocall="",bool push=true);
@@ -72,26 +71,26 @@ public:
 class Func
 {
 public:
-    Func(int _paramCount,string _name);
-    void Processor();
-    int insert(int s,int v);
-    void ReturnFunc(int v,int t);
-    void CallParam(int v,int t);
-    void CallFunc(int v,string f);
-    int getParamVar(int p);
-    friend class Expression;
+    Func(int _paramCount,string _name); //构造函数
+    void Processor();                   //主函数
+    int insert(int s,int v);            //向栈空间添加变量,s为大小,v为变量id,返回值为栈上的编号
+    void ReturnFunc(int v,int t);       //处理Return语句,v为变量id或常数值,t为选项(0表示常数,1表示变量)
+    void CallParam(int v,int t);        //处理Param语句,v和t的含义同上
+    void CallFunc(int v,string f);      //处理call语句,v为存返回值变量,f为call的函数名称
+    int getParamVar(int r);             //获取形参对应的局部变量编号
+    friend class Expression;            //将Expression声明为友元
 private:
-    int paramCount;
-    int paramToCallWithCount;
+    int paramCount;                     //参数数量
+    int paramToCallWithCount;           //调用参数计数器
     vector<int> calledStoredRegs; 
-    int frameSize;
-    int frameMaxSize;
-    unordered_map<int,int> frameSaveTable; 
-    unordered_map<int,int> frameArrayTable;
-    string name;
-    vector<int> offset;
-    vector<int> size;
-    vector<int> paramTable;
+    int frameSize;                      //栈空间大小(不含保存调用者保存寄存器的临时空间)
+    int frameMaxSize;                   //栈空间大小
+    unordered_map<int,int> frameSaveTable;  //记录被调用者保存寄存器的保存位置
+    unordered_map<int,int> frameArrayTable; //从栈上数组变量id映射到栈上位置
+    string name;                        //函数名称
+    vector<int> offset;                 //栈上数据位置
+    vector<int> size;                   //栈上数据大小
+    vector<int> paramTable;             //形参对应局部变量表
     unordered_map<int,int> paramTableReverse;
     list<Expression*> exprs;
     vector<int> spilledVariableFrameMap; //由变量id映射到上面的offset和size数组的下标
