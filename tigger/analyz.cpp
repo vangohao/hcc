@@ -1570,3 +1570,7 @@ void Analyz::ReportWarning(string s)
 {
     cerr<<"Warning: "<<s<<endl;
 }
+int Func::getParamVar(int p)
+{
+    return paramTable[p];
+}

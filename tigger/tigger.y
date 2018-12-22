@@ -143,6 +143,6 @@ Symbol '=' Symbol AOP Symbol             {  if($3!=$5)
 ;
 Symbol:
 VARIABLE                                        {$$ = $1;}
-|PARAMVARIABLE                                  {$$ = AnalyzInstance.currentFunc().paramTable[$1];}
+|PARAMVARIABLE                                  {$$ = AnalyzInstance.currentFunc().getParamVar($1);}
 
 %%

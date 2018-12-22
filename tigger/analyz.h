@@ -72,6 +72,15 @@ public:
 class Func
 {
 public:
+    Func(int _paramCount,string _name);
+    void Processor();
+    int insert(int s,int v);
+    void ReturnFunc(int v,int t);
+    void CallParam(int v,int t);
+    void CallFunc(int v,string f);
+    int getParamVar(int p);
+    friend class Expression;
+private:
     int paramCount;
     int paramToCallWithCount;
     vector<int> calledStoredRegs;
@@ -141,15 +150,12 @@ public:
 
     //进入函数环境处理
     void InitFunEnv();
-    int insert(int s,int v);
     int insert();
     void frameFree();
-    Func(int _paramCount,string _name);
     void genFlow();
     void OptimizeFlow();
     void OptimizeDead();
     void InitializeVectorSpace();
-    void Processor();
     void SaveReg();
     void OptimizeLoadStore();
 
@@ -160,9 +166,6 @@ public:
     void GenCode();
     void GenRiscv64();
     void GenRiscv32();
-    void ReturnFunc(int v,int t);
-    void CallParam(int v,int t);
-    void CallFunc(int v,string f);
     void checkReturn();
 
     //Debug
@@ -171,7 +174,6 @@ public:
     void DebugPrint(T & v);
     void DebugPrintColorResult();
     void DebugPrintPhysicsResult();
-private:
 };
 class Analyz
 {
