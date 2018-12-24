@@ -335,67 +335,6 @@ void Func::livelyAnalyz()
         std::sort(e->use.begin(),e->use.end());
         std::sort(e->def.begin(),e->def.end());
     }
-    /*
-    do
-    {
-        bool flag = true;
-        for(auto e:exprs)
-        {
-            e->in1 = e->in;
-            e->out1 = e->out;
-            vector<int> tmp;
-            auto p1 = e->out.begin();
-            auto p2 = e->def.begin();
-            while(p1!=e->out.end() && p2!=e->def.end())   //计算out-def
-            {
-                while(p2!=e->def.end() && *p2 < *p1) p2++;
-                if(p2!=e->def.end() && *p2 > *p1)
-                {
-                    tmp.push_back(*p1);
-                    p1++;
-                }
-                else if(p2!=e->def.end() && *p2 == *p1)
-                {
-                    p1++;
-                }
-            }
-            if(p1!=e->out.end())
-            {
-                tmp.insert(tmp.end(),p1,e->out.end());
-            }
-            e->in.clear();
-            p1 = e->use.begin();                    //计算in = use+(out-def)
-            p2 = tmp.begin();
-            while(p1!=e->use.end() && p2 != tmp.end())
-            {
-                if(*p1 <*p2) {e->in.push_back(*p1);p1++;}
-                else if(*p2 <*p1) {e->in.push_back(*p2);p2++;}
-                else {e->in.push_back(*p1); p1++; p2++;}
-            }
-            if(p1!=e->use.end())
-            {
-                e->in.insert(e->in.end(),p1,e->use.end());
-            }
-            else{e->in.insert(e->in.end(),p2,tmp.end());}
-            //由于in是归并得到的,所以已经排好序
-            e->out.clear();
-
-            
-            for(Expression* expr: e->nexts)        //计算out=nexts的in的并集
-            {
-                e->out.insert(e->out.end(),expr->in.begin(),expr->in.end());
-            }
-            std::sort(e->out.begin(),e->out.end());
-            e->out.erase(std::unique(e->out.begin(),e->out.end()),e->out.end());//这句话可能是n方的
-            
-            if(e->in != e->in1 || e->out != e->out1)
-            {
-                flag = false;
-            } 
-        }
-        if(flag) break;
-    }while(1);
-    */
     queue<Expression*> qex;
     qex.push(exprs.back());
     while(!qex.empty()) // 宽搜,去除死代码
