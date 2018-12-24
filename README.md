@@ -46,15 +46,43 @@ main.cpp: 主程序函数和少量全局变量.
 ![类结构](uml.png)
 1. Expression类:
 ```c++
+class Expression
+{
+public:
+    ExprType type;          //类型
+    bool isMove;            //是否为传送指令
+    bool dead;              //是否为死代码
+    bool visited;           //是否被访问过(用于活性分析)
+    vector<int> left;       //左值变量
+    vector<int> right;      //右值变量
+    vector<int> imm;        //直接数
+    vector<int> use;        //使用的变量集合
+    vector<int> def;        //定义的变量集合
+    set<int> in;            //入口活跃集合
+    set<int> out;           //出口活跃集合
+    list<Expression*> nexts;//下一条指令集合
+    list<Expression*> prevs;//上一条指令集合
+    map<int,int> constant;  //常数变量表,用于常数传播
+    string funtocall;       //仅用于call语句
+     //构造函数,用于创建Expression并自动将指针加入当前所在函数的exprs表
+    Expression(ExprType _type,vector<int> _left,
+    vector<int> _right,vector<int> _imm,
+    string _funtocall="",bool push=true);
+};
+```
+2.Func类
+```c++
 class Func
 {
 public:
     Func(int _paramCount,string _name); //构造函数
     void Processor();                   //主函数
-    int insert(int s,int v);            //向栈空间添加变量,s为大小,v为变量id,返回值为栈上的编号
-    void ReturnFunc(int v,int t);       //处理Return语句,v为变量id或常数值,t为选项(0表示常数,1表示变量)
+    int insert(int s,int v);            //向栈空间添加变量,s为大小,
+                                        //v为变量id,返回值为栈上的编号
+    void ReturnFunc(int v,int t);       //处理Return语句,v为变量id或常数值,
+                                        //t为选项(0表示常数,1表示变量)
     void CallParam(int v,int t);        //处理Param语句,v和t的含义同上
-    void CallFunc(int v,string f);      //处理call语句,v为存返回值变量,f为call的函数名称
+    void CallFunc(int v,string f);      //处理call语句,v为存返回值变量,f为函数名称
     int getParamVar(int r);             //获取形参对应的局部变量编号
     friend class Expression;            //将Expression声明为友元
 private:
@@ -123,16 +151,16 @@ private:
     void InsertExprForRead(Expression* e,int v);    //插入栈内存读取
     int GenTempVariable();              //获取一个新临时变量的id
 
-
+    //程序流处理及优化
+    void InitializeVectorSpace();       //初始化
     void InitFunEnv();                  //函数入口形参处理
     int insert();                       //添加一个int变量到栈中
     void frameFree();                   //释放栈的最后一个空间
-    void genFlow();                     //生成程序流
+    void SaveReg();                     //call语句出保存调用者保存的寄存器
     void OptimizeFlow();                //优化程序流(常数传播)
     void OptimizeDead();                //死代码消除
     void OptimizeLoadStore();           //优化
-    void InitializeVectorSpace();       //初始化
-    void SaveReg();                     //call语句出保存调用者保存的寄存器
+    void genFlow();                     //生成程序流
 
     //生成代码
     string opstring(int op);            //获得op对应的运算符
