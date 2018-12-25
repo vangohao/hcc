@@ -337,7 +337,7 @@ void Func::livelyAnalyz()
     }
     queue<Expression*> qex;
     qex.push(exprs.back());
-    while(!qex.empty()) // 宽搜,去除死代码
+    while(!qex.empty()) // 宽搜
     {
         set<int> liveVar;
         auto e = qex.front();

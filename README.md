@@ -1,3 +1,4 @@
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
 # 编译实习MiniC报告
 ### 罗昊 1700010686
 hcc(Hao miniC Compiler) is a simple compiler for MiniC.\
@@ -172,8 +173,24 @@ private:
     void checkReturn();                 //检查函数退出前是否有返回指令
 };
 ```
+### 程序流生成
+Parser分析到函数体结尾end func时会生成一个Empty类型语句表示函数体的结束.\
+程序流分析过程对Expression对象的nexts属性和prevs属性赋值,使其分别指向e的所有前驱和所有后继.\
+除Goto,If类,Return,Empty语句外,所有语句在vector<Expression*> exprs中的后继都是其程序流中的后继(称为默认后继).\
+对于Goto语句,其后继为Goto 所指向标号对应的Label语句;\
+对于If类语句,其后继为默认后继以及所指向标号对应的Label语句;\
+对于Return语句,其后继为表示函数体结束的Empty语句.\
+### return语句检查
+如果函数结尾处的Empty语句有不是return语句的前驱,则说明程序控制流到了函数末尾,会给出警告;\
+并会自动在函数结尾处添加一条return 0;
 ### 活性分析
-以语句为基本块进行自下而上的活性分析.
+以语句为基本块进行自下而上的活性分析.使用队列进行宽度优先搜索,递推式为:
+$$e.in = e.use\cup (e.out - e.def)$$
+$$e.out = \cup_{x\in e.nexts} (x.in)$$
+如果进行上述计算后e.in和e.out有所改变,则将e的前驱加入队列.\
+迭代直到队列为空.
+### 死代码消除
+
 ### 寄存器分配
 使用图着色算法进行寄存器分配.\
 利用活性分析的结果构造冲突图,兼用邻接表和邻接矩阵表示冲突图.\

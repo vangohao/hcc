@@ -1,0 +1,275 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.10.0/github-markdown.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/highlight.min.js">
+<link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css" integrity="sha384-9eLZqc9ds8eNjO3TmqPeYcDj8n+Qfa4nuSiGYa6DjLNcv9BtN69ZIulL9+8CqC9Y" crossorigin="anonymous">
+<link rel="stylesheet" href="https://gitcdn.xyz/repo/goessner/mdmath/master/css/texmath.css">
+<link rel="stylesheet" href="https://gitcdn.xyz/repo/goessner/mdmath/master/css/vscode-texmath.css">
+
+</head><body class="markdown-body">
+<h1 id="%E7%BC%96%E8%AF%91%E5%AE%9E%E4%B9%A0minic%E6%8A%A5%E5%91%8A" data-line="NaN" class="code-line code-line code-line" id="e7bc96e8af91e5ae9ee4b9a0minice68aa5e5918a-1" id="e7bc96e8af91e5ae9ee4b9a0minice68aa5e5918a-2">编译实习MiniC报告</h1>
+<h3 id="%E7%BD%97%E6%98%8A-1700010686" data-line="NaN" class="code-line code-line code-line" id="e7bd97e6988a-1700010686-1" id="e7bd97e6988a-1700010686-2">罗昊 1700010686</h3>
+<p data-line="NaN" class="code-line code-line code-line">hcc(Hao miniC Compiler) is a simple compiler for MiniC.<br>
+It contains 3 parts: eeyore, tigger and risc-v. <br>
+Get source code from <a href="https://github.com/vangohao/hcc">https://github.com/vangohao/hcc</a></p>
+<h2 id="supported-additional-c-rules-besides-minic" data-line="NaN" class="code-line code-line code-line" id="supported-additional-c-rules-besides-minic-1" id="supported-additional-c-rules-besides-minic-2">supported additional C rules besides MiniC</h2>
+<ol start="0">
+<li data-line="NaN" class="code-line code-line code-line">支持空语句( ; )</li>
+<li data-line="NaN" class="code-line code-line code-line">支持逻辑表达式与算术表达式互相自动转换.</li>
+<li data-line="NaN" class="code-line code-line code-line">支持无返回值调用函数.</li>
+<li data-line="NaN" class="code-line code-line code-line">支持调用函数时使用表达式作为参数.</li>
+<li data-line="NaN" class="code-line code-line code-line">支持在程序体内声明函数.</li>
+<li data-line="NaN" class="code-line code-line code-line">支持C风格多行注释和C++风格单行注释.</li>
+</ol>
+<h2 id="error-report" data-line="NaN" class="code-line code-line code-line" id="error-report-1" id="error-report-2">error report</h2>
+<ol start="0">
+<li data-line="NaN" class="code-line code-line code-line">报告语法错误和词法错误及其行号,并给出该处正确的token类型提示.</li>
+<li data-line="NaN" class="code-line code-line code-line">检查标识符使用,如果使用了未定义的标识符会报错.</li>
+<li data-line="NaN" class="code-line code-line code-line">检查标识符重复,对于重复定义的报错,函数名与变量名冲突的报错,如果在{}程序块内使用与程序块外同名的变量,则不会报错.</li>
+<li data-line="NaN" class="code-line code-line code-line">检查函数参数表,对于重复声明但参数表不一致,或定义与声明参数表不一致,或调用时所用的参数表与声明的类型不一致时报错.</li>
+<li data-line="NaN" class="code-line code-line code-line">检查+,-,*,/,%运算符对于数组类型变量的不合法操作给出错误提示,这些操作中除了 (int[])+(int), (int)+(int[]), (int[])-(int), 外涉及数组的运算都是不合法 的.</li>
+<li data-line="NaN" class="code-line code-line code-line">检查对数组变量的赋值,无法将数值赋给数组变量.</li>
+<li data-line="NaN" class="code-line code-line code-line">检查a[b]使用,如果a不是数组变量,会报错.</li>
+</ol>
+<h2 id="eeyore" data-line="NaN" class="code-line code-line code-line" id="eeyore-1" id="eeyore-2">eeyore</h2>
+<ol start="0">
+<li data-line="NaN" class="code-line code-line code-line">使用flex,bison和C++构建,将输入的MiniC代码转换为Eeyore三地址代码.</li>
+<li data-line="NaN" class="code-line code-line code-line">使用STL的map模板制作符号表,使用链表串联内外层程序块的符号表.</li>
+<li data-line="NaN" class="code-line code-line code-line">使用回填法构建eeyore中的标号及goto语句.</li>
+</ol>
+<h2 id="tigger" data-line="NaN" class="code-line code-line code-line" id="tigger-1" id="tigger-2">Tigger</h2>
+<h3 id="%E4%BB%A3%E7%A0%81%E7%BB%93%E6%9E%84" data-line="NaN" class="code-line code-line code-line" id="e4bba3e7a081e7bb93e69e84-1" id="e4bba3e7a081e7bb93e69e84-2">代码结构</h3>
+<p data-line="NaN" class="code-line code-line code-line">代码由analyz.cpp/h lexer.l tigger.y tigger.cpp/h main.cpp 构成</p>
+<p data-line="NaN" class="code-line code-line code-line">analyz.cpp: 包含三个类的定义:
+1.Expression类,每个Expression对象对应一条Tigger/RiscV指令;
+2.Func类,每个Func对象对应一个函数;
+3.Analyz类,单例类,负责整体处理工作以及函数间优化工作.</p>
+<p data-line="NaN" class="code-line code-line code-line">analyz.h: 包含上述三个类的声明.</p>
+<p data-line="NaN" class="code-line code-line code-line">lexer.l: 词法分析器,负责词法分析,其中对于变量,区分全局变量,局部变量和形参,使用Analyz中的vcount属性为变量分配id,并包含在yylval中.</p>
+<p data-line="NaN" class="code-line code-line code-line">tigger.y: 语法分析器,负责语法分析,负责将Eeyore语句转换为Expression对象, 以及负责Func类对象创建, Func类对象负责tigger的主要函数体内工作.</p>
+<p data-line="NaN" class="code-line code-line code-line">tigger.cpp: 包含一些公共函数.</p>
+<p data-line="NaN" class="code-line code-line code-line">tigger.h: 公共头文件.</p>
+<p data-line="NaN" class="code-line code-line code-line">main.cpp: 主程序函数和少量全局变量.</p>
+<h3 id="%E7%B1%BB%E7%BB%93%E6%9E%84" data-line="NaN" class="code-line code-line code-line" id="e7b1bbe7bb93e69e84-1" id="e7b1bbe7bb93e69e84-2">类结构</h3>
+<p data-line="NaN" class="code-line code-line code-line"><img src="/c:/Users/hao/Dropbox/hcc/uml.png" alt="类结构" class="loading loading loading" id="image-hash-a1bd9e1800dd178f636c120bdf15c16201453a129196bb4dd0296863822e6d70"></p>
+<ol>
+<li data-line="NaN" class="code-line code-line code-line">Expression类:</li>
+</ol>
+<pre><code data-line="NaN" class="code-line code-line code-line language-c++"><div><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Expression</span>
+{</span>
+<span class="hljs-keyword">public</span>:
+    ExprType type;          <span class="hljs-comment">//类型</span>
+    <span class="hljs-keyword">bool</span> isMove;            <span class="hljs-comment">//是否为传送指令</span>
+    <span class="hljs-keyword">bool</span> dead;              <span class="hljs-comment">//是否为死代码</span>
+    <span class="hljs-keyword">bool</span> visited;           <span class="hljs-comment">//是否被访问过(用于活性分析)</span>
+    <span class="hljs-built_in">vector</span>&lt;<span class="hljs-keyword">int</span>&gt; left;       <span class="hljs-comment">//左值变量</span>
+    <span class="hljs-built_in">vector</span>&lt;<span class="hljs-keyword">int</span>&gt; right;      <span class="hljs-comment">//右值变量</span>
+    <span class="hljs-built_in">vector</span>&lt;<span class="hljs-keyword">int</span>&gt; imm;        <span class="hljs-comment">//直接数</span>
+    <span class="hljs-built_in">vector</span>&lt;<span class="hljs-keyword">int</span>&gt; use;        <span class="hljs-comment">//使用的变量集合</span>
+    <span class="hljs-built_in">vector</span>&lt;<span class="hljs-keyword">int</span>&gt; def;        <span class="hljs-comment">//定义的变量集合</span>
+    <span class="hljs-built_in">set</span>&lt;<span class="hljs-keyword">int</span>&gt; in;            <span class="hljs-comment">//入口活跃集合</span>
+    <span class="hljs-built_in">set</span>&lt;<span class="hljs-keyword">int</span>&gt; out;           <span class="hljs-comment">//出口活跃集合</span>
+    <span class="hljs-built_in">list</span>&lt;Expression*&gt; nexts;<span class="hljs-comment">//下一条指令集合</span>
+    <span class="hljs-built_in">list</span>&lt;Expression*&gt; prevs;<span class="hljs-comment">//上一条指令集合</span>
+    <span class="hljs-built_in">map</span>&lt;<span class="hljs-keyword">int</span>,<span class="hljs-keyword">int</span>&gt; constant;  <span class="hljs-comment">//常数变量表,用于常数传播</span>
+    <span class="hljs-built_in">string</span> funtocall;       <span class="hljs-comment">//仅用于call语句</span>
+     <span class="hljs-comment">//构造函数,用于创建Expression并自动将指针加入当前所在函数的exprs表</span>
+    Expression(ExprType _type,<span class="hljs-built_in">vector</span>&lt;<span class="hljs-keyword">int</span>&gt; _left,
+    <span class="hljs-built_in">vector</span>&lt;<span class="hljs-keyword">int</span>&gt; _right,<span class="hljs-built_in">vector</span>&lt;<span class="hljs-keyword">int</span>&gt; _imm,
+    <span class="hljs-built_in">string</span> _funtocall=<span class="hljs-string">""</span>,<span class="hljs-keyword">bool</span> push=<span class="hljs-literal">true</span>);
+};
+</div></code></pre>
+<p data-line="NaN" class="code-line code-line code-line">2.Func类</p>
+<pre><code data-line="NaN" class="code-line code-line code-line language-c++"><div><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Func</span>
+{</span>
+<span class="hljs-keyword">public</span>:
+    Func(<span class="hljs-keyword">int</span> _paramCount,<span class="hljs-built_in">string</span> _name); <span class="hljs-comment">//构造函数</span>
+    <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">Processor</span><span class="hljs-params">()</span></span>;                   <span class="hljs-comment">//主函数</span>
+    <span class="hljs-function"><span class="hljs-keyword">int</span> <span class="hljs-title">insert</span><span class="hljs-params">(<span class="hljs-keyword">int</span> s,<span class="hljs-keyword">int</span> v)</span></span>;            <span class="hljs-comment">//向栈空间添加变量,s为大小,</span>
+                                        <span class="hljs-comment">//v为变量id,返回值为栈上的编号</span>
+    <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">ReturnFunc</span><span class="hljs-params">(<span class="hljs-keyword">int</span> v,<span class="hljs-keyword">int</span> t)</span></span>;       <span class="hljs-comment">//处理Return语句,v为变量id或常数值,</span>
+                                        <span class="hljs-comment">//t为选项(0表示常数,1表示变量)</span>
+    <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">CallParam</span><span class="hljs-params">(<span class="hljs-keyword">int</span> v,<span class="hljs-keyword">int</span> t)</span></span>;        <span class="hljs-comment">//处理Param语句,v和t的含义同上</span>
+    <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">CallFunc</span><span class="hljs-params">(<span class="hljs-keyword">int</span> v,<span class="hljs-built_in">string</span> f)</span></span>;      <span class="hljs-comment">//处理call语句,v为存返回值变量,f为函数名称</span>
+    <span class="hljs-function"><span class="hljs-keyword">int</span> <span class="hljs-title">getParamVar</span><span class="hljs-params">(<span class="hljs-keyword">int</span> r)</span></span>;             <span class="hljs-comment">//获取形参对应的局部变量编号</span>
+    <span class="hljs-keyword">friend</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Expression</span>;</span>            <span class="hljs-comment">//将Expression声明为友元</span>
+<span class="hljs-keyword">private</span>:
+    <span class="hljs-keyword">int</span> paramCount;                     <span class="hljs-comment">//参数数量</span>
+    <span class="hljs-keyword">int</span> paramToCallWithCount;           <span class="hljs-comment">//调用参数计数器</span>
+    <span class="hljs-keyword">int</span> frameSize;                      <span class="hljs-comment">//栈空间大小(不含保存调用者保存寄存器的临时空间)</span>
+    <span class="hljs-keyword">int</span> frameMaxSize;                   <span class="hljs-comment">//栈空间大小</span>
+    <span class="hljs-built_in">unordered_map</span>&lt;<span class="hljs-keyword">int</span>,<span class="hljs-keyword">int</span>&gt; frameSaveTable;  <span class="hljs-comment">//记录被调用者保存寄存器的保存位置</span>
+    <span class="hljs-built_in">unordered_map</span>&lt;<span class="hljs-keyword">int</span>,<span class="hljs-keyword">int</span>&gt; frameArrayTable; <span class="hljs-comment">//从栈上数组变量id映射到栈上位置</span>
+    <span class="hljs-built_in">string</span> name;                        <span class="hljs-comment">//函数名称</span>
+    <span class="hljs-built_in">vector</span>&lt;<span class="hljs-keyword">int</span>&gt; offset;                 <span class="hljs-comment">//栈上数据位置</span>
+    <span class="hljs-built_in">vector</span>&lt;<span class="hljs-keyword">int</span>&gt; size;                   <span class="hljs-comment">//栈上数据大小</span>
+    <span class="hljs-built_in">vector</span>&lt;<span class="hljs-keyword">int</span>&gt; paramTable;             <span class="hljs-comment">//形参对应局部变量表</span>
+    <span class="hljs-built_in">list</span>&lt;Expression*&gt; exprs;            <span class="hljs-comment">//语句表</span>
+    <span class="hljs-built_in">vector</span>&lt;<span class="hljs-keyword">int</span>&gt; spilledVariableFrameMap; <span class="hljs-comment">//由变量id映射到上面的offset和size数组的下标</span>
+
+
+    <span class="hljs-comment">//Color Algorithm图染色算法</span>
+    <span class="hljs-keyword">static</span> <span class="hljs-keyword">int</span> colorNumber;             <span class="hljs-comment">//颜色数</span>
+    <span class="hljs-built_in">list</span>&lt;<span class="hljs-keyword">int</span>&gt; initial;                  <span class="hljs-comment">//待初始化的节点表</span>
+    <span class="hljs-built_in">list</span>&lt;<span class="hljs-keyword">int</span>&gt; simplifyWorklist;         <span class="hljs-comment">//低度数传送无关节点表</span>
+    <span class="hljs-built_in">list</span>&lt;<span class="hljs-keyword">int</span>&gt; freezeWorklist;           <span class="hljs-comment">//低度数传送相关节点表</span>
+    <span class="hljs-built_in">list</span>&lt;<span class="hljs-keyword">int</span>&gt; spillWorklist;            <span class="hljs-comment">//高度数节点表</span>
+    <span class="hljs-built_in">list</span>&lt;<span class="hljs-keyword">int</span>&gt; spilledNodes;             <span class="hljs-comment">//溢出节点</span>
+    <span class="hljs-built_in">list</span>&lt;<span class="hljs-keyword">int</span>&gt; coalescedNodes;           <span class="hljs-comment">//已合并节点</span>
+    <span class="hljs-built_in">list</span>&lt;<span class="hljs-keyword">int</span>&gt; coloredNodes;             <span class="hljs-comment">//已染色节点</span>
+    <span class="hljs-built_in">list</span>&lt;<span class="hljs-keyword">int</span>&gt; selectStack;              <span class="hljs-comment">//栈</span>
+    <span class="hljs-built_in">list</span>&lt;Expression*&gt; coalescedMoves;   <span class="hljs-comment">//已合并传送指令</span>
+    <span class="hljs-built_in">list</span>&lt;Expression*&gt; constrainedMoves; <span class="hljs-comment">//已约束传送指令</span>
+    <span class="hljs-built_in">list</span>&lt;Expression*&gt; frozenMoves;      <span class="hljs-comment">//已冻结传送指令</span>
+    <span class="hljs-built_in">list</span>&lt;Expression*&gt; worklistMoves;    <span class="hljs-comment">//待合并的传送指令</span>
+    <span class="hljs-built_in">list</span>&lt;Expression*&gt; activeMoves;      <span class="hljs-comment">//活跃的传送指令</span>
+    <span class="hljs-built_in">vector</span>&lt;<span class="hljs-built_in">vector</span>&lt;<span class="hljs-keyword">int</span>&gt;&gt; adjMatrix;      <span class="hljs-comment">//邻接矩阵</span>
+    <span class="hljs-built_in">vector</span>&lt;<span class="hljs-built_in">list</span>&lt;<span class="hljs-keyword">int</span>&gt;&gt; adjList;          <span class="hljs-comment">//邻接表</span>
+    <span class="hljs-built_in">vector</span>&lt;<span class="hljs-keyword">int</span>&gt; degrees;                <span class="hljs-comment">//度</span>
+    <span class="hljs-built_in">vector</span>&lt;<span class="hljs-keyword">int</span>&gt; alias;                  <span class="hljs-comment">//别名</span>
+    <span class="hljs-built_in">vector</span>&lt;<span class="hljs-keyword">int</span>&gt; color;                  <span class="hljs-comment">//颜色</span>
+    <span class="hljs-built_in">vector</span>&lt;NodeStatus&gt; status;          <span class="hljs-comment">//顶点状态</span>
+    <span class="hljs-built_in">vector</span>&lt;<span class="hljs-built_in">list</span>&lt;Expression*&gt;&gt; useList;  <span class="hljs-comment">//使用该变量的指令表</span>
+    <span class="hljs-built_in">vector</span>&lt;<span class="hljs-built_in">list</span>&lt;Expression*&gt;&gt; defList;  <span class="hljs-comment">//定义该变量的指令表</span>
+    <span class="hljs-built_in">vector</span>&lt;<span class="hljs-built_in">list</span>&lt;Expression*&gt;&gt; moveList; <span class="hljs-comment">//与该变量有关的传送指令表</span>
+
+
+    <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">ColorAlgorithmMain</span><span class="hljs-params">()</span></span>;          <span class="hljs-comment">//图染色主函数</span>
+    <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">AddEdge</span><span class="hljs-params">(<span class="hljs-keyword">int</span> x,<span class="hljs-keyword">int</span> y)</span></span>;          <span class="hljs-comment">//建图添加边</span>
+    <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">livelyAnalyz</span><span class="hljs-params">()</span></span>;                <span class="hljs-comment">//活性分析</span>
+    <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">InitColorAlgorithm</span><span class="hljs-params">()</span></span>;          <span class="hljs-comment">//初始化</span>
+    <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">DecrementDegree</span><span class="hljs-params">(<span class="hljs-keyword">int</span> m)</span></span>;        <span class="hljs-comment">//顶点度数减1</span>
+    <span class="hljs-function"><span class="hljs-keyword">bool</span> <span class="hljs-title">MoveRelated</span><span class="hljs-params">(<span class="hljs-keyword">int</span> n)</span></span>;            <span class="hljs-comment">//n是否是传送相关的</span>
+    <span class="hljs-built_in">list</span>&lt;Expression*&gt;&amp; NodeMoves(<span class="hljs-keyword">int</span> n);<span class="hljs-comment">//与n相关的传送指令(未冻结的)</span>
+    <span class="hljs-built_in">list</span>&lt;<span class="hljs-keyword">int</span>&gt;&amp; Adjacent(<span class="hljs-keyword">int</span> n);         <span class="hljs-comment">//n的邻点集</span>
+    <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">Simplify</span><span class="hljs-params">()</span></span>;                    <span class="hljs-comment">//简化</span>
+    <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">Coalesce</span><span class="hljs-params">()</span></span>;                    <span class="hljs-comment">//合并</span>
+    <span class="hljs-function"><span class="hljs-keyword">int</span> <span class="hljs-title">GetAlias</span><span class="hljs-params">(<span class="hljs-keyword">int</span> x)</span></span>;                <span class="hljs-comment">//获取别名(由合并产生)</span>
+    <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">AddWorklist</span><span class="hljs-params">(<span class="hljs-keyword">int</span> u)</span></span>;            <span class="hljs-comment">//加入工作表</span>
+    <span class="hljs-function"><span class="hljs-keyword">bool</span> <span class="hljs-title">TestPrecoloredCombine</span><span class="hljs-params">(<span class="hljs-keyword">int</span> u<span class="hljs-comment">/*precolored*/</span>,<span class="hljs-keyword">int</span> v)</span></span>; <span class="hljs-comment">//测试预着色节点相关传送指令是否可以合并</span>
+    <span class="hljs-function"><span class="hljs-keyword">bool</span> <span class="hljs-title">TestConservative</span><span class="hljs-params">(<span class="hljs-keyword">int</span> u,<span class="hljs-keyword">int</span> v)</span></span>; <span class="hljs-comment">//测试传送指令是否可以保守合并</span>
+    <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">Combine</span><span class="hljs-params">(<span class="hljs-keyword">int</span> u,<span class="hljs-keyword">int</span> v)</span></span>;          <span class="hljs-comment">//合并</span>
+    <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">EnableMoves</span><span class="hljs-params">(<span class="hljs-keyword">int</span> m)</span></span>;            <span class="hljs-comment">//将m相关的传送指令设为待合并的</span>
+    <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">FreezeMoves</span><span class="hljs-params">(<span class="hljs-keyword">int</span> u)</span></span>;            <span class="hljs-comment">//将u相关的传送指令冻结</span>
+    <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">FreezeAction</span><span class="hljs-params">()</span></span>;                <span class="hljs-comment">//冻结</span>
+    <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">SelectSpill</span><span class="hljs-params">()</span></span>;                 <span class="hljs-comment">//选择高度数节点溢出</span>
+    <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">AssignColors</span><span class="hljs-params">()</span></span>;                <span class="hljs-comment">//分配颜色</span>
+    <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">RewriteProgram</span><span class="hljs-params">()</span></span>;              <span class="hljs-comment">//重写程序,对于有真实溢出的情况</span>
+    <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">InsertExprForWrite</span><span class="hljs-params">(Expression* e,<span class="hljs-keyword">int</span> v)</span></span>;   <span class="hljs-comment">//插入栈内存写入</span>
+    <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">InsertExprForRead</span><span class="hljs-params">(Expression* e,<span class="hljs-keyword">int</span> v)</span></span>;    <span class="hljs-comment">//插入栈内存读取</span>
+    <span class="hljs-function"><span class="hljs-keyword">int</span> <span class="hljs-title">GenTempVariable</span><span class="hljs-params">()</span></span>;              <span class="hljs-comment">//获取一个新临时变量的id</span>
+
+    <span class="hljs-comment">//程序流处理及优化</span>
+    <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">InitializeVectorSpace</span><span class="hljs-params">()</span></span>;       <span class="hljs-comment">//初始化</span>
+    <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">InitFunEnv</span><span class="hljs-params">()</span></span>;                  <span class="hljs-comment">//函数入口形参处理</span>
+    <span class="hljs-function"><span class="hljs-keyword">int</span> <span class="hljs-title">insert</span><span class="hljs-params">()</span></span>;                       <span class="hljs-comment">//添加一个int变量到栈中</span>
+    <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">frameFree</span><span class="hljs-params">()</span></span>;                   <span class="hljs-comment">//释放栈的最后一个空间</span>
+    <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">SaveReg</span><span class="hljs-params">()</span></span>;                     <span class="hljs-comment">//call语句出保存调用者保存的寄存器</span>
+    <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">OptimizeFlow</span><span class="hljs-params">()</span></span>;                <span class="hljs-comment">//优化程序流(常数传播)</span>
+    <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">OptimizeDead</span><span class="hljs-params">()</span></span>;                <span class="hljs-comment">//死代码消除</span>
+    <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">OptimizeLoadStore</span><span class="hljs-params">()</span></span>;           <span class="hljs-comment">//优化</span>
+    <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">genFlow</span><span class="hljs-params">()</span></span>;                     <span class="hljs-comment">//生成程序流</span>
+
+    <span class="hljs-comment">//生成代码</span>
+    <span class="hljs-function"><span class="hljs-built_in">string</span> <span class="hljs-title">opstring</span><span class="hljs-params">(<span class="hljs-keyword">int</span> op)</span></span>;            <span class="hljs-comment">//获得op对应的运算符</span>
+    <span class="hljs-function"><span class="hljs-built_in">string</span> <span class="hljs-title">opinstruct</span><span class="hljs-params">(<span class="hljs-keyword">int</span> op)</span></span>;          <span class="hljs-comment">//获得op对应的RiscV指令</span>
+    <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">OutputArithRIMul</span><span class="hljs-params">(<span class="hljs-keyword">int</span> reg1,<span class="hljs-keyword">int</span> reg2,<span class="hljs-keyword">unsigned</span> imm)</span></span>;  <span class="hljs-comment">//处理ArithRI指令的RiscV输出(将乘以2的幂改为左移)</span>
+    <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">GenCode</span><span class="hljs-params">()</span></span>;                     <span class="hljs-comment">//生成tigger代码</span>
+    <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">GenRiscv64</span><span class="hljs-params">()</span></span>;                  <span class="hljs-comment">//生成RiscV64代码</span>
+    <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">GenRiscv32</span><span class="hljs-params">()</span></span>;                  <span class="hljs-comment">//生成Riscv32代码</span>
+    <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">checkReturn</span><span class="hljs-params">()</span></span>;                 <span class="hljs-comment">//检查函数退出前是否有返回指令</span>
+};
+</div></code></pre>
+<h3 id="%E6%B4%BB%E6%80%A7%E5%88%86%E6%9E%90" data-line="NaN" class="code-line code-line code-line" id="e6b4bbe680a7e58886e69e90-1" id="e6b4bbe680a7e58886e69e90-2">活性分析</h3>
+<p data-line="NaN" class="code-line code-line code-line">以语句为基本块进行自下而上的活性分析.使用队列进行宽度优先搜索,递推式为:
+<eq><span class="katex-error" title="ParseError: KaTeX parse error: Can&#x27;t use function &#x27;$1#x27; in math mode at position 1: $̲e.in = e.use\cu…" style="color:#cc0000">$e.in = e.use\cup (e.out - e.def)</span></eq>$
+<eq><span class="katex-error" title="ParseError: KaTeX parse error: Can&#x27;t use function &#x27;$1#x27; in math mode at position 1: $̲e.out = \cup_{x…" style="color:#cc0000">$e.out = \cup_{x\in e.nexts} x.in</span></eq>$</p>
+<h3 id="%E5%AF%84%E5%AD%98%E5%99%A8%E5%88%86%E9%85%8D" data-line="NaN" class="code-line code-line code-line" id="e5af84e5ad98e599a8e58886e9858d-1" id="e5af84e5ad98e599a8e58886e9858d-2">寄存器分配</h3>
+<p data-line="NaN" class="code-line code-line code-line">使用图着色算法进行寄存器分配.<br>
+利用活性分析的结果构造冲突图,兼用邻接表和邻接矩阵表示冲突图.<br>
+图染色有四种操作:<br>
+1.简化 对于度数小于k的传送无关的点,将其从图中删除并放入栈中.<br>
+2.合并 对于一条传送指令,对其关联的两个点在保守规则下合并.<br>
+3.冻结 冻结一条传送指令,将他当作非传送指令.<br>
+4.溢出 将图中度数最大的点放入栈中,并从图中删除..<br>
+操作按1.2.3.4的优先级进行,直到图中不再有点.<br>
+将栈中元素依次弹出,并为其分配颜色,如果无颜色可用,则将该顶点真实溢出.<br>
+若有真实溢出发生,则重写程序,为溢出的变量分配栈空间,加入load语句和store语句来读取和写回,并创建临时变量进行运算.</p>
+<h3 id="%E5%85%B6%E4%BB%96%E8%AF%B4%E6%98%8E" data-line="NaN" class="code-line code-line code-line" id="e585b6e4bb96e8afb4e6988e-1" id="e585b6e4bb96e8afb4e6988e-2">其他说明</h3>
+<p data-line="NaN" class="code-line code-line code-line">Tigger不再创建符号表,因为其中所有变量名称的作用域都是全局,所以直接由词法分析器为其分配一个id(&gt;27).<br>
+全局变量和栈数组不分配寄存器,直接存到内存中.</p>
+<h3 id="%E9%A2%84%E7%9D%80%E8%89%B2%E8%8A%82%E7%82%B9%E7%9A%84%E5%A4%84%E7%90%86" data-line="NaN" class="code-line code-line code-line" id="e9a284e79d80e889b2e88a82e782b9e79a84e5a484e79086-1" id="e9a284e79d80e889b2e88a82e782b9e79a84e5a484e79086-2">预着色节点的处理</h3>
+<p data-line="NaN" class="code-line code-line code-line">Tigger有28个寄存器,给其确定id为0-27,以作为预着色节点,在活性分析中与其他变量处于同等地位. 在图着色时也可与与其相关的传送节点合并.</p>
+<h3 id="%E5%BD%A2%E5%8F%82%E7%9A%84%E5%A4%84%E7%90%86" data-line="NaN" class="code-line code-line code-line" id="e5bda2e58f82e79a84e5a484e79086-1" id="e5bda2e58f82e79a84e5a484e79086-2">形参的处理</h3>
+<p data-line="NaN" class="code-line code-line code-line">函数参数及返回值需要预着色,函数体的开头会创建临时变量,使用传送指令将预着色节点传送到临时变量作为形参,以避免形参长期占用a开头寄存器.</p>
+<h3 id="%E8%B0%83%E7%94%A8%E5%87%BD%E6%95%B0" data-line="NaN" class="code-line code-line code-line" id="e8b083e794a8e587bde695b0-1" id="e8b083e794a8e587bde695b0-2">调用函数</h3>
+<p data-line="NaN" class="code-line code-line code-line">该部分tigger.y代码:</p>
+<pre><code data-line="NaN" class="code-line code-line code-line"><code><div>Expression:
+| ...
+| PARAM Symbol                                {AnalyzInstance.currentFunc().CallParam($2,1);}
+| PARAM INTEGER                                 {AnalyzInstance.currentFunc().CallParam($2,0);}
+| Symbol '=' CALL FUNCTION                    {AnalyzInstance.currentFunc().CallFunc($1,$4);}
+| ...
+</div></code></code></pre>
+<p data-line="NaN" class="code-line code-line code-line">该部分analyz.cpp代码:</p>
+<pre><code data-line="NaN" class="code-line code-line code-line language-c++"><div><span class="hljs-keyword">void</span> Func::CallParam(<span class="hljs-keyword">int</span> v,<span class="hljs-keyword">int</span> t)
+{
+    <span class="hljs-keyword">if</span>(t == <span class="hljs-number">1</span>)
+    {
+    <span class="hljs-keyword">new</span> Expression(MoveRR,{(<span class="hljs-keyword">int</span>)(a0)+paramToCallWithCount},{v},{});
+    }
+    <span class="hljs-keyword">else</span>
+    {
+    <span class="hljs-keyword">new</span> Expression(MoveRI,{(<span class="hljs-keyword">int</span>)(a0)+paramToCallWithCount},{},{v});
+    }
+    paramToCallWithCount++;
+}
+<span class="hljs-keyword">void</span> Func::CallFunc(<span class="hljs-keyword">int</span> v,<span class="hljs-built_in">string</span> f)
+{
+    <span class="hljs-built_in">vector</span>&lt;<span class="hljs-keyword">int</span>&gt; paramvec;
+    paramvec.push_back(<span class="hljs-keyword">int</span>(a0));
+    <span class="hljs-keyword">for</span>(<span class="hljs-keyword">int</span> i = <span class="hljs-number">1</span>; i&lt;paramToCallWithCount;i ++)
+    {
+        paramvec.push_back((<span class="hljs-keyword">int</span>)(a0) + i);
+    }
+    <span class="hljs-keyword">new</span> Expression(Call,{(<span class="hljs-keyword">int</span>)(a0)},paramvec,{},f);
+    <span class="hljs-keyword">new</span> Expression(MoveRR,{v},{(<span class="hljs-keyword">int</span>)(a0)},{});
+    paramToCallWithCount = <span class="hljs-number">0</span>;
+}
+</div></code></pre>
+<p data-line="NaN" class="code-line code-line code-line">Func类设置了一个计数器计数当前传入参数的个数. 计数器初始化为0, 每扫描并处理一个Param语句, 将计数器值加一.<br>
+对于<code>Param x</code>语句,将其处理为 <code>a0 = x</code>(对应Expression的类型为MoveRR), 其中0可能为0-7,是传参计数器的当前值.<br>
+由Eeyore的构成,在Param语句和对应的Call语句之间不会有其他会改变参数寄存器值的语句,而Call语句的right属性会被设置成{a0,a1,..,at},其中t为参数的个数-1;<br>
+因此活性分析的结果会阻止Param语句和Call语句之间的其他无关变量被分配为a0-at寄存器.</p>
+<p data-line="NaN" class="code-line code-line code-line">合并预着色点相关传送节点的例子</p>
+<p data-line="NaN" class="code-line code-line code-line">MiniC代码</p>
+<pre><code data-line="NaN" class="code-line code-line code-line language-c"><div><span class="hljs-keyword">int</span> v0;
+v0 = getint();
+<span class="hljs-keyword">int</span> v1;
+v1 = func(v0);
+<span class="hljs-keyword">int</span> v2;
+v2 = putint(v1+<span class="hljs-number">1</span>);
+<span class="hljs-keyword">return</span> v2;
+</div></code></pre>
+<p data-line="NaN" class="code-line code-line code-line">tigger代码</p>
+<pre><code data-line="NaN" class="code-line code-line code-line language-x86asm"><div><span class="hljs-keyword">call</span> getint
+<span class="hljs-keyword">call</span> func
+a0 = a0 + <span class="hljs-number">1</span>
+<span class="hljs-keyword">call</span> putint
+return
+</div></code></pre>
+<p data-line="NaN" class="code-line code-line code-line">riscv64代码</p>
+<pre><code data-line="NaN" class="code-line code-line code-line language-x86asm"><div><span class="hljs-symbol">main:</span>
+	<span class="hljs-keyword">add</span>	<span class="hljs-built_in">sp</span>,<span class="hljs-built_in">sp</span>,-<span class="hljs-number">16</span>
+	sd	ra,<span class="hljs-number">8</span>(<span class="hljs-built_in">sp</span>)
+	<span class="hljs-keyword">call</span>	getint
+	<span class="hljs-keyword">call</span>	func
+	addiw	a0,a0,<span class="hljs-number">1</span>
+	<span class="hljs-keyword">call</span>	putint
+	ld	ra,<span class="hljs-number">8</span>(<span class="hljs-built_in">sp</span>)
+	addi	<span class="hljs-built_in">sp</span>,<span class="hljs-built_in">sp</span>,<span class="hljs-number">16</span>
+	jr	ra
+<span class="hljs-meta">	.size</span>	main, .-main
+</div></code></pre>
+<p data-line="NaN" class="code-line code-line code-line">变量大量合并,只用了a0,没有一条move指令.</p>
+
+</body></html>
