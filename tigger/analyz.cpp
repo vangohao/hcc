@@ -326,8 +326,7 @@ void Func::SaveReg()
     }
 }
 void Func::livelyAnalyz()
-{
-    
+{ 
     for(auto e:exprs)
     {
         e->in.clear();
@@ -393,7 +392,6 @@ void Func::livelyAnalyz()
                 }
         }
     }
-    // DebugPrint();
 }
 void Func::OptimizeFlow()
 {
