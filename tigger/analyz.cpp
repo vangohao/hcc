@@ -436,7 +436,7 @@ void Func::OptimizeFlow()
             if(e->type != Call && e->type!= Return && e->type != Goto  && e->type != GlobalLoad && e->type!=GlobalLoadAddr 
             && e->type != FrameLoad && e->type != FrameLoadAddr && e->type != FrameStore && e->type != ArrayRead && e->type!= ArrayWrite)
             {
-                bool flag = true;
+				bool flag = true;
                 for(auto x: e->use)
                 {
                     if(!e->constant.count(x))
@@ -495,6 +495,17 @@ void Func::OptimizeFlow()
                         {
                             e->constant.erase(it);
                         }
+                    }
+                }
+            }
+			else
+            {
+                for(auto x:e->def)
+                {
+                    auto it = e->constant.find(x);
+                    if(it!=e->constant.end())
+                    {
+                        e->constant.erase(it);
                     }
                 }
             }
