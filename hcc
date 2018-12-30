@@ -1,5 +1,5 @@
 #!/bin/bash
-if [ $# -gt 0 ]
+if [[ $# -gt 0 ]] && [[ $1 != "--help" ]]
 then
 	F=${1%.c}
 	if [ -f "$F.c" ]
@@ -28,6 +28,10 @@ then
 	fi
 else
 	echo "Please input a source file name."
+	echo "For example:"
+	echo "./hcc qsort.c" 
+	echo "or"
+	echo "./hcc qsort"
 fi
 	
 			
