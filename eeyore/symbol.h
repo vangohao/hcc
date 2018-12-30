@@ -8,12 +8,12 @@
 #include"node.h"
 enum SymbolType //符号类型
 {
-    Int=0,
-    IntPtr=1,
-    FunPtr=2,
-    Immediate=3,
-    Logic=4,
-    Error=5,
+    Int=0,          //整形变量
+    IntPtr=1,       //整形数组
+    FunPtr=2,       //函数
+    Immediate=3,    //直接数
+    Logic=4,        //逻辑表达式
+    Error=5,        
 };
 struct Symbol //符号
 {

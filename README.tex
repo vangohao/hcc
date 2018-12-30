@@ -82,7 +82,7 @@ Get source code from https://github.com/vangohao/hcc
 \begin{enumerate}
 \item symbol.cpp/h 包含两个类的定义:
 \begin{enumerate}[(1)]
-\item Symbol 类,即符号类,每个Symbol对象对应一个符号(包括常数,原生变量和临时变量)
+\item Symbol 类,即符号类,每个Symbol对象对应一个符号(包括函数,常数,原生变量和临时变量)
 \item SymbolTable 类,即符号表.
 \end{enumerate}
 \item node.cpp/h 包含两个类的定义:
@@ -98,6 +98,27 @@ Get source code from https://github.com/vangohao/hcc
 \end{enumerate}
 \subsection{类结构}
 \includegraphics[width=\linewidth]{uml_eeyore} 
+下面简要介绍一下以上几个类的组成和作用
+\subsubsection{Symbol 类}
+Symbol类是符号类.
+
+符号的类型定义在enum SymbolType中:
+\begin{lstlisting}
+enum SymbolType //符号类型
+{
+    Int=0,          //整形变量
+    IntPtr=1,       //整形数组
+    FunPtr=2,       //函数
+    Immediate=3,    //直接数
+    Logic=4,        //逻辑表达式
+    Error=5,        
+};
+\end{lstlisting}
+符号类主要功能是处理表达式运算和函数调用
+\begin{enumerate}[(1)]
+\item 两个静态方法ProcessDualOp和ProcessSingleOp传入两个Node* 类型节点,返回一个Symbol指针,指向运算所得的临时变量, eeyore在翻译每个运算时都会创建一个临时变量, 将运算结果赋给临时变量.
+\item Declear方法配合decleared属性, 由于parser第一次遇到一个令牌IDENTIFIER并不是在VarDefn非终结符中,而是在identifier终结符中, 因此在此时就会将新遇到的符号插入当前符号表top中, 而在VarDefn中,调用Declear方法将
+\end{enumerate}
 \section{Tigger}
 \subsection{代码结构}
 代码由analyz.cpp/h lexer.l tigger.y tigger.cpp/h main.cpp 构成
@@ -125,7 +146,7 @@ main.cpp: 主程序函数和少量全局变量.
 \subsection{类结构}
 \includegraphics[width=0.7\linewidth]{uml} 
 
-1. Expression类:
+\subsubsection{Expression类}
 \begin{lstlisting}
 class Expression
 {
@@ -151,7 +172,7 @@ public:
     string _funtocall="",bool push=true);
 };
 \end{lstlisting}
-2.Func类
+\subsubsection{Func类}
 \begin{lstlisting}
 class Func
 {
