@@ -34,7 +34,7 @@ else    {return ELSE;}
 while   {return WHILE;}
 return  {return RETURN;}
 [_A-Za-z][_A-Za-z0-9]* {yylval.name = strdup(yytext); return IDENTIFIER;}
-[ \t\n]+ {}
+[ \t\r\n]+ {}
 .   {return IllegalCharacter;}
 %%
 int yywrap()
