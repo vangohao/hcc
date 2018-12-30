@@ -27,7 +27,7 @@ then
 		then
 			TC="-m32"
 		else
-			TC=""
+			TC="-m64"
 		fi
 		F=${1%.c}
 	fi

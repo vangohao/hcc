@@ -733,7 +733,7 @@ Tigger中设置了全局变量target指示需要生成的代码类型.
 
 Func类中的函数GenCode(), GenRiscv64(), GenRiscv32() 三个函数分别生成对应函数的Tigger, Riscv64 和 Riscv32 代码, Analyz类中的GenGlobalTigger() 和GenGlobal()函数 分别生成Tigger和Riscv32/64的全局变量信息.
 
-tigger程序运行时接受一个参数, 如提供 -tg 参数,则输出Tigger 代码,如提供 -m32 参数,则输出Riscv-32代码. 如未提供参数或提供了其他参数, 则默认生成 Riscv-64代码.
+tigger程序运行时接受一个参数, 如提供 -m64 参数,Riscv-64 代码,如提供 -m32 参数,则输出Riscv-32代码. 如未提供参数或提供了其他参数, 则默认生成Tigger代码.
 
 由于Riscv不支持寄存器乘以直接数的指令, 因此在Tigger中规定了寄存器乘以直接数的指令中的直接数必须为2的幂以便转换为左移指令. 在Riscv代码输出过程中,Func类有OutputArithRIMulI(int reg1,int reg2,int op)函数来处理这种指令, 将其变为左移指令输出.
 
@@ -782,7 +782,7 @@ then
 		then
 			TC="-m32"
 		else
-			TC=""
+			TC="-m64"
 		fi
 		F=${1%.c}
 	fi

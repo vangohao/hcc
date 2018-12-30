@@ -23,5 +23,5 @@ main.o: main.cpp tigger.h
 clean:
 	cd eeyore_src && make clean && cd ..
 	-rm -f tigger lex.yy.o y.tab.o lex.yy.c y.tab.c y.tab.h analyz.o tigger.o main.o 1700010686.tar eeyore
-tarfile: 
-	tar -cv *.cpp *.h *.l *.y eeyore tigger makefile riscv64C riscv32C -f 1700010686.tar 
+tarfile: eeyore tigger
+	tar -cv *.cpp *.h *.l *.y eeyore tigger makefile riscv64C riscv32C tiggerC -f 1700010686.tar 

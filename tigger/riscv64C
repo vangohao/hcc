@@ -1,2 +1,2 @@
 #!/bin/bash
-./eeyore | ./tigger
+./eeyore | ./tigger -m64
