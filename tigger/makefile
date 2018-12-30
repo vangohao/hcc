@@ -2,7 +2,7 @@ CC = gcc-5
 CXX = g++-5
 CCARGS = -O1 -g -std=c++14 -Wfatal-errors
 all: tigger eeyore
-eeyore: eeyore_src
+eeyore: 
 	cd eeyore_src && make CXX=$(CXX) && cp eeyore ../eeyore && cd ..
 tigger: lex.yy.o analyz.o y.tab.o tigger.o main.o
 	$(CXX) $(CCARGS) -o tigger lex.yy.o analyz.o y.tab.o tigger.o main.o
@@ -22,6 +22,6 @@ main.o: main.cpp tigger.h
 	$(CXX) $(CCARGS) -c main.cpp
 clean:
 	cd eeyore_src && make clean && cd ..
-	-rm tigger lex.yy.o y.tab.o lex.yy.c y.tab.c y.tab.h analyz.o tigger.o main.o 1700010686.tar eeyore
+	-rm -f tigger lex.yy.o y.tab.o lex.yy.c y.tab.c y.tab.h analyz.o tigger.o main.o 1700010686.tar eeyore
 tarfile: 
 	tar -cv *.cpp *.h *.l *.y eeyore tigger makefile riscv64C riscv32C -f 1700010686.tar 

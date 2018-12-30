@@ -77,6 +77,9 @@
 
 %%
 Goal: BeforeMain MainFunc           {Output::print();}
+| error ';'                                 {
+                                            exit(1);
+}
 ;
 BeforeMain: BeforeMain BeforeMainStatement
 |   %empty
@@ -374,7 +377,7 @@ Statement: '{'    {save.push(top);top = new SymbolTable(top);}
 | error ';'                                 {
                                             yyclearin;
                                             errorstatus = false;
-                                            return 0;
+                                            exit(1);
 }
 ;
 Expression:  Expression '+' Expression    {$$ = new Node($1,$3,NodeType::ExprArith,'+',yylineno);
