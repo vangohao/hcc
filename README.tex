@@ -88,13 +88,146 @@ Get source code from https://github.com/vangohao/hcc
 \item node.cpp/h 包含两个类的定义:
 \begin{enumerate}[(1)]
 \item Node类,即语法树节点.
-\item Label类,即标号类,用于翻译生成的标号.
+\item Label类,goto语句后面的标识(对于非M语句)或标号(对于M语句) ,用于建立跳转关系
 \end{enumerate}
 \item gotolist.cpp/h 包含Gotolist类的定义,gotolist就是跳转表,用于建立跳转关系.
 \item fault.cpp/h 包含用于报错的函数.
 \item main.cpp 主程序
 \item parser.y 语法分析器,进行语法制导翻译.
 \item lexer.l 词法分析器,进行词法分析并传递token及其基本属性给语法分析器
+\end{enumerate}'
+\subsection{BNF}
+下面给出删除了所有处理语句的parser.y代码
+\begin{lstlisting}
+%code requires{
+    typedef struct{
+        int number;
+        char* name;
+        SymbolType type;
+        Node* node;
+    } foryystype;
+    #define YYSTYPE foryystype
+}
+%{
+    #define YYERROR_VERBOSE 1
+%}
+
+
+%token EQUAL NOTEQUAL LAND LOR T_INT MAIN IF ELSE WHILE RETURN IllegalCharacter
+%token<number> INTEGER
+%token<name> IDENTIFIER
+%type<node> Goal BeforeMainStatement VarDefn VarDecls VarDecl FuncDefn FuncCreateIdTable Ifhead
+%type<node> InsideFuncStatements FuncDecl MainFunc Statements Statement Expression Params Identifier
+%type<node> M N
+%type<type> Type
+%right '='
+%left LOR
+%left LAND
+%left EQUAL NOTEQUAL
+%left '<' '>'
+%left '+' '-'
+%left '*' '/' '%'
+%right NEGA '!'
+%right '[' 
+
+%%
+Goal: BeforeMain MainFunc          
+;
+BeforeMain: BeforeMain BeforeMainStatement
+|   %empty
+;
+BeforeMainStatement: VarDefn | FuncDefn | FuncDecl | ';'
+;
+VarDefn: Type Identifier ';'    
+| Type Identifier'['INTEGER']' ';' 
+;
+VarDecls:VarDecls ',' VarDecl  
+| VarDecl                      
+| %empty                      
+;
+VarDecl: Type Identifier      
+| Type Identifier '[' INTEGER ']'
+| Type Identifier '[' ']'          
+;
+FuncCreateIdTable: Type Identifier '(' 
+;
+FuncDefn: FuncCreateIdTable VarDecls ')' 
+'{'    
+InsideFuncStatements M
+'}'  
+;
+InsideFuncStatements: InsideFuncStatements M FuncDecl        
+| InsideFuncStatements M Statement                          
+| FuncDecl                     
+| Statement                    
+;
+FuncDecl: FuncCreateIdTable VarDecls ')' ';'
+;
+MainFunc: T_INT MAIN '(' ')'           
+ '{' InsideFuncStatements M'}'         
+;
+Type: T_INT  
+;
+Statements: Statements M Statement     
+| Statement
+;
+M: %empty
+;
+N: %empty 
+}
+;
+Ifhead:  IF '('  Expression ')'  
+;
+Statement: '{' Statements '}'       
+| ';'          
+| Ifhead M Statement 
+| Ifhead M Statement N ELSE M Statement  
+| WHILE M '(' Expression ')'  M Statement 
+| Identifier '=' Expression ';' 
+| Identifier '[' Expression ']' '='  Expression ';' 
+| Identifier '(' Params ')' ';' 
+| VarDefn
+| RETURN Expression ';'         
+| error ';'                     
+;
+Expression:  Expression '+' Expression 
+| Expression '-' Expression            
+| Expression '*' Expression            
+| Expression '/' Expression            
+| Expression '%' Expression           
+| Expression '<' Expression           
+| Expression '>' Expression           
+| Expression EQUAL Expression       
+| Expression NOTEQUAL Expression  
+| Expression LAND M Expression       
+| Expression LOR  M Expression  
+| Expression '[' Expression ']' 
+| INTEGER                       
+| Identifier                    
+| '!' Expression                
+| '-' Expression %prec NEGA     
+| Identifier '(' Params ')'     
+| '(' Expression ')'            
+;
+Params: Params ',' Expression
+| Expression               
+| %empty   
+;
+Identifier: IDENTIFIER          
+
+%%
+\end{lstlisting}
+对以上BNF的说明:
+\begin{enumerate}[(1)]
+\item 使用bison编译时会报一个Shift/reduce冲突,这是因为If和IfElse有所冲突, 但由于Bison的规则是冲突时优先选择移入, 所以在保留此冲突的情况下编译的语法分析器仍然是正确的.例如下面这段代码:
+\begin{lstlisting}
+if (x < 5)   if (x<3)  y = 1; else y = 2; 
+\end{lstlisting}
+其中的else 应该与第二个if 构成 IfElse, 而第一个if 是单独的If, 没有Else 与其配对.
+
+所以,对于 x == 4 运行结果应该是 y = 2;
+\item FuncCreateIdTabel 非终结符是FuncDefn和FuncDecl的公共部分, 由于程序需要在这部分之后首先为函数创建符号, 所以需要加上控制代码, 为了避免冲突, 所以将这部分单独拿出来加上控制代码; 类似的, Ifhead非终结符对if的条件表达式先做处理, 为了避免冲突, 所以将这部分单独拿出来加上控制代码.
+\item 对M 和 N 的说明: M和N是用于流程控制的占位符. 本MiniC转Eeyore编译器使用回填法$^{[1]}$处理while语句,if语句以及逻辑运算符涉及的条件跳转. 具体作用后面会讲.
 \end{enumerate}
 \subsection{类结构}
 \includegraphics[width=\linewidth]{uml_eeyore} 
@@ -117,7 +250,88 @@ enum SymbolType //符号类型
 符号类主要功能是处理表达式运算和函数调用
 \begin{enumerate}[(1)]
 \item 两个静态方法ProcessDualOp和ProcessSingleOp传入两个Node* 类型节点,返回一个Symbol指针,指向运算所得的临时变量, eeyore在翻译每个运算时都会创建一个临时变量, 将运算结果赋给临时变量.
-\item Declear方法配合decleared属性, 由于parser第一次遇到一个令牌IDENTIFIER并不是在VarDefn非终结符中,而是在identifier终结符中, 因此在此时就会将新遇到的符号插入当前符号表top中, 而在VarDefn中,调用Declear方法将
+\item Declear方法配合decleared属性, 由于parser第一次遇到一个令牌IDENTIFIER并不是在VarDefn非终结符中,而是在identifier终结符中, 因此在此时就会将新遇到的符号插入当前符号表top中, 而在VarDefn中,调用Declear方法将decleared属性设为true. 在Expression中遇到相应符号时, 需要检查符号的decleared属性,必须是true,否则会报错. 对于函数,Declear方法会存入参数表.
+\item Define方法,适用于函数, 作用是声明函数已定义, 若此函数已被声明, 则还需检查此处传入的参数表是否与声明时使用的参数表相匹配,若不匹配则会报错. 但函数声明和定义都不是调用的必要条件, 没有声明的函数也可以直接调用, 但已经声明或定义的函数在调用时会通过checkParams方法检查参数表是否匹配.
+\item CallWithParams方法,parser在遇到函数调用语句时调用, 作用是按照函数的声明或定义状态检查参数表并给出相应的报错.
+\item checkParams方法,这是个private方法,作用是检查传入的参数表是否与paramList相匹配. 参数表的类型是Node* ,也就是VarDecl对应的语法树节点. 检查的方法是遍历链表, 检查节点的sym属性的type属性是否对应或可以隐式转换,不匹配的给出错误提示.
+\end{enumerate}
+
+\subsection{SymbolTable类}
+SymbolTable类是符号表, 有两个属性,分别是std::map<std::string,Symbol*>类型的table表和SymbolTable* 类型的prev, 指向上一个符号表, 所以SymbolTable实际是一个链式栈.
+
+下面介绍SymbolTable支持的主要方法
+\begin{enumerate}[(1)]
+\item put方法,参数为一个字符串和一个Symbol指针, 作用是将该符号插入符号表.
+\item get方法, 参数是一个字符串,返回值是一个Symbol指针, 将首先在当前符号表中查找该符号, 如果没有, 则调用prev即上一级符号表的该方法, 如果整个符号表中都找不到该符号,则返回null
+\item gethere方法,在当前符号表中查找该符号, 如果没有就返回null, 不会递归查找上一级符号表.
+\end{enumerate}
+
+\subsection{Node类} 
+Node类是语法树的节点类,实质是一个结构体,没有实质性的方法.
+
+Node节点的种类用enum NodeType
+类型定义如下:
+\begin{lstlisting}
+enum NodeType //语法树节点所对应语句类型
+{
+ExprArith=0,            //数值表达式
+ExprLogic=1,            //逻辑表达式
+Assign=2,               //赋值语句
+If=5,                   //If语句
+IfElse=6,               //IfElse语句
+While=7,                //While语句
+Return=9,               //Return语句
+Vardfn=10,              //变量定义语句
+Fundcl=11,              //函数声明语句
+Fundfn=12,              //函数定义语句
+MainFun=13,             //main函数
+ArrayAssign=14,         //数组赋值语句
+Symbol1 = 15,           //未定类型的临时符号
+Params=16,              //参数表(调用时)
+Funcall=18,             //函数调用语句
+VarDcl = 20,            //参数表(定义或声明时)
+Empty = 21,             //空类型
+Stmts = 22,             //程序体
+};
+\end{lstlisting}
+
+Node类包含的属性如下:
+\begin{enumerate}[(1)]
+\item left, right Node指针, 指向左子节点和右子节点
+\item type, NodeType类型, 节点类型.
+\item val int类型, 用于储存属性值,例如函数节点的参数个数, Params节点的当前参数个数等,此外,在identifier中, 该属性还指示该符号是在最顶层符号表中找到的还是上级符号表中找到的, 以便后续必要时进行覆盖定义.
+\item line int类型, 储存该节点在源文件中的代码行号
+\item instr Label类型,goto语句后面的标识(对于非M语句)或标号(对于M语句) ,用于跳转
+\item nextlist, truelist, falselist, 是Gotolist类型指针,实际是跳转表, 分别储存跳转到当前语句结尾、当前语句为真位置、当前语句为假位置的goto指令,用于回填。
+\item sym 是Symbol指针类型,保存当前节点对应的符号.
+\end{enumerate}
+\subsection{Label类}
+Label类是goto语句后面的标识(对于非M语句)或标号(对于M语句) .属性如下:
+\begin{enumerate}[(1)]
+\item int类型id是标号的编号(对于M语句), 对于其他语句则为-1
+\item static int 类型usedCount是Label的计数, 用于编号.
+\item int类型 location是该goto语句或标号在生成代码序列中的编号, 用于回填
+\end{enumerate}
+下面是方法
+\begin{enumerate}[(1)]
+\item Init(int) 方法, 初始化当前Label, 传入的参数为location
+\item Patch() 方法, 只有标号会调用, 作用是在生成的代码序列中补充显示该标号.
+\end{enumerate}
+\subsection{Gotolist类}
+属性只有一个,是std::list<int>,储存的是goto语句在生成代码序列中的编号.
+
+方法如下:
+\begin{enumerate}
+\item Gotolist(int) 初始化, 构造函数, 使list属性初始化为一个值的列表
+\item merge(Gotolist\&) 返回值是Gotolist, 用于合并两个Gotolist
+\item backpatch(Label* l) 这个函数非常重要, 用于回填, 作用是对于list中的每个元素i,对于其每个元素调用全局函数Output.patch(int i,Label \& l); 对于非空的list, 一并调用l的Patch()函数显示标号.
+\end{enumerate}
+\subsection{对于回填法的说明}
+回填法用于解决语法制导翻译过程中生成的goto语句跳转到的编号不确定的问题.$^[1]$
+
+下面分几个部分说明:
+\begin{enumerate}
+\item 
 \end{enumerate}
 \section{Tigger}
 \subsection{代码结构}

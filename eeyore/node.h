@@ -10,28 +10,24 @@ namespace Output
 }
 enum NodeType //语法树节点所对应语句类型
 {
-ExprArith=0,
-ExprLogic=1,
-Assign=2,
-SingleArith=3,
-SingleLogic=4,
-If=5,
-IfElse=6,
-While=7,
-Bracket=8,
-Return=9,
-Vardfn=10,
-Fundcl=11,
-Fundfn=12,
-MainFun=13,
-ArrayAssign=14,
-Symbol1 = 15,
-Params=16,
-Funcall=18,
-ArrayItem=19,
-VarDcl = 20,
-Empty = 21,
-Stmts = 22,
+ExprArith=0,            //数值表达式
+ExprLogic=1,            //逻辑表达式
+Assign=2,               //赋值语句
+If=5,                   //If语句
+IfElse=6,               //IfElse语句
+While=7,                //While语句
+Return=9,               //Return语句
+Vardfn=10,              //变量定义语句
+Fundcl=11,              //函数声明语句
+Fundfn=12,              //函数定义语句
+MainFun=13,             //main函数
+ArrayAssign=14,         //数组赋值语句
+Symbol1 = 15,           //未定类型的临时符号
+Params=16,              //参数表(调用时)
+Funcall=18,             //函数调用语句
+VarDcl = 20,            //参数表(定义或声明时)
+Empty = 21,             //空类型
+Stmts = 22,             //程序体
 };
 struct Symbol;
 struct Label
