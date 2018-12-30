@@ -20,3 +20,4 @@ llvm-2.6
 *.html
 *.aux
 *.synctex.gz
+bnf.y
