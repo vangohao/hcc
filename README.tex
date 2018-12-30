@@ -39,31 +39,20 @@ Get source code from https://github.com/vangohao/hcc
 \section{supported additional C rules besides MiniC}
 \begin{enumerate}
 \item 支持空语句( ; )
-
 \item 支持逻辑表达式与算术表达式互相自动转换.
-
 \item 支持无返回值调用函数.
-
 \item 支持调用函数时使用表达式作为参数.
-
 \item 支持在程序体内声明函数.
-
 \item 支持C风格多行注释和C++风格单行注释.
 \end{enumerate}
 \section{error report}
-\begin{enumerate}[1.]
+\begin{enumerate}
 \item 报告语法错误和词法错误及其行号,并给出该处正确的token类型提示.
-
 \item 检查标识符使用,如果使用了未定义的标识符会报错.
-
 \item 检查标识符重复,对于重复定义的报错,函数名与变量名冲突的报错,如果在\{\}程序块内使用与程序块外同名的变量,则不会报错.
-
 \item 检查函数参数表,对于重复声明但参数表不一致,或定义与声明参数表不一致,或调用时所用的参数表与声明的类型不一致时报错.
-
 \item 检查+,-,*,/,\%运算符对于数组类型变量的不合法操作给出错误提示,这些操作中除了 (int[])+(int), (int)+(int[]), (int[])-(int), 外涉及数组的运算都是不合法 的.
-
 \item 检查对数组变量的赋值,无法将数值赋给数组变量.
-
 \item 检查a[b]使用,如果a不是数组变量,会报错.
 \end{enumerate}
 \section{warning report}
@@ -72,7 +61,7 @@ Get source code from https://github.com/vangohao/hcc
 \end{enumerate}
 \section{Eeyore}
 \subsection{简介}
-\begin{enumerate}[1.]
+\begin{enumerate}
 \item 使用flex,bison和C++构建,将输入的MiniC代码转换为Eeyore三地址代码.
 \item 使用STL的map模板制作符号表,使用链表串联内外层程序块的符号表.
 \item 使用回填法构建eeyore中的标号及goto语句.
@@ -227,7 +216,7 @@ if (x < 5)   if (x<3)  y = 1; else y = 2;
 
 所以,对于 x == 4 运行结果应该是 y = 2;
 \item FuncCreateIdTabel 非终结符是FuncDefn和FuncDecl的公共部分, 由于程序需要在这部分之后首先为函数创建符号, 所以需要加上控制代码, 为了避免冲突, 所以将这部分单独拿出来加上控制代码; 类似的, Ifhead非终结符对if的条件表达式先做处理, 为了避免冲突, 所以将这部分单独拿出来加上控制代码.
-\item 对M 和 N 的说明: M和N是用于流程控制的占位符. 本MiniC转Eeyore编译器使用回填法$^{[1]}$处理while语句,if语句以及逻辑运算符涉及的条件跳转. 具体作用后面会讲.
+\item 对M 和 N 的说明: M和N是用于流程控制的占位符,其中M将成为语句标号. 本MiniC转Eeyore编译器使用回填法$^{[1]}$处理while语句,if语句以及逻辑运算符涉及的条件跳转. 具体作用后面会讲.
 \end{enumerate}
 \subsection{类结构}
 \includegraphics[width=\linewidth]{uml_eeyore} 
@@ -256,7 +245,7 @@ enum SymbolType //符号类型
 \item checkParams方法,这是个private方法,作用是检查传入的参数表是否与paramList相匹配. 参数表的类型是Node* ,也就是VarDecl对应的语法树节点. 检查的方法是遍历链表, 检查节点的sym属性的type属性是否对应或可以隐式转换,不匹配的给出错误提示.
 \end{enumerate}
 
-\subsection{SymbolTable类}
+\subsubsection{SymbolTable类}
 SymbolTable类是符号表, 有两个属性,分别是std::map<std::string,Symbol*>类型的table表和SymbolTable* 类型的prev, 指向上一个符号表, 所以SymbolTable实际是一个链式栈.
 
 下面介绍SymbolTable支持的主要方法
@@ -266,7 +255,7 @@ SymbolTable类是符号表, 有两个属性,分别是std::map<std::string,Symbol
 \item gethere方法,在当前符号表中查找该符号, 如果没有就返回null, 不会递归查找上一级符号表.
 \end{enumerate}
 
-\subsection{Node类} 
+\subsubsection{Node类} 
 Node类是语法树的节点类,实质是一个结构体,没有实质性的方法.
 
 Node节点的种类用enum NodeType
@@ -299,13 +288,13 @@ Node类包含的属性如下:
 \begin{enumerate}[(1)]
 \item left, right Node指针, 指向左子节点和右子节点
 \item type, NodeType类型, 节点类型.
-\item val int类型, 用于储存属性值,例如函数节点的参数个数, Params节点的当前参数个数等,此外,在identifier中, 该属性还指示该符号是在最顶层符号表中找到的还是上级符号表中找到的, 以便后续必要时进行覆盖定义.
+\item val int类型, 用于储存属性值,例如函数节点的参数个数, Params节点的当前参数个数等,此外,在identifier中, 该属性还指示该符号是在最顶层符号表中找到的还是上级符号表中找到的, 以便后续必要时进行覆盖定义. 该属性为综合属性.
 \item line int类型, 储存该节点在源文件中的代码行号
 \item instr Label类型,goto语句后面的标识(对于非M语句)或标号(对于M语句) ,用于跳转
-\item nextlist, truelist, falselist, 是Gotolist类型指针,实际是跳转表, 分别储存跳转到当前语句结尾、当前语句为真位置、当前语句为假位置的goto指令,用于回填。
+\item nextlist, truelist, falselist, 是Gotolist类型指针,实际是跳转表, 分别储存跳转到当前语句结尾、当前语句为真位置、当前语句为假位置的goto指令,用于回填。该属性为综合属性.
 \item sym 是Symbol指针类型,保存当前节点对应的符号.
 \end{enumerate}
-\subsection{Label类}
+\subsubsection{Label类}
 Label类是goto语句后面的标识(对于非M语句)或标号(对于M语句) .属性如下:
 \begin{enumerate}[(1)]
 \item int类型id是标号的编号(对于M语句), 对于其他语句则为-1
@@ -317,21 +306,40 @@ Label类是goto语句后面的标识(对于非M语句)或标号(对于M语句) .
 \item Init(int) 方法, 初始化当前Label, 传入的参数为location
 \item Patch() 方法, 只有标号会调用, 作用是在生成的代码序列中补充显示该标号.
 \end{enumerate}
-\subsection{Gotolist类}
+\subsubsection{Gotolist类}
 属性只有一个,是std::list<int>,储存的是goto语句在生成代码序列中的编号.
 
 方法如下:
 \begin{enumerate}
 \item Gotolist(int) 初始化, 构造函数, 使list属性初始化为一个值的列表
 \item merge(Gotolist\&) 返回值是Gotolist, 用于合并两个Gotolist
-\item backpatch(Label* l) 这个函数非常重要, 用于回填, 作用是对于list中的每个元素i,对于其每个元素调用全局函数Output.patch(int i,Label \& l); 对于非空的list, 一并调用l的Patch()函数显示标号.
+\item backpatch(Label* l) 这个函数非常重要, 用于回填, 作用是对于list中的每个元素i,对于其每个元素调用全局函数Output::patch(int i,Label \& l); 对于非空的list, 一并调用l的Patch()函数显示标号.
 \end{enumerate}
-\subsection{对于回填法的说明}
+\subsection{对于回填法和逻辑运算的说明}
 回填法用于解决语法制导翻译过程中生成的goto语句跳转到的编号不确定的问题.$^[1]$
 
 下面分几个部分说明:
-\begin{enumerate}
-\item 
+\begin{enumerate}[(1)]
+\item M占位符的作用: 
+
+M占位符是标号位置, 翻译到M占位符时会在该位置初始化一个标号.
+\item N占位符的作用:
+
+N占位符是goto语句, 翻译到N占位符时会将该Node的instr属性初始化为一个goto语句,也就是说,该处必有跳转.这只用于含有else的if语句,因为执行完true的代码块以后必须跳过后面的else代码块;
+\item Gotolist 的作用, 每个逻辑表达式都有他的nextlist, truelist和falselist(实质是综合属性);  分别对应于一个标号(也即M占位符), 内容是这三个标号对应的goto语句的集合(在生成代码序列中的编号)
+
+\item 对于比较运算符,对其生成eeyore中的if语句, 并初始化两个goto语句对应true和false, 初始化truelist和falselist包含分别包含对应的goto语句, 对于比较运算符表达式, nextlist为空.
+
+\item 对于逻辑运算符(包括与,或,非), 对应的调用merge函数由子节点的三个list计算出父节点的三个list. 很显然,这一步过程同时能够完成所谓的短路现象.
+
+\item 对于回填过程 整个If,IfElse或While程序块处理完后即可进行调用三个gotolist的backpatch函数进行回填操作, 该函数调用全局函数Output::patch(int i, Label \& l);  这个全局函数找到生成代码序列中的第i项(必然以goto结尾), 在其后添加上跳转到的标号 l, 即完成了标号回填的过程.
+\end{enumerate}
+\subsection{对于逻辑表达式和算术表达式互相转化的说明}
+本编译器将比较表达式以及或与非表达式视为逻辑表达式, 五则运算表达式视为算术表达式, 支持逻辑表达式和算术表达式的自动转化.
+
+\begin{enumerate}[(1)]
+\item 逻辑表达式转算术表达式: 生成一个临时变量x表示结果,将逻辑表达式的truelist指向运行x=1,然后跳过后面一句x=0;将逻辑表达式的falselist指向运行x=0.
+\item 算术表达式转逻辑表达式: 设算数表达式对应的符号为x, 则将该语句翻译为和逻辑比较表达式x==0相同的翻译结果. 即为其生成if-goto-goto语句, 并将truelist初始化为第一个goto对应的序号, 将falselist初始化为第二个goto对应的序号.
 \end{enumerate}
 \section{Tigger}
 \subsection{代码结构}
@@ -609,19 +617,16 @@ a0 = a1
 return
 \end{lstlisting}
 \subsection{寄存器分配}
-使用图着色算法进行寄存器分配.
+使用图着色算法进行寄存器分配.\footnote{寄存器分配的算法参考了《现代编译原理-C语言描述（修订版）》第11章}
 
 利用活性分析的结果构造冲突图,兼用邻接表和邻接矩阵表示冲突图.
 
 图染色有四种操作:
 \begin{enumerate}[1.]
-\item 简化 对于度数小于k的传送无关的点,将其从图中删除并放入栈中.
-
-\item 合并 对于一条传送指令,对其关联的两个点在保守规则下合并.
-
-\item 冻结 冻结一条传送指令,将他当作非传送指令.
-
-\item 溢出 将图中度数最大的点放入栈中,并从图中删除.
+\item 简化:对于度数小于k的传送无关的点,将其从图中删除并放入栈中.
+\item 合并:对于一条传送指令,对其关联的两个点在保守规则下合并.
+\item 冻结:冻结一条传送指令,将他当作非传送指令.
+\item 溢出:将图中度数最大的点放入栈中,并从图中删除.
 \end{enumerate}
 操作按1.2.3.4的优先级进行,直到图中不再有点.
 
@@ -632,7 +637,7 @@ return
 Tigger不再创建符号表,因为其中所有变量名称的作用域都是全局,所以直接由词法分析器为其分配一个id(>27).\
 全局变量和栈数组不分配寄存器,直接存到内存中.
 \subsection{预着色节点的处理}
-Tigger有28个寄存器,给其确定id为0-27,以作为预着色节点,在活性分析中与其他变量处于同等地位. 在图着色时也可与与其相关的传送节点合并.
+Tigger有28个寄存器,给其确定id为0-27,以作为预着色节点,在活性分析中与其他变量处于同等地位. 在图着色时也可与与其相关的传送节点合并.但两个不同色的预着色节点无法合并.
 \subsection{形参的处理}
 函数参数及返回值需要预着色,函数体的开头会创建临时变量,使用传送指令将预着色节点传送到临时变量作为形参,以避免形参长期占用a开头寄存器.
 \subsection{调用函数}
@@ -677,8 +682,7 @@ Func类设置了一个计数器计数当前传入参数的个数. 计数器初�
 由Eeyore的构成,在Param语句和对应的Call语句之间不会有其他会改变参数寄存器值的语句,而Call语句的right属性会被设置成{a0,a1,..,at},其中t为参数的个数-1;\
 因此活性分析的结果会阻止Param语句和Call语句之间的其他无关变量被分配为a0-at寄存器.
 
-合并预着色点相关传送节点的例子
-
+\subsection{合并预着色点相关传送节点的例子}
 MiniC代码
 \begin{lstlisting}
 int v0;
@@ -697,7 +701,6 @@ a0 = a0 + 1
 call putint
 return
 \end{lstlisting}
-
 riscv64代码
 \begin{lstlisting}
 main:
