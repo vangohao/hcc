@@ -1,0 +1,31 @@
+#!/bin/bash
+if [ $# -gt 0 ]
+then
+	F=${1%.c}
+	if [ -f "$F.c" ]
+	then
+		./tigger/eeyore < "$F.c" > "$F.ee"
+		if [ $? -eq 0 ]  
+		then
+			./tigger/tigger < "$F.ee" > "$F.s"
+			if [ $? -eq 0 ]
+			then
+				rm -f "$F.ee"
+				echo "RISC-V64 code has sucessfully written to $F.s"
+			else
+				rm -f "$F.ee" "$F.s"
+				echo "tigger return exit code $?: hcc stoped."
+			fi
+				
+		else
+			rm -f "$F.ee"
+			echo "eeyore return exit code $?: hcc stoped."
+		fi
+	else
+		echo "$F.c not exists."
+	fi
+else
+	echo "Please input a source file name."
+fi
+	
+			

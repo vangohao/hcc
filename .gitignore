@@ -1,6 +1,5 @@
 .vscode
 a.out
-hcc
 lex.yy.o
 lex.yy.c
 main.o
@@ -21,3 +20,7 @@ llvm-2.6
 *.aux
 *.synctex.gz
 bnf.y
+qsort.c
+*.ee
+*.tg
+*.s
