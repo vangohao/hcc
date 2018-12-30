@@ -36,6 +36,12 @@ tigger convert eeyore code to Tigger code || Riscv64 asm || Riscv32 asm.
 
 Get source code from https://github.com/vangohao/hcc
 
+to build the project, run ``make'' in the hcc directory.
+
+to run the hcc compiler, run ``./hcc qsort.c'' or ``./hcc qsort'' to compile qsort.c to qsort.s
+
+use ``-m32'' option to get Riscv-32 code (default is Riscv-64)
+
 \section{supported additional C rules besides MiniC}
 \begin{enumerate}
 \item 支持空语句( ; )
@@ -677,9 +683,13 @@ void Func::CallFunc(int v,string f)
     paramToCallWithCount = 0;
 }
 \end{lstlisting}
-Func类设置了一个计数器计数当前传入参数的个数. 计数器初始化为0, 每扫描并处理一个Param语句, 将计数器值加一.\
-对于`Param x`语句,将其处理为 `a0 = x`(对应Expression的类型为MoveRR), 其中0可能为0-7,是传参计数器的当前值.\
-由Eeyore的构成,在Param语句和对应的Call语句之间不会有其他会改变参数寄存器值的语句,而Call语句的right属性会被设置成{a0,a1,..,at},其中t为参数的个数-1;\
+
+Func类设置了一个计数器计数当前传入参数的个数. 计数器初始化为0, 每扫描并处理一个Param语句, 将计数器值加一.
+
+对于`Param x`语句,将其处理为 `a0 = x`(对应Expression的类型为MoveRR), 其中0可能为0-7,是传参计数器的当前值.
+
+由Eeyore的构成,在Param语句和对应的Call语句之间不会有其他会改变参数寄存器值的语句,而Call语句的right属性会被设置成{a0,a1,..,at},其中t为参数的个数-1;
+
 因此活性分析的结果会阻止Param语句和Call语句之间的其他无关变量被分配为a0-at寄存器.
 
 \subsection{合并预着色点相关传送节点的例子}
@@ -716,5 +726,97 @@ main:
 	.size	main, .-main
 \end{lstlisting}
 变量大量合并,只用了a0,没有一条move指令.
+\section{Risc-v64/32}
+本编译器生成Risc-v64/32的代码写在tigger部分之中, 未单独编写.
 
+Tigger中设置了全局变量target指示需要生成的代码类型.
+
+Func类中的函数GenCode(), GenRiscv64(), GenRiscv32() 三个函数分别生成对应函数的Tigger, Riscv64 和 Riscv32 代码, Analyz类中的GenGlobalTigger() 和GenGlobal()函数 分别生成Tigger和Riscv32/64的全局变量信息.
+
+tigger程序运行时接受一个参数, 如提供 -tg 参数,则输出Tigger 代码,如提供 -m32 参数,则输出Riscv-32代码. 如未提供参数或提供了其他参数, 则默认生成 Riscv-64代码.
+
+由于Riscv不支持寄存器乘以直接数的指令, 因此在Tigger中规定了寄存器乘以直接数的指令中的直接数必须为2的幂以便转换为左移指令. 在Riscv代码输出过程中,Func类有OutputArithRIMulI(int reg1,int reg2,int op)函数来处理这种指令, 将其变为左移指令输出.
+
+此外, 依照MiniC-Checker平台的要求, tigger文件夹中提供了三个利用管道实现的脚本tiggerC,riscv64C和riscv32C,他们接受miniC代码,输出对应代码.
+\section{hcc}
+整个编译器已整合为hcc
+
+从 https://github.com/vangohao/hcc 获取源码
+
+在repo根目录运行``make''
+
+运行 ``./hcc qsort.c'' or ``./hcc qsort''来将 qsort.c 编译为RISCV64汇编代码 qsort.s
+
+运行 ``./hcc -m32 qsort.c'' or ``./hcc -m32 qsort''来将 qsort.c 编译为RISCV32汇编代码 qsort.s
+
+hcc 是一个脚本,实际是调用eeyore程序和tigger程序实现, 在eeyore有错误时会提前终止程序.
+
+hcc脚本内容如下:
+\begin{lstlisting}
+#!/bin/bash
+
+Help(){
+	echo "Please input a source file name."
+	echo "For example:"
+	echo "./hcc qsort.c" 
+	echo "or"
+	echo "./hcc qsort"
+	echo "or"
+	echo "./hcc -m32 qsort.c"
+}
+
+if [[ $# -gt 0 ]] && [[ $1 != "--help" ]]
+then
+	if [ $1 == "-m32" ]
+	then
+		TC="-m32"
+		if [[ $# -gt 1 ]]
+		then
+			F=${2%.c}
+		else
+			Help
+			exit
+		fi
+	else
+		if [[ $# -gt 1 ]] && [[ $2 == "-m32" ]]
+		then
+			TC="-m32"
+		else
+			TC=""
+		fi
+		F=${1%.c}
+	fi
+	if [ -f "$F.c" ]
+	then
+		./tigger/eeyore < "$F.c" > "$F.ee"
+		EC=$?
+		if [ ${EC} -eq 0 ]  
+		then
+			./tigger/tigger ${TC} < "$F.ee" > "$F.s"
+			EC=$?
+			if [ ${EC} -eq 0 ]
+			then
+				rm -f "$F.ee"
+				if [[ ${TC} == "-m32" ]]
+				then
+					echo "RISC-V32 code has sucessfully written to $F.s"
+				else
+					echo "RISC-V64 code has sucessfully written to $F.s"
+				fi
+			else
+				rm -f "$F.ee" "$F.s"
+				echo "tigger return exit code ${EC}: hcc stoped."
+			fi
+				
+		else
+			rm -f "$F.ee"
+			echo "eeyore return exit code ${EC}: hcc stoped."
+		fi
+	else
+		echo "$F.c not exists."
+	fi
+else
+	Help
+fi
+\end{lstlisting}
 \end{document}

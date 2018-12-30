@@ -1,19 +1,53 @@
 #!/bin/bash
+
+Help(){
+	echo "Please input a source file name."
+	echo "For example:"
+	echo "./hcc qsort.c" 
+	echo "or"
+	echo "./hcc qsort"
+	echo "or"
+	echo "./hcc -m32 qsort.c"
+}
+
 if [[ $# -gt 0 ]] && [[ $1 != "--help" ]]
 then
-	F=${1%.c}
+	if [ $1 == "-m32" ]
+	then
+		TC="-m32"
+		if [[ $# -gt 1 ]]
+		then
+			F=${2%.c}
+		else
+			Help
+			exit
+		fi
+	else
+		if [[ $# -gt 1 ]] && [[ $2 == "-m32" ]]
+		then
+			TC="-m32"
+		else
+			TC=""
+		fi
+		F=${1%.c}
+	fi
 	if [ -f "$F.c" ]
 	then
 		./tigger/eeyore < "$F.c" > "$F.ee"
 		EC=$?
 		if [ ${EC} -eq 0 ]  
 		then
-			./tigger/tigger < "$F.ee" > "$F.s"
+			./tigger/tigger ${TC} < "$F.ee" > "$F.s"
 			EC=$?
 			if [ ${EC} -eq 0 ]
 			then
 				rm -f "$F.ee"
-				echo "RISC-V64 code has sucessfully written to $F.s"
+				if [[ ${TC} == "-m32" ]]
+				then
+					echo "RISC-V32 code has sucessfully written to $F.s"
+				else
+					echo "RISC-V64 code has sucessfully written to $F.s"
+				fi
 			else
 				rm -f "$F.ee" "$F.s"
 				echo "tigger return exit code ${EC}: hcc stoped."
@@ -27,11 +61,7 @@ then
 		echo "$F.c not exists."
 	fi
 else
-	echo "Please input a source file name."
-	echo "For example:"
-	echo "./hcc qsort.c" 
-	echo "or"
-	echo "./hcc qsort"
+	Help
 fi
 	
 			
