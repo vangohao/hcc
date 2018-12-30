@@ -37,42 +37,46 @@ tigger convert eeyore code to Tigger code || Riscv64 asm || Riscv32 asm.
 Get source code from https://github.com/vangohao/hcc
 
 \section{supported additional C rules besides MiniC}
-0. 支持空语句( ; )
+\begin{enumerate}
+\item 支持空语句( ; )
 
-1. 支持逻辑表达式与算术表达式互相自动转换.
+\item 支持逻辑表达式与算术表达式互相自动转换.
 
-2. 支持无返回值调用函数.
+\item 支持无返回值调用函数.
 
-3. 支持调用函数时使用表达式作为参数.
+\item 支持调用函数时使用表达式作为参数.
 
-4. 支持在程序体内声明函数.
+\item 支持在程序体内声明函数.
 
-5. 支持C风格多行注释和C++风格单行注释.
-
+\item 支持C风格多行注释和C++风格单行注释.
+\end{enumerate}
 \section{error report}
-0. 报告语法错误和词法错误及其行号,并给出该处正确的token类型提示.
+\begin{enumerate}[1.]
+\item 报告语法错误和词法错误及其行号,并给出该处正确的token类型提示.
 
-1. 检查标识符使用,如果使用了未定义的标识符会报错.
+\item 检查标识符使用,如果使用了未定义的标识符会报错.
 
-2. 检查标识符重复,对于重复定义的报错,函数名与变量名冲突的报错,如果在\{\}程序块内使用与程序块外同名的变量,则不会报错.
+\item 检查标识符重复,对于重复定义的报错,函数名与变量名冲突的报错,如果在\{\}程序块内使用与程序块外同名的变量,则不会报错.
 
-3. 检查函数参数表,对于重复声明但参数表不一致,或定义与声明参数表不一致,或调用时所用的参数表与声明的类型不一致时报错.
+\item 检查函数参数表,对于重复声明但参数表不一致,或定义与声明参数表不一致,或调用时所用的参数表与声明的类型不一致时报错.
 
-4. 检查+,-,*,/,\%运算符对于数组类型变量的不合法操作给出错误提示,这些操作中除了 (int[])+(int), (int)+(int[]), (int[])-(int), 外涉及数组的运算都是不合法 的.
+\item 检查+,-,*,/,\%运算符对于数组类型变量的不合法操作给出错误提示,这些操作中除了 (int[])+(int), (int)+(int[]), (int[])-(int), 外涉及数组的运算都是不合法 的.
 
-5. 检查对数组变量的赋值,无法将数值赋给数组变量.
+\item 检查对数组变量的赋值,无法将数值赋给数组变量.
 
-6. 检查a[b]使用,如果a不是数组变量,会报错.
-
+\item 检查a[b]使用,如果a不是数组变量,会报错.
+\end{enumerate}
 \section{warning report}
-0. 控制流到达函数结尾(Control reaches end of function)
+\begin{enumerate}
+\item 控制流到达函数结尾(Control reaches end of function)
+\end{enumerate}
 \section{Eeyore}
 \subsection{简介}
-0. 使用flex,bison和C++构建,将输入的MiniC代码转换为Eeyore三地址代码.
-
-1. 使用STL的map模板制作符号表,使用链表串联内外层程序块的符号表.
-
-2. 使用回填法构建eeyore中的标号及goto语句.
+\begin{enumerate}[1.]
+\item 使用flex,bison和C++构建,将输入的MiniC代码转换为Eeyore三地址代码.
+\item 使用STL的map模板制作符号表,使用链表串联内外层程序块的符号表.
+\item 使用回填法构建eeyore中的标号及goto语句.
+\end{enumerate}
 \subsection{代码结构}
 代码由 symbol.cpp/h node.cpp/h gotolist.cpp/h fault.cpp/h main.cpp parser.y lexer.l构成
 \begin{enumerate}
@@ -92,6 +96,8 @@ Get source code from https://github.com/vangohao/hcc
 \item parser.y 语法分析器,进行语法制导翻译.
 \item lexer.l 词法分析器,进行词法分析并传递token及其基本属性给语法分析器
 \end{enumerate}
+\subsection{类结构}
+\includegraphics[width=\linewidth]{uml_eeyore} 
 \section{Tigger}
 \subsection{代码结构}
 代码由analyz.cpp/h lexer.l tigger.y tigger.cpp/h main.cpp 构成

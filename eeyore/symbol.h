@@ -17,18 +17,18 @@ enum SymbolType //符号类型
 };
 struct Symbol //符号
 {
-    static int origCount;
-    static int tempCount;
-    int id;
-    int tempid;
-    SymbolType type;
+    static int origCount;   //原生变量计数
+    static int tempCount;   //临时变量计数
+    int id;                 //id
+    int tempid;             //临时id
+    SymbolType type;        //类型
     int val; //附加值，函数参数个数或数组大小
     Node* appear; //第一次出现的位置
     Node* paramlist; //若为函数,指向它的参数表
-    bool decleared;
-    bool defined;
+    bool decleared;     //是否被声明
+    bool defined;       //是否被定义(只有函数有)
     int paramCount; //p0,p1这样的变量计数
-    int immediate;
+    int immediate;      //直接数数值(只有直接数有)
     std::string funName; //函数名称
     Symbol();
     Symbol(Node* _appear);
@@ -49,12 +49,12 @@ private:
 
 struct SymbolTable
 {
-    std::map<std::string,Symbol*> table;
-    SymbolTable * prev;
-    SymbolTable(SymbolTable * st);
-    void put(const char * s, Symbol* sym);
+    std::map<std::string,Symbol*> table; //当前符号表
+    SymbolTable * prev;             //指向上一级符号表的指针
+    SymbolTable(SymbolTable * st); 
+    void put(const char * s, Symbol* sym); //插入
     void put(std::string s, Symbol* sym);
-    Symbol* get(const char * s);
-    Symbol* gethere(const char * s);
+    Symbol* get(const char * s);        //查找
+    Symbol* gethere(const char * s);    //在上一级查找
 };
 #endif
