@@ -15,3 +15,8 @@ y.tab.o
 *.gch
 *.tmp.pre
 llvm-2.6
+*.log
+*.htm
+*.html
+*.aux
+*.synctex.gz

@@ -1,40 +1,113 @@
-<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
-# 编译实习MiniC报告
-### 罗昊 1700010686
-hcc(Hao miniC Compiler) is a simple compiler for MiniC.\
-It contains 3 parts: eeyore, tigger and risc-v. \
+\documentclass[UTF8]{article}
+\usepackage{ctex}
+\usepackage{enumerate}[i]
+\usepackage{listings}
+\usepackage{algpseudocode}
+\usepackage{graphicx}
+\usepackage{geometry}
+	\usepackage{fontspec}
+	\setmonofont{Consolas}
+\usepackage{xcolor}
+\lstset{
+    columns=fixed,    
+    basicstyle=\ttfamily\scriptsize,   
+    numberstyle=\tiny,
+    numbers=left,                                        % 在左侧显示行号
+    frame=none,                                          % 不显示背景边框
+    backgroundcolor=\color[RGB]{245,245,244},            % 设定背景颜色
+    keywordstyle=\color[RGB]{40,40,255},                 % 设定关键字颜色
+    numberstyle=\footnotesize\color{darkgray},           % 设定行号格式
+    commentstyle=\it\color[RGB]{0,96,96},                % 设置代码注释的格式
+    stringstyle=\rmfamily\slshape\color[RGB]{128,0,0},   % 设置字符串格式
+    showstringspaces=false,                              % 不显示字符串中的空格
+    language=c++,                                        % 设置语言
+}
+\begin{document}
+\title{编译实习MiniC报告}
+\author{罗昊\quad 1700010686}
+\maketitle
+hcc(Hao miniC Compiler) is a simple compiler for MiniC.
+
+It contains 2 parts: eeyore and tigger. 
+
+eeyore convert MiniC code to Eeyore code (a kind of three-address code)
+
+tigger convert eeyore code to Tigger code || Riscv64 asm || Riscv32 asm.
+
 Get source code from https://github.com/vangohao/hcc
-## supported additional C rules besides MiniC
+
+\section{supported additional C rules besides MiniC}
 0. 支持空语句( ; )
+
 1. 支持逻辑表达式与算术表达式互相自动转换.
+
 2. 支持无返回值调用函数.
+
 3. 支持调用函数时使用表达式作为参数.
+
 4. 支持在程序体内声明函数.
+
 5. 支持C风格多行注释和C++风格单行注释.
-## error report
+
+\section{error report}
 0. 报告语法错误和词法错误及其行号,并给出该处正确的token类型提示.
+
 1. 检查标识符使用,如果使用了未定义的标识符会报错.
-2. 检查标识符重复,对于重复定义的报错,函数名与变量名冲突的报错,如果在{}程序块内使用与程序块外同名的变量,则不会报错.
+
+2. 检查标识符重复,对于重复定义的报错,函数名与变量名冲突的报错,如果在\{\}程序块内使用与程序块外同名的变量,则不会报错.
+
 3. 检查函数参数表,对于重复声明但参数表不一致,或定义与声明参数表不一致,或调用时所用的参数表与声明的类型不一致时报错.
-4. 检查+,-,*,/,%运算符对于数组类型变量的不合法操作给出错误提示,这些操作中除了 (int[])+(int), (int)+(int[]), (int[])-(int), 外涉及数组的运算都是不合法 的.
+
+4. 检查+,-,*,/,\%运算符对于数组类型变量的不合法操作给出错误提示,这些操作中除了 (int[])+(int), (int)+(int[]), (int[])-(int), 外涉及数组的运算都是不合法 的.
+
 5. 检查对数组变量的赋值,无法将数值赋给数组变量.
+
 6. 检查a[b]使用,如果a不是数组变量,会报错.
-## eeyore
+
+\section{warning report}
+0. 控制流到达函数结尾(Control reaches end of function)
+\section{Eeyore}
+\subsection{简介}
 0. 使用flex,bison和C++构建,将输入的MiniC代码转换为Eeyore三地址代码.
+
 1. 使用STL的map模板制作符号表,使用链表串联内外层程序块的符号表.
+
 2. 使用回填法构建eeyore中的标号及goto语句.
-## Tigger
-### 代码结构
+\subsection{代码结构}
+代码由 symbol.cpp/h node.cpp/h gotolist.cpp/h fault.cpp/h main.cpp parser.y lexer.l构成
+\begin{enumerate}
+\item symbol.cpp/h 包含两个类的定义:
+\begin{enumerate}[(1)]
+\item Symbol 类,即符号类,每个Symbol对象对应一个符号(包括常数,原生变量和临时变量)
+\item SymbolTable 类,即符号表.
+\end{enumerate}
+\item node.cpp/h 包含两个类的定义:
+\begin{enumerate}[(1)]
+\item Node类,即语法树节点.
+\item Label类,即标号类,用于翻译生成的标号.
+\end{enumerate}
+\item gotolist.cpp/h 包含Gotolist类的定义,gotolist就是跳转表,用于建立跳转关系.
+\item fault.cpp/h 包含用于报错的函数.
+\item main.cpp 主程序
+\item parser.y 语法分析器,进行语法制导翻译.
+\item lexer.l 词法分析器,进行词法分析并传递token及其基本属性给语法分析器
+\end{enumerate}
+\section{Tigger}
+\subsection{代码结构}
 代码由analyz.cpp/h lexer.l tigger.y tigger.cpp/h main.cpp 构成
 
 analyz.cpp: 包含三个类的定义: 
+
 	1.Expression类,每个Expression对象对应一条Tigger/RiscV指令;
+	
 	2.Func类,每个Func对象对应一个函数; 
+	
 	3.Analyz类,单例类,负责整体处理工作以及函数间优化工作. 
 
 analyz.h: 包含上述三个类的声明.
 
-lexer.l: 词法分析器,负责词法分析,其中对于变量,区分全局变量,局部变量和形参,使用Analyz中的vcount属性为变量分配id,并包含在yylval中.
+lexer.l: 词法分析器,负责词法分析,其中对于变量,区分全局变量,局部变量和形参,使用Analyz中的vcount属性
+为变量分配id,并包含在yylval中.
 
 tigger.y: 语法分析器,负责语法分析,负责将Eeyore语句转换为Expression对象, 以及负责Func类对象创建, Func类对象负责tigger的主要函数体内工作.
 
@@ -43,10 +116,11 @@ tigger.cpp: 包含一些公共函数.
 tigger.h: 公共头文件.
 
 main.cpp: 主程序函数和少量全局变量.
-### 类结构
-![类结构](uml.png)
+\subsection{类结构}
+\includegraphics[width=0.7\linewidth]{uml} 
+
 1. Expression类:
-```c++
+\begin{lstlisting}
 class Expression
 {
 public:
@@ -70,9 +144,9 @@ public:
     vector<int> _right,vector<int> _imm,
     string _funtocall="",bool push=true);
 };
-```
+\end{lstlisting}
 2.Func类
-```c++
+\begin{lstlisting}
 class Func
 {
 public:
@@ -172,189 +246,166 @@ private:
     void GenRiscv32();                  //生成Riscv32代码
     void checkReturn();                 //检查函数退出前是否有返回指令
 };
-```
-### 程序流生成
-Parser分析到函数体结尾end func时会生成一个Empty类型语句表示函数体的结束.\
-程序流分析过程对Expression对象的nexts属性和prevs属性赋值,使其分别指向e的所有前驱和所有后继.\
-除Goto,If类,Return,Empty语句外,所有语句在vector<Expression*> exprs中的后继都是其程序流中的后继(称为默认后继).\
-对于Goto语句,其后继为Goto 所指向标号对应的Label语句;\
-对于If类语句,其后继为默认后继以及所指向标号对应的Label语句;\
-对于Return语句,其后继为表示函数体结束的Empty语句.\
-代码:
-```c++
-void Func::genFlow()
-{
-    for(auto iter = exprs.begin();iter!=exprs.end();++iter)
-    {
-        Expression* e = *iter;
-        iter++;
-        e->nexts.clear();
-        e->prevs.clear();
-        if(iter != exprs.end() && e->type != Goto && e->type != Return) //如果是Goto或Return则下一语句不是后继
-        e->nexts.push_back(*iter);
-        iter--;
-        e->use = e->right;
-        e->def = e->left;
-        if(e->type==Goto)
-        {
-            e->nexts.push_back(AnalyzInstance.labelTable[e->imm[0]]);
-        }
-        else if(e->type==IfRR || e->type==IfRI || e->type==IfIR)
-        {
-            e->nexts.push_back(AnalyzInstance.labelTable[e->imm[1]]);
-        }
-        else if(e->type == Return)
-        {
-                e->nexts.push_back(exprs.back());
-        }
-    }
-    for(auto e:exprs)
-    {
-        for(auto n: e->nexts)
-        {
-            n->prevs.push_back(e);
-        }
-    }
-}
-```
-### return语句检查
-如果函数结尾处的Empty语句有不是return语句的前驱,则说明程序控制流到了函数末尾,会给出警告;\
-并会自动在函数结尾处添加一条return 0;\
-代码:
-```c++
-void Func::checkReturn()
-{
-    bool flag = false;
-    Expression * e = exprs.back();
-    for(auto f: e->prevs)
-    {
-        if( f->type != Return)
-        {
-            flag = true;
-            auto it = find(exprs.begin(),exprs.end(),f);
-            it++;
-            Expression * e0 = new Expression(MoveRI,{(int)(a0)},{},{0},"",false); 
-            Expression * e1 = new Expression(Return,{},{(int)(a0)},{},"",false); //返回a0=0值
-            it = exprs.insert(it,e0);
-            it++;
-            exprs.insert(it,e1);
-        }
-    }
-    if(flag)
-    {
-        AnalyzInstance.ReportWarning("Control reaches end of non-void function "+name);
-    }
-}
-```
-### 活性分析
+\end{lstlisting}
+\subsection{程序流生成}
+Parser分析到函数体结尾end func时会生成一个Empty类型语句表示函数体的结束.
+
+程序流分析过程对Expression对象的nexts属性和prevs属性赋值,使其分别指向e的所有前驱和所有后继.
+
+除Goto,If类,Return,Empty语句外,所有语句在vector<Expression*> exprs中的后继都是其程序流中的后继(称为默认后继).
+
+对于Goto语句,其后继为Goto 所指向标号对应的Label语句;
+
+对于If类语句,其后继为默认后继以及所指向标号对应的Label语句;
+
+对于Return语句,其后继为表示函数体结束的Empty语句.
+
+\subsection{return语句检查}
+如果函数结尾处的Empty语句有不是return语句的前驱,则说明程序控制流到了函数末尾,会给出警告;
+
+并会自动在函数结尾处添加一条return 0;
+\subsection{活性分析}
 以语句为基本块进行自下而上的活性分析.使用队列进行宽度优先搜索,递推式为:
 $$e.in = e.use\cup (e.out - e.def)$$
 $$e.out = \cup_{x\in e.nexts} (x.in)$$
-如果进行上述计算后e.in和e.out有所改变,则将e的前驱加入队列.\
-迭代直到队列为空.\
-代码:
-```c++
-void Func::livelyAnalyz()
-{ 
-    for(auto e:exprs)
-    {
-        e->in.clear();
-        e->out.clear();
-        std::sort(e->use.begin(),e->use.end());
-        std::sort(e->def.begin(),e->def.end());
-    }
-    queue<Expression*> qex;
-    qex.push(exprs.back());
-    while(!qex.empty()) // 宽搜
-    {
-        set<int> liveVar;
-        auto e = qex.front();
-        qex.pop();
-        for (auto f : e->nexts)
-        {
-            for (auto x : f->in)
-            {
-                liveVar.insert(x);
-            }
-        }
-        //设置out
-        bool flagout = false, flagin = false;
-        for (auto x : liveVar)
-        {
-            if (e->out.find(x) == e->out.end())
-            {
-                flagout = true;
-                e->out.insert(x);
-            }
-        }
-        for (auto x : e->def)
-        {
-            auto it = liveVar.find(x);
+如果进行上述计算后e.in和e.out有所改变,则将e的前驱加入队列.
 
-            if (it != liveVar.end())
-            {
-                it = liveVar.erase(it);
-            }
-        }
-        //继续;
-        for (auto x : e->use)
-        {
-            liveVar.insert(x);
-        }
-        //加入in
-        for (auto x : liveVar)
-        {
-            if (e->in.find(x) == e->in.end())
-            {
-                flagin = true;
-                e->in.insert(x);
-            }
-        }
-        if ((flagin || flagout || !e->visited || e->use.empty()) && e->dead == false)
-        {
-            e->visited = true;
-            //加入前驱
-            for (auto ee : e->prevs)
-                if (ee->dead == false)
-                {
-                    qex.push(ee);
-                }
-        }
-    }
-}
-```
-### 死代码消除
+迭代直到队列为空.
 
-### 寄存器分配
-使用图着色算法进行寄存器分配.\
-利用活性分析的结果构造冲突图,兼用邻接表和邻接矩阵表示冲突图.\
-图染色有四种操作:\
-1.简化 对于度数小于k的传送无关的点,将其从图中删除并放入栈中.\
-2.合并 对于一条传送指令,对其关联的两个点在保守规则下合并.\
-3.冻结 冻结一条传送指令,将他当作非传送指令.\
-4.溢出 将图中度数最大的点放入栈中,并从图中删除..\
-操作按1.2.3.4的优先级进行,直到图中不再有点.\
-将栈中元素依次弹出,并为其分配颜色,如果无颜色可用,则将该顶点真实溢出.\
+\subsection{死代码消除}
+此处处理的死代码分为两种:
+
+(1)$e.def \bigcap\left( \bigcup_{x\in e.nexts}x.in \right)== \Phi$ 即该语句定义的变量在这条语句的所有
+后继中都不是入口活跃的.
+
+(2)不可达语句,即在活性分析时未处理的语句.
+
+对于第(1)情行,未定义变量的语句和控制流跳转类语句为例外排除.
+
+\subsection{常数传播}
+每个Expression语句对象都有一个constant属性,他是一个map表,从变量id映射到该处(出口处)的变量常数值. 此表只会储存此处为常数值的变量.
+
+按顺序遍历所有语句,对于每个语句,计算一个mp(map表)
+$$ mp = \bigcap_{x \in e.prevs}x.constant $$
+即mp为e的所有前驱的constant表中项的交集,也即对于所有前驱语句都具有相同常数值的变量.
+
+对于非跳转类或访存类语句,如果$ x\in mp \forall x\in e.use $成立,也即所有被x使用的变量在此处均为常数,则可说明此语句定义的变量也为常数. 调用calcarith函数计算此算术运算.并将该语句的类型改为MoveRI(即将直接数赋值给变量的语句)
+
+对于上面公式不成立的语句, 以及跳转类和访存类语句, 令
+$$ mp = mp - e.def $$
+即此处被定义的变量标记为不是常数.
+
+最后令 $  e.constant = mp $ 记录此语句处的常量表
+
+\subsection{访存优化}
+死代码消除和常数传播的优化是在寄存器分配之前就完成的, 而访存优化主要是优化对局部变量的访存指令.考虑这两种情况: (1)当寄存器不够用时,图染色算法将局部变量溢出至栈帧, 然后RewriteProgram过程会为每次对该局部变量的读取增加FrameLoad指令, 对修改增加FrameStore指令.(2)连续的call语句时,调用者保存的寄存器会被连续存取但却不会改变.
+
+以上两种情况可能产生一些冗余的访存指令.
+
+此处使用两种规则优化:
+
+(1) 设本条语句FrameLoad n x.若当前寄存器x在上一句FrameLoad n x后未改变,且上条语句和本条语句之间没有跳转类语句,标号或者数组写入语句,则当前FrameLoad语句可被优化.
+
+(2) 设本条语句FrameStore n x.若当前寄存器x在上一句FrameLoad n x后未改变,且上条语句和本条语句之间没有跳转类语句,标号或者数组写入语句,则当前FrameStore语句和之前的FrameLoad语句都可被优化. 
+
+举例:
+
+(1)
+\begin{lstlisting}
+//此处设a保存在栈帧中
+c = a + b;
+d = a + c;
+e = c + d;
+\end{lstlisting}
+
+优化前的tigger代码:
+\begin{lstlisting}
+load  0 a0
+a1 = a0 + a1
+load  0 a0
+a1 = a0 + a1
+a1 = a1 + a1
+\end{lstlisting}
+优化后的tigger代码
+\begin{lstlisting}
+load  0 a0
+a1 = a0 + a1
+a1 = a0 + a1
+a1 = a1 + a1
+\end{lstlisting}
+
+(2)
+\begin{lstlisting}
+b = a + 2;
+d = func(1);
+d = func(2);
+return b;
+\end{lstlisting}
+优化前的tigger代码:
+\begin{lstlisting}
+a1 = a0 + 2
+a0 = 1
+store a1 0
+call func
+load 0 a1
+a0 = 2
+store a1 0
+call func
+load 0 a1
+a0 = a1
+return
+\end{lstlisting}
+优化后的tigger代码
+\begin{lstlisting}
+a1 = a0 + 2
+a0 = 1
+store a1 0
+call func
+a0 = 2
+call func
+load 0 a1
+a0 = a1
+return
+\end{lstlisting}
+\subsection{寄存器分配}
+使用图着色算法进行寄存器分配.
+
+利用活性分析的结果构造冲突图,兼用邻接表和邻接矩阵表示冲突图.
+
+图染色有四种操作:
+\begin{enumerate}[1.]
+\item 简化 对于度数小于k的传送无关的点,将其从图中删除并放入栈中.
+
+\item 合并 对于一条传送指令,对其关联的两个点在保守规则下合并.
+
+\item 冻结 冻结一条传送指令,将他当作非传送指令.
+
+\item 溢出 将图中度数最大的点放入栈中,并从图中删除.
+\end{enumerate}
+操作按1.2.3.4的优先级进行,直到图中不再有点.
+
+将栈中元素依次弹出,并为其分配颜色,如果无颜色可用,则将该顶点真实溢出.
+
 若有真实溢出发生,则重写程序,为溢出的变量分配栈空间,加入load语句和store语句来读取和写回,并创建临时变量进行运算.
-### 其他说明
+\subsection{其他说明}
 Tigger不再创建符号表,因为其中所有变量名称的作用域都是全局,所以直接由词法分析器为其分配一个id(>27).\
 全局变量和栈数组不分配寄存器,直接存到内存中.
-### 预着色节点的处理
+\subsection{预着色节点的处理}
 Tigger有28个寄存器,给其确定id为0-27,以作为预着色节点,在活性分析中与其他变量处于同等地位. 在图着色时也可与与其相关的传送节点合并.
-### 形参的处理
+\subsection{形参的处理}
 函数参数及返回值需要预着色,函数体的开头会创建临时变量,使用传送指令将预着色节点传送到临时变量作为形参,以避免形参长期占用a开头寄存器.
-### 调用函数
+\subsection{调用函数}
 该部分tigger.y代码:
-```
+\begin{lstlisting}
 Expression:
 | ...
 | PARAM Symbol                                {AnalyzInstance.currentFunc().CallParam($2,1);}
 | PARAM INTEGER                                 {AnalyzInstance.currentFunc().CallParam($2,0);}
 | Symbol '=' CALL FUNCTION                    {AnalyzInstance.currentFunc().CallFunc($1,$4);}
 | ...
-```
+\end{lstlisting}
 该部分analyz.cpp代码:
-```c++
+\begin{lstlisting}
 void Func::CallParam(int v,int t)
 {
     if(t == 1)
@@ -379,7 +430,7 @@ void Func::CallFunc(int v,string f)
     new Expression(MoveRR,{v},{(int)(a0)},{});
     paramToCallWithCount = 0;
 }
-```
+\end{lstlisting}
 Func类设置了一个计数器计数当前传入参数的个数. 计数器初始化为0, 每扫描并处理一个Param语句, 将计数器值加一.\
 对于`Param x`语句,将其处理为 `a0 = x`(对应Expression的类型为MoveRR), 其中0可能为0-7,是传参计数器的当前值.\
 由Eeyore的构成,在Param语句和对应的Call语句之间不会有其他会改变参数寄存器值的语句,而Call语句的right属性会被设置成{a0,a1,..,at},其中t为参数的个数-1;\
@@ -388,7 +439,7 @@ Func类设置了一个计数器计数当前传入参数的个数. 计数器初�
 合并预着色点相关传送节点的例子
 
 MiniC代码
-```c
+\begin{lstlisting}
 int v0;
 v0 = getint();
 int v1;
@@ -396,18 +447,18 @@ v1 = func(v0);
 int v2;
 v2 = putint(v1+1);
 return v2;
-```
+\end{lstlisting}
 tigger代码
-```x86asm
+\begin{lstlisting}
 call getint
 call func
 a0 = a0 + 1
 call putint
 return
-```
+\end{lstlisting}
 
 riscv64代码
-```x86asm
+\begin{lstlisting}
 main:
 	add	sp,sp,-16
 	sd	ra,8(sp)
@@ -419,5 +470,7 @@ main:
 	addi	sp,sp,16
 	jr	ra
 	.size	main, .-main
-```
+\end{lstlisting}
 变量大量合并,只用了a0,没有一条move指令.
+
+\end{document}
