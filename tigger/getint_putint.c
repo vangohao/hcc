@@ -5,7 +5,6 @@ int getchar()
 	read(0,&ch,1);
 	return ch;
 }
-
 int putint(int a)
 {
 	char buf[40];

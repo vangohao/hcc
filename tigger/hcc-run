@@ -4,10 +4,10 @@ if [ $# -gt 0 ]
 then
 	./eeyore < $1.c > $1.ee
 	echo "./eeyore < $1.c > $1.ee"
-	./tigger -tg < $1.ee > $1.tg
-	echo "./tigger -tg < $1.ee > $2.tg"
-	./tigger < $1.ee > $1.s
-	echo "./tigger < $2.ee > $2.s"
+	./tigger < $1.ee > $1.tg
+	echo "./tigger < $1.ee > $2.tg"
+	./tigger -m64 < $1.ee > $1.s
+	echo "./tigger -m64 < $2.ee > $2.s"
 	$RISCV/bin/riscv64-unknown-linux-gnu-gcc $1.s getint_putint.s
 	echo "$RISCV/bin/riscv64-unknown-linux-gnu-gcc $1.s getint_putint.s"
 	echo "$RISCV/bin/qemu-riscv64 -L $RISCV/sysroot a.out"

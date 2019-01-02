@@ -19,6 +19,10 @@ llvm-2.6
 *.html
 *.aux
 *.synctex.gz
+*.snm
+*.nav
+*.toc
+*.vrb
 bnf.y
 qsort.c
 *.ee
