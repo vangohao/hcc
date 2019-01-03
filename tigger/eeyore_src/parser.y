@@ -486,6 +486,8 @@ M Expression               {$$ = new Node($1,$5,NodeType::ExprLogic,LOR,yylineno
                                                     Output::gen(" [");$3->sym->print();Output::gen("]\n");
                                                     $$->sym = tmpsym;
                                                     }
+													else
+													{
                                                     Node * tmpnode = new Node(NULL,NULL,Symbol1,0,yylineno);
                                                     tmpnode -> sym = new Symbol(SymbolType::Immediate,4);
                                                     Symbol * tmpans = Symbol::ProcessDualOp($3,tmpnode,"*");
@@ -494,6 +496,7 @@ M Expression               {$$ = new Node($1,$5,NodeType::ExprLogic,LOR,yylineno
                                                     tmpsym->print();Output::gen(" = ");$1->sym->print();
                                                     Output::gen(" [");tmpans->print();Output::gen("]\n");
                                                     $$->sym = tmpsym;
+													}
                                                 }
 }
 | INTEGER                                     {$$ = new Node(NULL,NULL,NodeType::Symbol1,$1,yylineno);
